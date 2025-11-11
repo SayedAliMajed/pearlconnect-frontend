@@ -51,7 +51,7 @@ const SignUpForm = () => {
       const signUpData = {
         username,
         email,
-        password, // Backend will hash this as hashedPassword
+        password, 
         role,
         profile: {
           fullName: fullName || undefined,
@@ -60,7 +60,7 @@ const SignUpForm = () => {
         },
       };
 
-      // Remove undefined profile fields
+      
       if (!signUpData.profile.fullName) delete signUpData.profile.fullName;
       if (!signUpData.profile.phone) delete signUpData.profile.phone;
       if (!signUpData.profile.address) delete signUpData.profile.address;
