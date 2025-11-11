@@ -1,12 +1,12 @@
-// src/pages/auth/SignInPage.jsx
+// src/components/auth/SignInPage.jsx
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import Container from '../../components/ui/Container';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
-import Card from '../../components/ui/Card';
-import './SignInPage.css';
+import Container from '../ui/Container';
+import Button from '../ui/Button';
+import Input from '../ui/Input';
+import Card from '../ui/Card';
+import '../../pages/auth/SignInPage.css';
 
 const SignInPage = () => {
   const navigate = useNavigate();
