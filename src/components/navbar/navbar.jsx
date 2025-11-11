@@ -4,17 +4,16 @@
 import { useContext } from 'react';
 import { Link } from 'react-router';
 
-// Import the UserContext object
-import { UserContext } from '../../contexts/AuthContext';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const NavBar = () => {
-  // Pass the UserContext object to the useContext hook to access:
+  // Pass the AuthContext object to the useContext hook to access:
   // - The user state (which we use here).
   // - The setUser function to update the user state (which we aren't using).
   //
   // Destructure the object returned by the useContext hook for easy access
   // to the data we added to the context with familiar names.
-  const { user, setUser } = useContext(UserContext);
+  const { user, setUser } = useContext(AuthContext);
 
    const handleSignOut = () => {
     // Clear the token from localStorage
@@ -43,4 +42,3 @@ const NavBar = () => {
 };
 
 export default NavBar;
-

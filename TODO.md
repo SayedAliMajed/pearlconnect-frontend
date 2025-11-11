@@ -1,14 +1,19 @@
-# Git Workflow: Feature Branch to Develop
+# Git Feature Branch Creation and Push
 
-- [ ] Commit staged changes with appropriate message
-- [ ] Push feature branch to remote
-- [ ] Switch to develop branch
-- [ ] Merge feature branch into develop
-- [ ] Push develop branch to remote
-- [ ] Clean up feature branch (optional)
+## Tasks:
+- [ ] Check current branch status
+- [ ] git checkout develop
+- [ ] git pull origin develop
+- [ ] git checkout -b feature/fix-authcontext-mismatch
+- [ ] Commit changes with descriptive message
+- [ ] git push origin feature/fix-authcontext-mismatch
+- [ ] Verify push was successful
 
-## Current Status:
-- Working on: feature/create-file-structure
-- Changes are staged and ready
-- Target: develop branch
-- Will NOT update main branch
+## Feature Details:
+- **Name**: fix-authcontext-mismatch
+- **Changes**: Fixed AuthContext naming mismatches across 3 files
+- **Files Modified**: 
+  - src/main.jsx (UserProvider → AuthProvider)
+  - src/components/dashboard/dashboard.jsx (UserContext → AuthContext)
+  - src/components/navbar/navbar.jsx (UserContext → AuthContext)
+  - TODO.md (documentation)
