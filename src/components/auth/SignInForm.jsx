@@ -3,7 +3,7 @@
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router';
 
-import { signIn } from '../../services/authService';
+import { signIn } from '../../services/auth';
 
 import { UserContext } from '../../contexts/UserContext';
 
