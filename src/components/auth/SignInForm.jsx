@@ -1,20 +1,23 @@
-// src/components/SignInForm/SignInForm.jsx
+// src/components/auth/SignInForm.jsx
 
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router';
 
 import { signIn } from '../../services/auth';
 
-import { UserContext } from '../../contexts/UserContext';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const SignInForm = () => {
   const navigate = useNavigate();
-  const { setUser } = useContext(UserContext);
+  const { setUser } = useContext(AuthContext);
   const [message, setMessage] = useState('');
   const [formData, setFormData] = useState({
     username: '',
+    email: '',
     password: '',
   });
+
+  const { username, email, password } = formData;
 
   const handleChange = (evt) => {
     setMessage('');
@@ -24,9 +27,9 @@ const SignInForm = () => {
   const handleSubmit = async (evt) => {
     evt.preventDefault();
     try {
-      // This function doesn't exist yet, but we'll create it soon.
-      // It will cause an error right now
-      const signedInUser = await signIn(formData);
+      // Allow login with either username or email
+      const loginData = email ? { email, password } : { username, password };
+      const signedInUser = await signIn(loginData);
 
       setUser(signedInUser);
       navigate('/');
@@ -35,22 +38,41 @@ const SignInForm = () => {
     }
   };
 
+  const isFormValid = () => {
+    return (username || email) && password;
+  };
+
   return (
     <main>
       <h1>Sign In</h1>
       <p>{message}</p>
       <form autoComplete='off' onSubmit={handleSubmit}>
         <div>
-          <label htmlFor='email'>Username:</label>
+          <label htmlFor='username'>Username:</label>
           <input
             type='text'
             autoComplete='off'
             id='username'
-            value={formData.username}
+            value={username}
             name='username'
             onChange={handleChange}
-            required
+            placeholder='Enter your username'
           />
+        </div>
+        <div>
+          <label htmlFor='email'>Email:</label>
+          <input
+            type='email'
+            autoComplete='off'
+            id='email'
+            value={email}
+            name='email'
+            onChange={handleChange}
+            placeholder='Enter your email'
+          />
+        </div>
+        <div>
+          <small>You can sign in with either username or email</small>
         </div>
         <div>
           <label htmlFor='password'>Password:</label>
@@ -58,14 +80,14 @@ const SignInForm = () => {
             type='password'
             autoComplete='off'
             id='password'
-            value={formData.password}
+            value={password}
             name='password'
             onChange={handleChange}
             required
           />
         </div>
         <div>
-          <button>Sign In</button>
+          <button disabled={!isFormValid()}>Sign In</button>
           <button onClick={() => navigate('/')}>Cancel</button>
         </div>
       </form>
@@ -74,4 +96,3 @@ const SignInForm = () => {
 };
 
 export default SignInForm;
-
