@@ -1,17 +1,17 @@
-// src/contexts/UserContext.jsx
+// src/contexts/AuthContext.jsx
 
 import { createContext, useState } from 'react';
 
-const UserContext = createContext();
+const AuthContext = createContext();
 
-function UserProvider({ children }) {
+function AuthProvider({ children }) {
   const getUserFromToken = () => {
-  const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
-  if (!token) return null;
+    if (!token) return null;
 
-  return JSON.parse(atob(token.split('.')[1]));
-};
+    return JSON.parse(atob(token.split('.')[1]));
+  };
 
   // Create state just like you normally would in any other component
   const [user, setUser] = useState(getUserFromToken());
@@ -20,16 +20,15 @@ function UserProvider({ children }) {
   const value = { user, setUser };
 
   return (
-    <UserContext.Provider value={value}>
+    <AuthContext.Provider value={value}>
       {/* The data we pass to the value prop above is now available to */}
-      {/* all the children of the UserProvider component. */}
+      {/* all the children of the AuthProvider component. */}
       {children}
-    </UserContext.Provider>
+    </AuthContext.Provider>
   );
 };
 
 // When components need to use the value of the user context, they will need
-// access to the UserContext object to know which context to access.
+// access to the AuthContext object to know which context to access.
 // Therefore, we export it here.
-export { UserProvider, UserContext };
-
+export { AuthProvider, AuthContext };
