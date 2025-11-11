@@ -34,6 +34,7 @@ const NavBar = () => {
           {/* Logo Section */}
           <div className="pc-header-logo">
             <Link to="/" className="pc-logo-link">
+              <img src="/img/logo.png" alt="PearlConnect" className="pc-logo-image" />
               <span className="pc-logo-text">PearlConnect</span>
             </Link>
           </div>
