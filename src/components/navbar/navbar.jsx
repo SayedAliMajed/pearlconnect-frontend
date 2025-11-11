@@ -5,7 +5,7 @@ import { useContext } from 'react';
 import { Link } from 'react-router';
 
 // Import the UserContext object
-import { UserContext } from '../../contexts/UserContext';
+import { UserContext } from '../../contexts/AuthContext';
 
 const NavBar = () => {
   // Pass the UserContext object to the useContext hook to access:

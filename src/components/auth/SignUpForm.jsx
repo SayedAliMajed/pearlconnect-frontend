@@ -2,7 +2,7 @@
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router';
 
-import { signUp } from '../../services/authService';
+import { signUp } from '../../services/auth';
 
 // Import the UserContext object
 import { UserContext } from '../../contexts/UserContext';
