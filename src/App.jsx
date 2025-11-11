@@ -4,8 +4,8 @@ import { Routes, Route } from 'react-router'; // Import React Router
 
 import NavBar from './components/navbar/navbar';
 // Import the new auth page components
-import SignUpPage from './pages/auth/SignUpPage';
-import SignInPage from './pages/auth/SignInPage';
+import SignUpPage from './components/auth/SignUpPage';
+import SignInPage from './components/auth/SignInPage';
 import Landing from './components/landing/landing';
 import Dashboard from './components/dashboard/dashboard';
 import { useContext } from 'react';
