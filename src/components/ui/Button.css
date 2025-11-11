@@ -1,0 +1,146 @@
+/* Button Component Styles */
+
+.ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family);
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  outline: none;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.ui-button:focus {
+  box-shadow: 0 0 0 3px rgba(0, 173, 150, 0.2);
+}
+
+.ui-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Button Variants */
+.ui-button--primary {
+  background-color: var(--primary-teal);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.ui-button--primary:hover:not(:disabled) {
+  background-color: var(--primary-teal-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.ui-button--primary:active:not(:disabled) {
+  background-color: var(--primary-teal-active);
+  box-shadow: var(--shadow-sm);
+}
+
+.ui-button--secondary {
+  background-color: white;
+  color: var(--text-dark);
+  border: 1px solid var(--border-gray);
+  box-shadow: var(--shadow-sm);
+}
+
+.ui-button--secondary:hover:not(:disabled) {
+  background-color: #f8f9fa;
+  border-color: var(--text-gray);
+  box-shadow: var(--shadow-md);
+}
+
+.ui-button--secondary:active:not(:disabled) {
+  background-color: #e9ecef;
+  border-color: var(--text-gray);
+  box-shadow: var(--shadow-sm);
+}
+
+.ui-button--category {
+  background-color: white;
+  color: var(--text-dark);
+  border: 1px solid var(--border-gray);
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+}
+
+.ui-button--category:hover:not(:disabled) {
+  background-color: #f8f9fa;
+  border-color: var(--primary-teal);
+  color: var(--primary-teal);
+  box-shadow: var(--shadow-md);
+}
+
+/* Button Sizes */
+.ui-button--small {
+  padding: 8px 16px;
+  font-size: var(--font-size-sm);
+  min-height: 36px;
+}
+
+.ui-button--medium {
+  padding: 12px 24px;
+  font-size: var(--font-size-base);
+  min-height: 44px;
+}
+
+.ui-button--large {
+  padding: 16px 32px;
+  font-size: var(--font-size-lg);
+  min-height: 52px;
+}
+
+/* Special sizing for search button from wireframe */
+.ui-button--search {
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 10px;
+  min-width: 113px;
+  min-height: 56px;
+}
+
+/* Full Width */
+.ui-button--full-width {
+  width: 100%;
+}
+
+/* Icon support */
+.ui-button__icon {
+  margin-right: 8px;
+}
+
+.ui-button__icon--right {
+  margin-right: 0;
+  margin-left: 8px;
+}
+
+/* Loading state */
+.ui-button--loading {
+  pointer-events: none;
+  position: relative;
+}
+
+.ui-button--loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin: auto;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: ui-button-spin 1s linear infinite;
+}
+
+@keyframes ui-button-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
