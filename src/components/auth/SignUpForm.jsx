@@ -1,53 +1,80 @@
-// Import the useContext hook
+// src/components/auth/SignUpForm.jsx
+
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router';
 
 import { signUp } from '../../services/auth';
 
-// Import the UserContext object
-import { UserContext } from '../../contexts/UserContext';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const SignUpForm = () => {
   const navigate = useNavigate();
-  // Pass the UserContext object to the useContext hook to access:
-  // - The user state (which we're not using here).
-  // - The setUser function to update the user state (which we are using).
-  //
-  // Destructure the object returned by the useContext hook for easy access
-  // to the data we added to the context with familiar names.
-  const { setUser } = useContext(UserContext);
+  const { setUser } = useContext(AuthContext);
   const [message, setMessage] = useState('');
   const [formData, setFormData] = useState({
     username: '',
+    email: '',
     password: '',
     passwordConf: '',
+    role: 'customer',
+    fullName: '',
+    phone: '',
+    address: '',
   });
 
-
-  const { username, password, passwordConf } = formData;
+  const {
+    username,
+    email,
+    password,
+    passwordConf,
+    role,
+    fullName,
+    phone,
+    address,
+  } = formData;
 
   const handleChange = (evt) => {
     setMessage('');
     setFormData({ ...formData, [evt.target.name]: evt.target.value });
   };
 
- const handleSubmit = async (evt) => {
+  const handleSubmit = async (evt) => {
     evt.preventDefault();
     try {
-      const newUser = await signUp(formData);
-      // Call the setUser function to update the user state, just like normal.
+      // Validate password confirmation
+      if (password !== passwordConf) {
+        setMessage('Passwords do not match');
+        return;
+      }
 
+      // Structure data according to userSchema
+      const signUpData = {
+        username,
+        email,
+        password, 
+        role,
+        profile: {
+          fullName: fullName || undefined,
+          phone: phone || undefined,
+          address: address || undefined,
+        },
+      };
+
+      
+      if (!signUpData.profile.fullName) delete signUpData.profile.fullName;
+      if (!signUpData.profile.phone) delete signUpData.profile.phone;
+      if (!signUpData.profile.address) delete signUpData.profile.address;
+
+      const newUser = await signUp(signUpData);
       setUser(newUser);
-      // Take the user to the (non-existent) home page after they sign up.
-      // We'll get to this shortly!
       navigate('/');
     } catch (err) {
       setMessage(err.message);
     }
   };
 
-  const isFormInvalid = () => {
-    return !(username && password && password === passwordConf);
+  const isFormValid = () => {
+    return username && email && password && password === passwordConf && role;
   };
 
   return (
@@ -59,12 +86,39 @@ const SignUpForm = () => {
           <label htmlFor='username'>Username:</label>
           <input
             type='text'
-            id='name'
+            id='username'
             value={username}
             name='username'
             onChange={handleChange}
             required
+            placeholder='Choose a unique username'
           />
+        </div>
+        <div>
+          <label htmlFor='email'>Email:</label>
+          <input
+            type='email'
+            id='email'
+            value={email}
+            name='email'
+            onChange={handleChange}
+            required
+            placeholder='Enter your email address'
+          />
+        </div>
+        <div>
+          <label htmlFor='role'>Role:</label>
+          <select
+            id='role'
+            name='role'
+            value={role}
+            onChange={handleChange}
+            required
+          >
+            <option value='customer'>Customer</option>
+            <option value='provider'>Service Provider</option>
+            <option value='admin'>Admin</option>
+          </select>
         </div>
         <div>
           <label htmlFor='password'>Password:</label>
@@ -75,22 +129,60 @@ const SignUpForm = () => {
             name='password'
             onChange={handleChange}
             required
+            placeholder='Enter a strong password'
           />
         </div>
         <div>
-          <label htmlFor='confirm'>Confirm Password:</label>
+          <label htmlFor='passwordConf'>Confirm Password:</label>
           <input
             type='password'
-            id='confirm'
+            id='passwordConf'
             value={passwordConf}
             name='passwordConf'
             onChange={handleChange}
             required
+            placeholder='Confirm your password'
+          />
+        </div>
+        
+        <h3>Profile Information (Optional)</h3>
+        <div>
+          <label htmlFor='fullName'>Full Name:</label>
+          <input
+            type='text'
+            id='fullName'
+            value={fullName}
+            name='fullName'
+            onChange={handleChange}
+            placeholder='Enter your full name'
           />
         </div>
         <div>
-          <button disabled={isFormInvalid()}>Sign Up</button>
-          <button onClick={() => navigate('/')}>Cancel</button>
+          <label htmlFor='phone'>Phone:</label>
+          <input
+            type='tel'
+            id='phone'
+            value={phone}
+            name='phone'
+            onChange={handleChange}
+            placeholder='Enter your phone number'
+          />
+        </div>
+        <div>
+          <label htmlFor='address'>Address:</label>
+          <textarea
+            id='address'
+            value={address}
+            name='address'
+            onChange={handleChange}
+            placeholder='Enter your address'
+            rows='3'
+          />
+        </div>
+        
+        <div>
+          <button disabled={!isFormValid()}>Sign Up</button>
+          <button type='button' onClick={() => navigate('/')}>Cancel</button>
         </div>
       </form>
     </main>
