@@ -3,9 +3,9 @@
 import { Routes, Route } from 'react-router'; // Import React Router
 
 import NavBar from './components/navbar/navbar';
-// Import the auth components
-import SignUpForm from './components/auth/SignUpForm';
-import SignInForm from './components/auth/SignInForm';
+// Import the new auth page components
+import SignUpPage from './pages/auth/SignUpPage';
+import SignInPage from './pages/auth/SignInPage';
 import Landing from './components/landing/landing';
 import Dashboard from './components/dashboard/dashboard';
 import { useContext } from 'react';
@@ -16,9 +16,15 @@ const App = () => {
 
   return (
     <>
-      <NavBar />
+      {/* Hide NavBar on auth pages for cleaner design */}
+      {!(window.location.pathname === '/sign-in' || window.location.pathname === '/sign-up') && <NavBar />}
 
       <Routes>
+        {/* Auth Routes - Full page design without navbar */}
+        <Route path='/sign-up' element={<SignUpPage />} />
+        <Route path='/sign-in' element={<SignInPage />} />
+        
+        {/* Main App Routes */}
         {
           user ?
           <>
@@ -31,8 +37,6 @@ const App = () => {
             :
             <Route path='/' element={<Landing/>}/>
         }
-        <Route path='/sign-up' element={<SignUpForm />} />
-        <Route path='/sign-in' element={<SignInForm />} />
       </Routes>
     </>
   );
