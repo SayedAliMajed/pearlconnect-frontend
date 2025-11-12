@@ -78,7 +78,7 @@
 /* Search Bar */
 .pc-header-search {
   flex: 1;
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 var(--spacing-sm);
 }
 
@@ -130,6 +130,7 @@
 /* Account Section */
 .pc-header-account {
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .pc-account-section {
@@ -387,7 +388,6 @@
     gap: var(--spacing-xs);
   }
   
-  .pc-header-delivery,
   .pc-header-returns {
     display: none;
   }

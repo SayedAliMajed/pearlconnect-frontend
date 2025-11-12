@@ -3,6 +3,7 @@
 import { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { AuthContext } from '../../contexts/AuthContext';
+import { featuredCategories } from '../../data/services';
 import './navbar.css';
 
 const NavBar = () => {
@@ -39,25 +40,18 @@ const NavBar = () => {
             </Link>
           </div>
 
-          {/* Delivery Location */}
-          <div className="pc-header-delivery">
-            <div className="pc-delivery-info">
-              <span className="pc-delivery-label">Deliver to</span>
-              <span className="pc-delivery-location">
-                <i className="pc-location-icon">📍</i>
-                Bahrain
-              </span>
-            </div>
-          </div>
+
 
           {/* Search Bar */}
           <div className="pc-header-search">
             <form onSubmit={handleSearch} className="pc-search-form">
               <select className="pc-search-category">
                 <option value="all">All Categories</option>
-                <option value="services">Services</option>
-                <option value="bookings">Bookings</option>
-                <option value="categories">Categories</option>
+                {featuredCategories.map(category => (
+                  <option key={category.id} value={category.name}>
+                    {category.name}
+                  </option>
+                ))}
               </select>
               <input
                 type="text"
@@ -67,7 +61,7 @@ const NavBar = () => {
                 className="pc-search-input"
               />
               <button type="submit" className="pc-search-button">
-                <span className="pc-search-icon">🔍</span>
+                Search
               </button>
             </form>
           </div>
