@@ -54,7 +54,7 @@ const NavBar = () => {
           <div className="pc-header-logo">
             <Link to="/" className="pc-logo-link">
               <img src="/img/logo.png" alt="PearlConnect" className="pc-logo-image" />
-              <span className="pc-logo-text">PearlConnect</span>
+              <span className="pc-logo-text"></span>
             </Link>
           </div>
 
@@ -75,7 +75,6 @@ const NavBar = () => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search PearlConnect services..."
                 className="pc-search-input"
               />
               <button type="submit" className="pc-search-button">

@@ -10,7 +10,14 @@ function AuthProvider({ children }) {
 
     if (!token) return null;
 
-    return JSON.parse(atob(token.split('.')[1]));
+    try {
+      // Try to decode the token payload
+      return JSON.parse(atob(token.split('.')[1]));
+    } catch (err) {
+      // If token decoding fails, return null
+      console.log('Token decoding failed:', err);
+      return null;
+    }
   };
 
   // Create state just like you normally would in any other component

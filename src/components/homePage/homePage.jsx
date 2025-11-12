@@ -1,6 +1,6 @@
 // src/components/homePage/homePage.jsx
 
-import React, { useState } from 'react';
+import React from 'react';
 import Container from '../ui/Container';
 import Card from '../ui/Card';
 import { popularServices, featuredCategories, formatPrice } from '../../data/services';
@@ -10,21 +10,6 @@ const HomePage = () => {
   const handleCategoryClick = (categoryName) => {
     // Navigate to category page or filter services
     console.log('Selected category:', categoryName);
-  };
-
-  const renderStars = (rating) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push('⭐');
-    }
-    if (hasHalfStar) {
-      stars.push('⭐');
-    }
-
-    return stars.join(' ');
   };
 
   return (
@@ -37,7 +22,6 @@ const HomePage = () => {
             <p className="hero-subtitle">
               Connect with trusted professionals for all your service needs
             </p>
-
           </div>
         </Container>
       </section>
@@ -47,7 +31,7 @@ const HomePage = () => {
         <Container size="xlarge">
           <h2 className="section-title">Featured Categories</h2>
           <p className="section-subtitle">Browse our most popular service categories</p>
-          
+
           <div className="categories-grid">
             {featuredCategories.map(category => (
               <Card
@@ -70,7 +54,7 @@ const HomePage = () => {
         <Container size="xlarge">
           <h2 className="section-title">Popular Services</h2>
           <p className="section-subtitle">Highly rated services from trusted professionals</p>
-          
+
           <div className="services-grid">
             {popularServices.map(service => (
               <Card

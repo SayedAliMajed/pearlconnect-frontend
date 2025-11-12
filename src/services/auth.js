@@ -13,6 +13,12 @@ const signUp = async (formData) => {
       body: JSON.stringify(formData),
     });
 
+    // Check if response is JSON
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Server returned invalid response format');
+    }
+
     const data = await res.json();
 
     if (data.err) {
@@ -22,13 +28,14 @@ const signUp = async (formData) => {
     if (data.token) {
       localStorage.setItem('token', data.token);
       console.log(data.token)
-      return JSON.parse(atob(data.token.split('.')[1]))
+      // Return the user object from the response
+      return data.user;
     }
 
     throw new Error('Invalid response from server');
   } catch (err) {
     console.log(err);
-    throw new Error(err);
+    throw new Error(err.message || 'Sign up failed');
   }
 };
 
@@ -40,6 +47,16 @@ const signIn = async (formData) => {
       body: JSON.stringify(formData),
     });
 
+    // Check if response is JSON
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      // If not successful and not JSON, it's likely an HTML error page
+      if (!res.ok) {
+        throw new Error(`Authentication failed (${res.status})`);
+      }
+      throw new Error('Server returned invalid response format');
+    }
+
     const data = await res.json();
 
     if (data.err) {
@@ -48,13 +65,14 @@ const signIn = async (formData) => {
 
     if (data.token) {
       localStorage.setItem('token', data.token);
-      return JSON.parse(atob(data.token.split('.')[1]))
+      // Return the user object from the response, not just the token payload
+      return data.user;
     }
 
     throw new Error('Invalid response from server');
   } catch (err) {
     console.log(err);
-    throw new Error(err);
+    throw new Error(err.message || 'Sign in failed');
   }
 };
 

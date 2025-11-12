@@ -1,4 +1,5 @@
 /* PearlConnect Header Styles - Amazon-inspired with PearlConnect branding */
+/* Updated: Logo left corner, items right edge positioning - v2 */
 
 .pc-header {
   position: sticky;
@@ -12,6 +13,8 @@
 .pc-header-top {
   background-color: var(--primary-teal);
   padding: var(--spacing-xs) 0;
+  position: relative;
+  width: 100%;
 }
 
 .pc-header-container {
@@ -22,11 +25,16 @@
   gap: var(--spacing-sm);
   padding: 0 var(--spacing-md);
   min-height: 60px;
+  position: relative;
 }
 
 /* Logo Section */
 .pc-header-logo {
-  flex-shrink: 0;
+  position: absolute !important;
+  left: var(--spacing-sm) !important; /* Closer to left edge */
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 1001 !important;
 }
 
 .pc-logo-link {
@@ -129,8 +137,11 @@
 
 /* Account Section */
 .pc-header-account {
-  flex-shrink: 0;
-  margin-left: auto;
+  position: absolute !important;
+  right: 112px !important; /* Position after cart */
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 1001 !important;
 }
 
 .pc-account-section {
@@ -217,7 +228,11 @@
 
 /* Returns & Orders */
 .pc-header-returns {
-  flex-shrink: 0;
+  position: absolute !important;
+  right: 248px !important; /* Position before account section */
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 1001 !important;
 }
 
 .pc-returns-link {
@@ -248,7 +263,11 @@
 
 /* Cart */
 .pc-header-cart {
-  flex-shrink: 0;
+  position: absolute !important;
+  right: var(--spacing-md) !important; /* Right edge (corner) */
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 1001 !important;
 }
 
 .pc-cart-link {
@@ -294,6 +313,11 @@
 
 /* Mobile Menu Toggle */
 .pc-mobile-menu-toggle {
+  position: absolute !important;
+  right: 384px !important; /* Position before cart */
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 1001 !important;
   display: none;
   background: none;
   border: none;
@@ -387,46 +411,52 @@
     padding: 0 var(--spacing-sm);
     gap: var(--spacing-xs);
   }
-  
+
   .pc-header-returns {
     display: none;
   }
-  
+
   .pc-header-search {
+    position: absolute;
+    left: 80px; /* Position after logo */
+    right: 450px; /* Leave space for mobile menu */
     margin: 0;
-    order: 3;
+    max-width: none;
   }
-  
-  .pc-header-account,
-  .pc-header-cart {
-    order: 4;
-  }
-  
+
   .pc-mobile-menu-toggle {
     display: block;
-    order: 2;
   }
-  
+
   .pc-nav-links {
     display: none;
   }
-  
+
   .pc-mobile-menu {
     display: block;
   }
-  
+
   .pc-logo-text {
     font-size: var(--font-size-lg);
   }
-  
+
   .pc-account-greeting,
   .pc-account-options {
     display: none;
   }
-  
+
   .pc-account-button {
     min-width: auto;
     padding: var(--spacing-xs);
+  }
+
+  /* Adjust positioning for mobile */
+  .pc-header-cart {
+    right: 280px;
+  }
+
+  .pc-mobile-menu-toggle {
+    right: 360px;
   }
 }
 
