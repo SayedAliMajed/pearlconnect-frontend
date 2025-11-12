@@ -1,14 +1,12 @@
-// src/components/landing/landing.jsx
+// src/components/homePage/homePage.jsx
 
 import React, { useState } from 'react';
 import Container from '../ui/Container';
-import Button from '../ui/Button';
-import Input from '../ui/Input';
 import Card from '../ui/Card';
 import { popularServices, featuredCategories, formatPrice } from '../../data/services';
-import './landing.css';
+import './homePage.css';
 
-const Landing = () => {
+const HomePage = () => {
   const handleCategoryClick = (categoryName) => {
     // Navigate to category page or filter services
     console.log('Selected category:', categoryName);
@@ -30,7 +28,7 @@ const Landing = () => {
   };
 
   return (
-    <div className="landing-page">
+    <div className="homepage">
       {/* Hero Section */}
       <section className="hero-section">
         <Container size="xlarge" padding={false}>
@@ -39,7 +37,6 @@ const Landing = () => {
             <p className="hero-subtitle">
               Connect with trusted professionals for all your service needs
             </p>
-            
 
           </div>
         </Container>
@@ -100,7 +97,7 @@ const Landing = () => {
       </section>
 
       {/* Footer */}
-      <footer className="landing-footer">
+      <footer className="homepage-footer">
         <Container size="xlarge">
           <div className="footer-content">
             <div className="footer-section">
@@ -144,4 +141,4 @@ const Landing = () => {
   );
 };
 
-export default Landing;
+export default HomePage;

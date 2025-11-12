@@ -1,15 +1,18 @@
 // src/components/auth/SignInPage.jsx
 
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router';
 import Container from '../ui/Container';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Card from '../ui/Card';
+import { AuthContext } from '../../contexts/AuthContext';
+import { signIn } from '../../services/auth';
 import '../../pages/auth/SignInPage.css';
 
 const SignInPage = () => {
   const navigate = useNavigate();
+  const { setUser } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -17,6 +20,7 @@ const SignInPage = () => {
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [authError, setAuthError] = useState('');
 
   const { email, password, rememberMe } = formData;
 
@@ -57,20 +61,20 @@ const SignInPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
-    
+
     setLoading(true);
-    
+    setAuthError('');
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('Signing in with:', { email, password, rememberMe });
-      // navigate('/dashboard');
+      const userData = await signIn({ email, password });
+      setUser(userData);
+      navigate('/');
     } catch (error) {
-      console.error('Sign in error:', error);
+      setAuthError(error.message || 'Sign in failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -139,6 +143,12 @@ const SignInPage = () => {
                 >
                   {loading ? 'Signing In...' : 'Sign In'}
                 </Button>
+
+                {authError && (
+                  <div className="signin-error-message">
+                    {authError}
+                  </div>
+                )}
               </form>
 
               <div className="signin-divider">

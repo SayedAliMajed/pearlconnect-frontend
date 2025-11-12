@@ -1,6 +1,6 @@
 // src/components/navbar/navbar.jsx
 
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { AuthContext } from '../../contexts/AuthContext';
 import { featuredCategories } from '../../data/services';
@@ -12,6 +12,24 @@ const NavBar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowAccountDropdown(false);
+      }
+    };
+
+    if (showAccountDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showAccountDropdown]);
 
   const handleSignOut = () => {
     localStorage.removeItem('token');
@@ -67,9 +85,9 @@ const NavBar = () => {
           </div>
 
           {/* Account & Orders */}
-          <div className="pc-header-account">
+          <div className="pc-header-account" ref={dropdownRef}>
             <div className="pc-account-section">
-              <button 
+              <button
                 className="pc-account-button"
                 onClick={() => setShowAccountDropdown(!showAccountDropdown)}
               >
@@ -78,24 +96,24 @@ const NavBar = () => {
                 </span>
                 <span className="pc-account-options">Account & Lists</span>
               </button>
-              
+
               {showAccountDropdown && (
                 <div className="pc-account-dropdown">
                   {user ? (
                     <div className="pc-dropdown-content">
-                      <Link to="/profile" className="pc-dropdown-item">Your Account</Link>
-                      <Link to="/orders" className="pc-dropdown-item">Your Orders</Link>
-                      <Link to="/favorites" className="pc-dropdown-item">Your Favorites</Link>
+                      <Link to="/profile" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>Your Account</Link>
+                      <Link to="/orders" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>Your Orders</Link>
+                      <Link to="/favorites" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>Your Favorites</Link>
                       <button onClick={handleSignOut} className="pc-dropdown-item pc-sign-out">
                         Sign Out
                       </button>
                     </div>
                   ) : (
                     <div className="pc-dropdown-content">
-                      <Link to="/sign-in" className="pc-dropdown-item pc-sign-in">
+                      <Link to="/sign-in" className="pc-dropdown-item pc-sign-in" onClick={() => setShowAccountDropdown(false)}>
                         Sign In
                       </Link>
-                      <Link to="/sign-up" className="pc-dropdown-item">
+                      <Link to="/sign-up" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>
                         Create Account
                       </Link>
                     </div>

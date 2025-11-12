@@ -44,12 +44,16 @@
 }
 
 /* Input with Icons */
-.ui-input-wrapper .ui-input {
+.ui-input-wrapper:has(.ui-input__icon--left) .ui-input {
   padding-left: 44px;
 }
 
-.ui-input-wrapper .ui-input--with-right-icon {
-  padding-left: 16px;
+.ui-input-wrapper:has(.ui-input__icon--right) .ui-input {
+  padding-right: 44px;
+}
+
+.ui-input-wrapper:has(.ui-input__icon--left):has(.ui-input__icon--right) .ui-input {
+  padding-left: 44px;
   padding-right: 44px;
 }
 

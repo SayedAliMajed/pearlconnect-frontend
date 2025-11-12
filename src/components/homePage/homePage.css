@@ -1,6 +1,6 @@
-/* Landing Page Specific Styles */
+/* HomePage Specific Styles */
 
-.landing-page {
+.homepage {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -8,7 +8,8 @@
 
 /* Hero Section */
 .hero-section {
-  background: linear-gradient(135deg, #00AD96FF 0%, #008A77FF 100%);
+  background: linear-gradient(135deg, #166534 0%, #0d9488 100%);
+
   padding: var(--spacing-2xl) 0;
   color: white;
   position: relative;
@@ -284,7 +285,7 @@
 }
 
 /* Footer */
-.landing-footer {
+.homepage-footer {
   background-color: var(--bg-container);
   padding: var(--spacing-2xl) 0 var(--spacing-lg);
   margin-top: auto;

@@ -1,15 +1,18 @@
 // src/components/auth/SignUpPage.jsx
 
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router';
 import Container from '../ui/Container';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Card from '../ui/Card';
+import { AuthContext } from '../../contexts/AuthContext';
+import { signUp } from '../../services/auth';
 import '../../pages/auth/SignUpPage.css';
 
 const SignUpPage = () => {
   const navigate = useNavigate();
+  const { setUser } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     // Required fields
     username: '',
@@ -24,6 +27,7 @@ const SignUpPage = () => {
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [authError, setAuthError] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
 
   const {
@@ -98,20 +102,20 @@ const SignUpPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateStep(currentStep)) {
       return;
     }
-    
+
     setLoading(true);
-    
+    setAuthError('');
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Signing up with:', formData);
-      // navigate('/dashboard');
+      const userData = await signUp(formData);
+      setUser(userData);
+      navigate('/');
     } catch (error) {
-      console.error('Sign up error:', error);
+      setAuthError(error.message || 'Sign up failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -182,7 +186,7 @@ const SignUpPage = () => {
                         fullWidth
                         className="signup-input"
                       />
-                      
+
                       <Input
                         type="password"
                         name="confirmPassword"
@@ -300,6 +304,12 @@ const SignUpPage = () => {
                         {loading ? 'Creating Account...' : 'Create Account'}
                       </Button>
                     </div>
+                  </div>
+                )}
+
+                {authError && (
+                  <div className="signup-error-message">
+                    {authError}
                   </div>
                 )}
               </form>

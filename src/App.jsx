@@ -6,7 +6,7 @@ import NavBar from './components/navbar/navbar';
 // Import the new auth page components
 import SignUpPage from './components/auth/SignUpPage';
 import SignInPage from './components/auth/SignInPage';
-import Landing from './components/landing/landing';
+import HomePage from './components/homePage/homePage';
 import Dashboard from './components/dashboard/dashboard';
 import { useContext } from 'react';
 import { AuthContext } from './contexts/AuthContext';
@@ -24,19 +24,13 @@ const App = () => {
         <Route path='/sign-up' element={<SignUpPage />} />
         <Route path='/sign-in' element={<SignInPage />} />
         
-        {/* Main App Routes */}
-        {
-          user ?
-          <>
-            <Route path='/' element={<Dashboard/>}/>
-            <Route path='/products' element={<h1>Products</h1>}/>
-            <Route path='/favs' element={<h1>Favorites</h1>}/>
-            <Route path='/profile' element={<h1>{user.username}</h1>}/>
-            <Route path='/orders' element={<h1>Orders</h1>}/>
-          </>
-            :
-            <Route path='/' element={<Landing/>}/>
-        }
+        {/* Main App Routes - Homepage for everyone */}
+        <Route path='/' element={<HomePage/>}/>
+        <Route path='/dashboard' element={<Dashboard/>}/>
+        <Route path='/products' element={<h1>Products</h1>}/>
+        <Route path='/favs' element={<h1>Favorites</h1>}/>
+        <Route path='/profile' element={<h1>{user.username}</h1>}/>
+        <Route path='/orders' element={<h1>Orders</h1>}/>
       </Routes>
     </>
   );
