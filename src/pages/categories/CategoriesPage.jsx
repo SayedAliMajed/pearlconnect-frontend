@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 
 const CategoriesPage = () => {
 	const [allowedNames, setAllowedNames] = useState([]);
@@ -8,15 +7,17 @@ const CategoriesPage = () => {
 
 	// Fetch allowed category names for dropdown
 	useEffect(() => {
-		axios.get('/api/categories/names')
-			.then(res => setAllowedNames(res.data))
+		fetch('/api/categories/names')
+			.then(res => res.json())
+			.then(data => setAllowedNames(data))
 			.catch(() => setAllowedNames([]));
 	}, []);
 
 	// Fetch all categories
 	useEffect(() => {
-		axios.get('/api/categories')
-			.then(res => setCategories(res.data))
+		fetch('/api/categories')
+			.then(res => res.json())
+			.then(data => setCategories(data))
 			.catch(() => setCategories([]));
 	}, []);
 
