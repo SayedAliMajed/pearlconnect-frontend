@@ -1,38 +1,8 @@
 const BASE_URL = `${import.meta.env.VITE_BACK_END_SERVER_URL}`;
-
-const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
-async function parseResponse(res) {
-  // handle empty body
-  if (res.status === 204) return null;
-
-  const contentType = (res.headers.get('content-type') || '').toLowerCase();
-
-  if (contentType.includes('application/json')) {
-    // Preferred path: parse JSON directly
-    const data = await res.json();
-    if (!res.ok) {
-      const message = (data && (data.err || data.message)) || `Request failed with status ${res.status}`;
-      throw new Error(message);
-    }
-    return data;
-  }
-
-  // Fallback for non-JSON responses
-  const text = await res.text();
-  if (!res.ok) {
-    throw new Error(text || `Request failed with status ${res.status}`);
-  }
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    return text;
-  }
-}
+const headers = () => ({
+  'Content-Type': 'application/json',
+  Authorization: `Bearer ${localStorage.getItem('token')}`
+});
 
 export const createBooking = async (payload) => {
   try {
@@ -41,16 +11,30 @@ export const createBooking = async (payload) => {
       throw new Error('Invalid booking payload: serviceId, providerId, customerId and date are required');
     }
 
+    const token = localStorage.getItem('token');
     const res = await fetch(`${BASE_URL}/bookings`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        ...getAuthHeader(),
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(payload),
+      body: new URLSearchParams(payload).toString(),
     });
 
-    const data = await parseResponse(res);
+    // resilient response parsing
+    let data;
+    try {
+      data = await res.json();
+    } catch (parseErr) {
+      const text = await res.text();
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = text;
+      }
+    }
+
+    if (data && data.err) throw new Error(data.err || 'Booking error');
     return data;
   } catch (err) {
     console.error('createBooking', err);
@@ -60,9 +44,10 @@ export const createBooking = async (payload) => {
 
 export const fetchServices = async () => {
   try {
-    const res = await fetch(`${BASE_URL}/services`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
-    const data = await parseResponse(res);
-    return data || [];
+    const res = await fetch(`${BASE_URL}/services`, { headers: headers() });
+    const data = await res.json();
+    if (data.err) throw new Error(data.err || 'Failed to fetch services');
+    return data;
   } catch (err) {
     console.error('fetchServices', err);
     return [];
@@ -71,9 +56,10 @@ export const fetchServices = async () => {
 
 export const fetchProviders = async () => {
   try {
-    const res = await fetch(`${BASE_URL}/users/providers`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
-    const data = await parseResponse(res);
-    return data || [];
+    const res = await fetch(`${BASE_URL}/users/providers`, { headers: headers() });
+    const data = await res.json();
+    if (data.err) throw new Error(data.err || 'Failed to fetch providers');
+    return data;
   } catch (err) {
     console.error('fetchProviders', err);
     return [];
@@ -82,9 +68,10 @@ export const fetchProviders = async () => {
 
 export const fetchBookings = async () => {
   try {
-    const res = await fetch(`${BASE_URL}/bookings`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
-    const data = await parseResponse(res);
-    return data || [];
+    const res = await fetch(`${BASE_URL}/bookings`, { headers: headers() });
+    const data = await res.json();
+    if (data.err) throw new Error(data.err || 'Failed to fetch bookings');
+    return data;
   } catch (err) {
     console.error('fetchBookings', err);
     return [];
@@ -93,11 +80,13 @@ export const fetchBookings = async () => {
 
 export const cancelBooking = async (bookingId) => {
   try {
+    const token = localStorage.getItem('token');
     const res = await fetch(`${BASE_URL}/bookings/${bookingId}`, {
       method: 'DELETE',
-      headers: { ...getAuthHeader() },
+      headers: { Authorization: `Bearer ${token}` },
     });
-    const data = await parseResponse(res);
+    const data = await res.json();
+    if (data.err) throw new Error(data.err || 'Failed to cancel booking');
     return data;
   } catch (err) {
     console.error('cancelBooking', err);
