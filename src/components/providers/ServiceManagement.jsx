@@ -32,7 +32,9 @@ const ServiceManagement = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('Loaded services:', data);
-        setServices(Array.isArray(data) ? data : []);
+        // API returns {services: [...], pagination: {...}}
+        const servicesArray = data.services || data || [];
+        setServices(Array.isArray(servicesArray) ? servicesArray : []);
       } else {
         console.error('Failed to load services');
         setServices([]);
