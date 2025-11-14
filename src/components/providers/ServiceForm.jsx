@@ -1,0 +1,334 @@
+import React, { useState, useEffect, useContext } from 'react';
+import Card from '../ui/Card';
+import Button from '../ui/Button';
+import Input from '../ui/Input';
+import { AuthContext } from '../../contexts/AuthContext';
+import { featuredCategories } from '../../data/services';
+
+const ServiceForm = ({ service, onSuccess, onCancel }) => {
+  const { user } = useContext(AuthContext);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    category: '',
+    price: '',
+    currency: 'BD',
+    duration: '',
+    images: [],
+    active: true
+  });
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [imagePreview, setImagePreview] = useState([]);
+
+  useEffect(() => {
+    if (service) {
+      // Editing existing service
+      setFormData({
+        title: service.title || '',
+        description: service.description || '',
+        category: service.category || '',
+        price: service.price || '',
+        currency: service.currency || 'BD',
+        duration: service.duration || '',
+        images: service.images || [],
+        active: service.active !== false
+      });
+      setImagePreview(service.images || []);
+    }
+  }, [service]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const newImages = files.map(file => URL.createObjectURL(file));
+    setImagePreview(prev => [...prev, ...newImages]);
+
+    // In a real app, you'd upload to a server and get URLs back
+    // For now, we'll just store the blob URLs
+    setFormData(prev => ({
+      ...prev,
+      images: [...prev.images, ...newImages]
+    }));
+  };
+
+  const removeImage = (index) => {
+    setImagePreview(prev => prev.filter((_, i) => i !== index));
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.title.trim()) newErrors.title = 'Service title is required';
+    if (!formData.description.trim()) newErrors.description = 'Description is required';
+    if (!formData.category) newErrors.category = 'Category is required';
+    if (!formData.price || formData.price <= 0) newErrors.price = 'Valid price is required';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const serviceData = {
+        ...formData,
+        provider: user.id || user._id,
+        providerName: user.username || user.name
+      };
+
+      let response;
+      if (service) {
+        // Update existing service
+        response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/services/${service._id || service.id}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(serviceData)
+        });
+      } else {
+        // Create new service
+        response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/services`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(serviceData)
+        });
+      }
+
+      if (response.ok) {
+        const result = await response.json();
+        onSuccess && onSuccess(result);
+      } else {
+        const error = await response.json();
+        alert(`Failed to ${service ? 'update' : 'create'} service: ${error.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error saving service:', error);
+      alert(`Failed to ${service ? 'update' : 'create'} service. Please try again.`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card className="service-form">
+      <div className="form-header">
+        <h3>{service ? 'Edit Service' : 'Create New Service'}</h3>
+        <p>{service ? 'Update your service details' : 'Add a new service to your offerings'}</p>
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        <div className="form-grid">
+          {/* Basic Information */}
+          <div className="form-section">
+            <h4>Basic Information</h4>
+
+            <div className="form-group">
+              <label htmlFor="title">Service Title *</label>
+              <Input
+                id="title"
+                name="title"
+                type="text"
+                value={formData.title}
+                onChange={handleInputChange}
+                placeholder="e.g., Professional House Cleaning"
+                error={!!errors.title}
+                fullWidth
+              />
+              {errors.title && <span className="error-message">{errors.title}</span>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="description">Description *</label>
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                placeholder="Describe your service in detail..."
+                rows="4"
+                className={`form-textarea ${errors.description ? 'error' : ''}`}
+              />
+              {errors.description && <span className="error-message">{errors.description}</span>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="category">Category *</label>
+              <select
+                id="category"
+                name="category"
+                value={formData.category}
+                onChange={handleInputChange}
+                className={`form-select ${errors.category ? 'error' : ''}`}
+              >
+                <option value="">Select a category</option>
+                {featuredCategories.map(cat => (
+                  <option key={cat.id} value={cat.name}>{cat.name}</option>
+                ))}
+              </select>
+              {errors.category && <span className="error-message">{errors.category}</span>}
+            </div>
+          </div>
+
+          {/* Pricing */}
+          <div className="form-section">
+            <h4>Pricing</h4>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="price">Price *</label>
+                <Input
+                  id="price"
+                  name="price"
+                  type="number"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01"
+                  error={!!errors.price}
+                />
+                {errors.price && <span className="error-message">{errors.price}</span>}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="currency">Currency</label>
+                <select
+                  id="currency"
+                  name="currency"
+                  value={formData.currency}
+                  onChange={handleInputChange}
+                  className="form-select"
+                >
+                  <option value="BD">BD (Bahraini Dinar)</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="duration">Duration (optional)</label>
+              <Input
+                id="duration"
+                name="duration"
+                type="text"
+                value={formData.duration}
+                onChange={handleInputChange}
+                placeholder="e.g., 2-3 hours, 1 session"
+                fullWidth
+              />
+            </div>
+          </div>
+
+          {/* Images */}
+          <div className="form-section">
+            <h4>Service Images</h4>
+
+            <div className="image-upload">
+              <input
+                type="file"
+                id="images"
+                name="images"
+                accept="image/*"
+                multiple
+                onChange={handleImageUpload}
+                style={{ display: 'none' }}
+              />
+              <label htmlFor="images" className="upload-button">
+                📷 Choose Images
+              </label>
+              <p className="upload-help">Upload up to 5 images. First image will be the main photo.</p>
+            </div>
+
+            {imagePreview.length > 0 && (
+              <div className="image-preview">
+                {imagePreview.map((image, index) => (
+                  <div key={index} className="image-item">
+                    <img src={image} alt={`Service ${index + 1}`} className="preview-image" />
+                    <button
+                      type="button"
+                      className="remove-image"
+                      onClick={() => removeImage(index)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Settings */}
+          <div className="form-section">
+            <h4>Settings</h4>
+
+            <div className="form-group checkbox-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  name="active"
+                  checked={formData.active}
+                  onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
+                />
+                <span className="checkmark"></span>
+                Service is active and available for booking
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Form Actions */}
+        <div className="form-actions">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onCancel}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={loading}
+          >
+            {loading ? 'Saving...' : (service ? 'Update Service' : 'Create Service')}
+          </Button>
+        </div>
+      </form>
+    </Card>
+  );
+};
+
+export default ServiceForm;
