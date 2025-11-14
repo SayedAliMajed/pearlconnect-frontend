@@ -103,6 +103,10 @@ const AvailabilityCalendar = () => {
         duration: timeForm.duration
       };
 
+      console.log('Sending availability data:', slotData);
+      console.log('API URL:', `${import.meta.env.VITE_BACK_END_SERVER_URL}/providers/availability`);
+      console.log('Auth token exists:', !!localStorage.getItem('token'));
+
       let response;
       if (editingSlot) {
         // Update existing slot
