@@ -102,6 +102,10 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
         providerName: user.username || user.name
       };
 
+      console.log('Sending service data:', serviceData);
+      console.log('API URL:', `${import.meta.env.VITE_BACK_END_SERVER_URL}/services`);
+      console.log('Auth token exists:', !!localStorage.getItem('token'));
+
       let response;
       if (service) {
         // Update existing service
@@ -129,8 +133,25 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
         const result = await response.json();
         onSuccess && onSuccess(result);
       } else {
-        const error = await response.json();
-        alert(`Failed to ${service ? 'update' : 'create'} service: ${error.message || 'Unknown error'}`);
+        let errorMessage = 'Unknown error';
+        try {
+          const error = await response.json();
+          errorMessage = error.message || `HTTP ${response.status}: ${response.statusText}`;
+          console.error('API Error Response:', error);
+        } catch (parseError) {
+          // Response might not be JSON
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+          console.error('API Error (non-JSON):', response.status, response.statusText);
+        }
+
+        console.error('Full API Response:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          url: response.url
+        });
+
+        alert(`Failed to ${service ? 'update' : 'create'} service: ${errorMessage}`);
       }
     } catch (error) {
       console.error('Error saving service:', error);
