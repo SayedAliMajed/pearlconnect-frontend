@@ -149,7 +149,7 @@ const NavBar = () => {
         </div>
       </div>
 
-      {/* Navigation Menu */}
+          {/* Navigation Menu */}
       <div className="pc-header-nav">
         <div className="pc-header-container">
           <div className="pc-nav-links">
@@ -158,7 +158,12 @@ const NavBar = () => {
             <Link to="/categories" className="pc-nav-link">Categories</Link>
             <Link to="/bookings" className="pc-nav-link">Bookings</Link>
             <Link to="/reviews" className="pc-nav-link">Reviews</Link>
-            {user && <Link to="/dashboard" className="pc-nav-link">Dashboard</Link>}
+            {user && user.role === 'provider' && (
+              <Link to="/provider/dashboard" className="pc-nav-link">Provider Dashboard</Link>
+            )}
+            {user && user.role !== 'provider' && (
+              <Link to="/dashboard" className="pc-nav-link">Dashboard</Link>
+            )}
           </div>
         </div>
       </div>
@@ -184,9 +189,15 @@ const NavBar = () => {
             </Link>
             {user ? (
               <>
-                <Link to="/dashboard" className="pc-mobile-link" onClick={() => setShowMobileMenu(false)}>
-                  Dashboard
-                </Link>
+                {user.role === 'provider' ? (
+                  <Link to="/provider/dashboard" className="pc-mobile-link" onClick={() => setShowMobileMenu(false)}>
+                    Provider Dashboard
+                  </Link>
+                ) : (
+                  <Link to="/dashboard" className="pc-mobile-link" onClick={() => setShowMobileMenu(false)}>
+                    Dashboard
+                  </Link>
+                )}
                 <button onClick={handleSignOut} className="pc-mobile-link pc-mobile-signout">
                   Sign Out
                 </button>
