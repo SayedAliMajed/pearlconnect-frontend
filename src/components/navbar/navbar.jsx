@@ -46,6 +46,11 @@ const NavBar = () => {
     }
   };
 
+  // Debug user object
+  console.log('Navbar user object:', user);
+  console.log('User role:', user?.role);
+  console.log('Is provider?', user?.role === 'provider');
+
   return (
     <header className="pc-header">
       <div className="pc-header-top">
@@ -131,13 +136,7 @@ const NavBar = () => {
             </div>
           </div>
 
-          {/* Returns & Orders */}
-          <div className="pc-header-returns">
-            <Link to="/orders" className="pc-returns-link">
-              <span className="pc-returns-text">Returns</span>
-              <span className="pc-orders-text">& Orders</span>
-            </Link>
-          </div>
+
 
           {/* Cart */}
           <div className="pc-header-cart">
