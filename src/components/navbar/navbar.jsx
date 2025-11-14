@@ -100,11 +100,20 @@ const NavBar = () => {
                 <div className="pc-account-dropdown">
                   {user ? (
                     <div className="pc-dropdown-content">
-                      <Link to="/profile" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>Your Account</Link>
-                      <Link to="/orders" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>Your Orders</Link>
-                      <Link to="/favorites" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>Your Favorites</Link>
+                      {user.role === 'provider' ? (
+                        <Link to="/provider/dashboard" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>
+                          🏪 Provider Dashboard
+                        </Link>
+                      ) : (
+                        <Link to="/dashboard" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>
+                          📊 Dashboard
+                        </Link>
+                      )}
+                      <Link to="/profile" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>👤 Your Account</Link>
+                      <Link to="/orders" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>📦 Your Orders</Link>
+                      <Link to="/favorites" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>❤️ Your Favorites</Link>
                       <button onClick={handleSignOut} className="pc-dropdown-item pc-sign-out">
-                        Sign Out
+                        🚪 Sign Out
                       </button>
                     </div>
                   ) : (
@@ -158,12 +167,6 @@ const NavBar = () => {
             <Link to="/categories" className="pc-nav-link">Categories</Link>
             <Link to="/bookings" className="pc-nav-link">Bookings</Link>
             <Link to="/reviews" className="pc-nav-link">Reviews</Link>
-            {user && user.role === 'provider' && (
-              <Link to="/provider/dashboard" className="pc-nav-link">Provider Dashboard</Link>
-            )}
-            {user && user.role !== 'provider' && (
-              <Link to="/dashboard" className="pc-nav-link">Dashboard</Link>
-            )}
           </div>
         </div>
       </div>
