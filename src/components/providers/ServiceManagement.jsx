@@ -31,6 +31,7 @@ const ServiceManagement = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('Loaded services:', data);
         setServices(Array.isArray(data) ? data : []);
       } else {
         console.error('Failed to load services');
@@ -150,8 +151,8 @@ const ServiceManagement = () => {
                 <div className="service-image">
                   {service.images && service.images.length > 0 ? (
                     <img
-                      src={service.images[0]}
-                      alt={service.title}
+                      src={service.images[0].url || service.images[0]}
+                      alt={service.images[0].alt || service.title}
                       className="service-thumbnail"
                     />
                   ) : (
