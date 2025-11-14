@@ -37,7 +37,7 @@ const AvailabilityCalendar = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setAvailability(Array.isArray(data) ? data : []);
+        setAvailability(data.availabilities || []);
       } else {
         console.error('Failed to load availability');
         setAvailability([]);
