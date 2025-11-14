@@ -46,6 +46,41 @@ const NavBar = () => {
     }
   };
 
+  // Debug user object
+  console.log('Navbar user object:', user);
+  console.log('User role:', user?.role);
+  console.log('Is provider?', user?.role === 'provider');
+
+  // Temporary workaround: Check if user might be a provider by fetching profile
+  // This is needed because JWT doesn't include role field
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (user && user._id && !user.role) {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/users/${user._id}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          if (response.ok) {
+            const userData = await response.json();
+            setUserRole(userData.role);
+            console.log('Fetched user role:', userData.role);
+          }
+        } catch (error) {
+          console.error('Failed to fetch user role:', error);
+        }
+      } else if (user?.role) {
+        setUserRole(user.role);
+      }
+    };
+
+    fetchUserRole();
+  }, [user]);
+
   return (
     <header className="pc-header">
       <div className="pc-header-top">
@@ -100,11 +135,20 @@ const NavBar = () => {
                 <div className="pc-account-dropdown">
                   {user ? (
                     <div className="pc-dropdown-content">
-                      <Link to="/profile" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>Your Account</Link>
-                      <Link to="/orders" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>Your Orders</Link>
-                      <Link to="/favorites" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>Your Favorites</Link>
+                      {(user.role === 'provider' || userRole === 'provider') ? (
+                        <Link to="/provider/dashboard" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>
+                          🏪 Provider Dashboard
+                        </Link>
+                      ) : (
+                        <Link to="/dashboard" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>
+                          📊 Dashboard
+                        </Link>
+                      )}
+                      <Link to="/profile" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>👤 Your Account</Link>
+                      <Link to="/orders" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>📦 Your Orders</Link>
+                      <Link to="/favorites" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>❤️ Your Favorites</Link>
                       <button onClick={handleSignOut} className="pc-dropdown-item pc-sign-out">
-                        Sign Out
+                        🚪 Sign Out
                       </button>
                     </div>
                   ) : (
@@ -122,13 +166,7 @@ const NavBar = () => {
             </div>
           </div>
 
-          {/* Returns & Orders */}
-          <div className="pc-header-returns">
-            <Link to="/orders" className="pc-returns-link">
-              <span className="pc-returns-text">Returns</span>
-              <span className="pc-orders-text">& Orders</span>
-            </Link>
-          </div>
+
 
           {/* Cart */}
           <div className="pc-header-cart">
@@ -149,7 +187,7 @@ const NavBar = () => {
         </div>
       </div>
 
-      {/* Navigation Menu */}
+          {/* Navigation Menu */}
       <div className="pc-header-nav">
         <div className="pc-header-container">
           <div className="pc-nav-links">
@@ -158,7 +196,6 @@ const NavBar = () => {
             <Link to="/categories" className="pc-nav-link">Categories</Link>
             <Link to="/bookings" className="pc-nav-link">Bookings</Link>
             <Link to="/reviews" className="pc-nav-link">Reviews</Link>
-            {user && <Link to="/dashboard" className="pc-nav-link">Dashboard</Link>}
           </div>
         </div>
       </div>
@@ -184,9 +221,15 @@ const NavBar = () => {
             </Link>
             {user ? (
               <>
-                <Link to="/dashboard" className="pc-mobile-link" onClick={() => setShowMobileMenu(false)}>
-                  Dashboard
-                </Link>
+                {(user.role === 'provider' || userRole === 'provider') ? (
+                  <Link to="/provider/dashboard" className="pc-mobile-link" onClick={() => setShowMobileMenu(false)}>
+                    Provider Dashboard
+                  </Link>
+                ) : (
+                  <Link to="/dashboard" className="pc-mobile-link" onClick={() => setShowMobileMenu(false)}>
+                    Dashboard
+                  </Link>
+                )}
                 <button onClick={handleSignOut} className="pc-mobile-link pc-mobile-signout">
                   Sign Out
                 </button>

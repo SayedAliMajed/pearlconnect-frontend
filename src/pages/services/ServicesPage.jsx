@@ -1,0 +1,174 @@
+import React, { useState, useEffect } from 'react';
+import Container from '../../components/ui/Container';
+import Card from '../../components/ui/Card';
+import { popularServices, featuredCategories, formatPrice } from '../../data/services';
+import { fetchServices } from '../../services/bookings';
+
+const ServicesPage = () => {
+  const [services, setServices] = useState([]);
+  const [filteredServices, setFilteredServices] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        // Try to fetch from API first
+        const apiServices = await fetchServices();
+        if (apiServices && apiServices.length > 0) {
+          setServices(apiServices);
+        } else {
+          // Fallback to static data
+          setServices(popularServices);
+        }
+      } catch (error) {
+        console.log('Using static data due to API error:', error);
+        // Fallback to static data
+        setServices(popularServices);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadServices();
+  }, []);
+
+  useEffect(() => {
+    let filtered = services;
+
+    // Filter by category
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(service =>
+        service.category?.toLowerCase() === selectedCategory.toLowerCase()
+      );
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(service =>
+        service.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        service.subtitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        service.category?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    setFilteredServices(filtered);
+  }, [services, selectedCategory, searchQuery]);
+
+  const handleServiceClick = (service) => {
+    // Navigate to service detail page or open booking modal
+    console.log('Service clicked:', service);
+  };
+
+  if (loading) {
+    return (
+      <Container size="xlarge">
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <p>Loading services...</p>
+        </div>
+      </Container>
+    );
+  }
+
+  return (
+    <div className="services-page">
+      {/* Header Section */}
+      <section className="services-header">
+        <Container size="xlarge">
+          <h1 className="page-title">Our Services</h1>
+          <p className="page-subtitle">Find and book the best local services for all your needs</p>
+        </Container>
+      </section>
+
+      {/* Filters Section */}
+      <section className="services-filters">
+        <Container size="xlarge">
+          <div className="filters-container">
+            {/* Category Filter */}
+            <div className="filter-group">
+              <label htmlFor="category-filter">Category:</label>
+              <select
+                id="category-filter"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="filter-select"
+              >
+                <option value="all">All Categories</option>
+                {featuredCategories.map(category => (
+                  <option key={category.id} value={category.name}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Search Filter */}
+            <div className="filter-group">
+              <label htmlFor="search-filter">Search:</label>
+              <input
+                id="search-filter"
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search services..."
+                className="filter-input"
+              />
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* Services Grid */}
+      <section className="services-grid-section">
+        <Container size="xlarge">
+          {filteredServices.length > 0 ? (
+            <>
+              <div className="services-count">
+                <p>{filteredServices.length} service{filteredServices.length !== 1 ? 's' : ''} found</p>
+              </div>
+              <div className="services-grid">
+                {filteredServices.map(service => (
+                  <Card
+                    key={service.id || service._id}
+                    variant="service"
+                    layout="wireframe"
+                    className="service-card"
+                    onClick={() => handleServiceClick(service)}
+                  >
+                    <img
+                      src={service.image || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=297&h=167&fit=crop'}
+                      alt={service.title}
+                      className="ui-card__image"
+                    />
+                    <div className="ui-card__content">
+                      <h3 className="ui-card__title">{service.title}</h3>
+                      <p className="ui-card__subtitle">{service.subtitle}</p>
+                      <div className="service-meta">
+                        <span className="service-category">{service.category}</span>
+                        <div className="service-rating">
+                          ⭐ {service.rating || 'N/A'} ({service.reviews || 0} reviews)
+                        </div>
+                      </div>
+                      <div className="ui-card__price">
+                        {formatPrice(service.price, service.currency)}
+                      </div>
+                      <button className="ui-card__button">Book Now</button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="no-services">
+              <h3>No services found</h3>
+              <p>Try adjusting your filters or search terms.</p>
+            </div>
+          )}
+        </Container>
+      </section>
+    </div>
+  );
+};
+
+export default ServicesPage;

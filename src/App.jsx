@@ -8,6 +8,11 @@ import SignUpPage from './components/auth/SignUpPage';
 import SignInPage from './components/auth/SignInPage';
 import HomePage from './components/homePage/homePage';
 import Dashboard from './components/dashboard/dashboard';
+import ServicesPage from './pages/services/ServicesPage';
+import BookingsPage from './pages/bookings/BookingsPage';
+import ReviewsPage from './pages/reviews/ReviewsPage';
+import ProfilePage from './pages/profile/ProfilePage';
+import ProviderDashboard from './pages/providers/ProviderDashboard';
 import { useContext } from 'react';
 import { AuthContext } from './contexts/AuthContext';
 
@@ -27,10 +32,14 @@ const App = () => {
 
         {/* Main App Routes - Homepage for everyone */}
         <Route path='/' element={<HomePage/>}/>
+        <Route path='/services' element={<ServicesPage/>}/>
+        <Route path='/bookings' element={<BookingsPage/>}/>
+        <Route path='/reviews' element={<ReviewsPage/>}/>
         <Route path='/dashboard' element={<Dashboard/>}/>
+        <Route path='/provider/dashboard' element={<ProviderDashboard/>}/>
         <Route path='/products' element={<h1>Products</h1>}/>
         <Route path='/favs' element={<h1>Favorites</h1>}/>
-        <Route path='/profile' element={<h1>{user ? user.username : 'Profile'}</h1>}/>
+        <Route path='/profile' element={<ProfilePage/>}/>
         <Route path='/orders' element={<h1>Orders</h1>}/>
       </Routes>
     </>
