@@ -96,12 +96,26 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
     setLoading(true);
 
     try {
+      // Convert images from blob URLs to proper image objects
+      const processedImages = formData.images.map((imageUrl, index) => ({
+        url: imageUrl,
+        alt: `Service image ${index + 1}`
+      }));
+
       const serviceData = {
         ...formData,
         price: parseFloat(formData.price), // Convert price to number
+        images: processedImages, // Convert to proper image objects
+        // Omit category field for now since backend expects ObjectId
+        // category: formData.category, // Commented out - needs ObjectId
         provider: user.id || user._id,
         providerName: user.username || user.name
       };
+
+      // Remove category from serviceData if it's empty or invalid
+      if (!serviceData.category || typeof serviceData.category === 'string') {
+        delete serviceData.category;
+      }
 
       console.log('Sending service data:', serviceData);
       console.log('API URL:', `${import.meta.env.VITE_BACK_END_SERVER_URL}/services`);
