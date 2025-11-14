@@ -98,6 +98,7 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
     try {
       const serviceData = {
         ...formData,
+        price: parseFloat(formData.price), // Convert price to number
         provider: user.id || user._id,
         providerName: user.username || user.name
       };
