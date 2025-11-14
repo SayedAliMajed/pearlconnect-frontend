@@ -51,6 +51,36 @@ const NavBar = () => {
   console.log('User role:', user?.role);
   console.log('Is provider?', user?.role === 'provider');
 
+  // Temporary workaround: Check if user might be a provider by fetching profile
+  // This is needed because JWT doesn't include role field
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (user && user._id && !user.role) {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/users/${user._id}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          if (response.ok) {
+            const userData = await response.json();
+            setUserRole(userData.role);
+            console.log('Fetched user role:', userData.role);
+          }
+        } catch (error) {
+          console.error('Failed to fetch user role:', error);
+        }
+      } else if (user?.role) {
+        setUserRole(user.role);
+      }
+    };
+
+    fetchUserRole();
+  }, [user]);
+
   return (
     <header className="pc-header">
       <div className="pc-header-top">
@@ -105,7 +135,7 @@ const NavBar = () => {
                 <div className="pc-account-dropdown">
                   {user ? (
                     <div className="pc-dropdown-content">
-                      {user.role === 'provider' ? (
+                      {(user.role === 'provider' || userRole === 'provider') ? (
                         <Link to="/provider/dashboard" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>
                           🏪 Provider Dashboard
                         </Link>
@@ -191,7 +221,7 @@ const NavBar = () => {
             </Link>
             {user ? (
               <>
-                {user.role === 'provider' ? (
+                {(user.role === 'provider' || userRole === 'provider') ? (
                   <Link to="/provider/dashboard" className="pc-mobile-link" onClick={() => setShowMobileMenu(false)}>
                     Provider Dashboard
                   </Link>
