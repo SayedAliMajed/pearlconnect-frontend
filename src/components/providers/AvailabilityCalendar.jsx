@@ -11,11 +11,12 @@ const AvailabilityCalendar = () => {
   const [showTimeForm, setShowTimeForm] = useState(false);
   const [editingSlot, setEditingSlot] = useState(null);
   const [timeForm, setTimeForm] = useState({
-    startTime: '',
-    endTime: '',
-    breakStart: '',
-    breakEnd: '',
-    isRecurring: false
+    openingTime: '',
+    closingTime: '',
+    breakStartTime: '',
+    breakEndTime: '',
+    isRepeating: false,
+    duration: 60 // Default 60 minutes
   });
 
   useEffect(() => {
@@ -60,20 +61,22 @@ const AvailabilityCalendar = () => {
     if (existingSlot) {
       setEditingSlot(existingSlot);
       setTimeForm({
-        startTime: existingSlot.startTime || '',
-        endTime: existingSlot.endTime || '',
-        breakStart: existingSlot.breakStart || '',
-        breakEnd: existingSlot.breakEnd || '',
-        isRecurring: existingSlot.isRecurring || false
+        openingTime: existingSlot.openingTime || existingSlot.startTime || '',
+        closingTime: existingSlot.closingTime || existingSlot.endTime || '',
+        breakStartTime: existingSlot.breakStartTime || existingSlot.breakStart || '',
+        breakEndTime: existingSlot.breakEndTime || existingSlot.breakEnd || '',
+        isRepeating: existingSlot.isRepeating || existingSlot.isRecurring || false,
+        duration: existingSlot.duration || 60
       });
     } else {
       setEditingSlot(null);
       setTimeForm({
-        startTime: '09:00',
-        endTime: '17:00',
-        breakStart: '12:00',
-        breakEnd: '13:00',
-        isRecurring: false
+        openingTime: '09:00',
+        closingTime: '17:00',
+        breakStartTime: '12:00',
+        breakEndTime: '13:00',
+        isRepeating: false,
+        duration: 60
       });
     }
     setShowTimeForm(true);
@@ -92,11 +95,12 @@ const AvailabilityCalendar = () => {
       const slotData = {
         provider: user.id || user._id,
         date: selectedDate.toISOString().split('T')[0], // YYYY-MM-DD format
-        startTime: timeForm.startTime,
-        endTime: timeForm.endTime,
-        breakStart: timeForm.breakStart,
-        breakEnd: timeForm.breakEnd,
-        isRecurring: timeForm.isRecurring
+        openingTime: timeForm.openingTime,
+        closingTime: timeForm.closingTime,
+        breakStartTime: timeForm.breakStartTime,
+        breakEndTime: timeForm.breakEndTime,
+        isRepeating: timeForm.isRepeating,
+        duration: timeForm.duration
       };
 
       let response;
@@ -287,14 +291,14 @@ const AvailabilityCalendar = () => {
               {day.availability && (
                 <div className="day-availability">
                   <div className="time-slot">
-                    {formatTime(day.availability.startTime)} - {formatTime(day.availability.endTime)}
+                    {formatTime(day.availability.openingTime || day.availability.startTime)} - {formatTime(day.availability.closingTime || day.availability.endTime)}
                   </div>
-                  {day.availability.breakStart && (
+                  {day.availability.breakStartTime && (
                     <div className="break-time">
-                      Break: {formatTime(day.availability.breakStart)} - {formatTime(day.availability.breakEnd)}
+                      Break: {formatTime(day.availability.breakStartTime)} - {formatTime(day.availability.breakEndTime)}
                     </div>
                   )}
-                  {day.availability.isRecurring && (
+                  {day.availability.isRepeating && (
                     <div className="recurring-badge">🔄</div>
                   )}
                 </div>
@@ -317,24 +321,24 @@ const AvailabilityCalendar = () => {
             <div className="form-content">
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="startTime">Start Time *</label>
+                  <label htmlFor="openingTime">Opening Time *</label>
                   <input
-                    id="startTime"
-                    name="startTime"
+                    id="openingTime"
+                    name="openingTime"
                     type="time"
-                    value={timeForm.startTime}
+                    value={timeForm.openingTime}
                     onChange={handleTimeFormChange}
                     className="form-input"
                   />
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="endTime">End Time *</label>
+                  <label htmlFor="closingTime">Closing Time *</label>
                   <input
-                    id="endTime"
-                    name="endTime"
+                    id="closingTime"
+                    name="closingTime"
                     type="time"
-                    value={timeForm.endTime}
+                    value={timeForm.closingTime}
                     onChange={handleTimeFormChange}
                     className="form-input"
                   />
@@ -343,26 +347,43 @@ const AvailabilityCalendar = () => {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="breakStart">Break Start (optional)</label>
+                  <label htmlFor="breakStartTime">Break Start (optional)</label>
                   <input
-                    id="breakStart"
-                    name="breakStart"
+                    id="breakStartTime"
+                    name="breakStartTime"
                     type="time"
-                    value={timeForm.breakStart}
+                    value={timeForm.breakStartTime}
                     onChange={handleTimeFormChange}
                     className="form-input"
                   />
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="breakEnd">Break End (optional)</label>
+                  <label htmlFor="breakEndTime">Break End (optional)</label>
                   <input
-                    id="breakEnd"
-                    name="breakEnd"
+                    id="breakEndTime"
+                    name="breakEndTime"
                     type="time"
-                    value={timeForm.breakEnd}
+                    value={timeForm.breakEndTime}
                     onChange={handleTimeFormChange}
                     className="form-input"
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="duration">Duration (minutes)</label>
+                  <input
+                    id="duration"
+                    name="duration"
+                    type="number"
+                    value={timeForm.duration}
+                    onChange={handleTimeFormChange}
+                    className="form-input"
+                    min="15"
+                    max="480"
+                    placeholder="60"
                   />
                 </div>
               </div>
@@ -371,8 +392,8 @@ const AvailabilityCalendar = () => {
                 <label className="checkbox-label">
                   <input
                     type="checkbox"
-                    name="isRecurring"
-                    checked={timeForm.isRecurring}
+                    name="isRepeating"
+                    checked={timeForm.isRepeating}
                     onChange={handleTimeFormChange}
                   />
                   <span className="checkmark"></span>
@@ -421,13 +442,13 @@ const AvailabilityCalendar = () => {
                   📅 {new Date(slot.date).toLocaleDateString()}
                 </div>
                 <div className="availability-times">
-                  🕐 {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
-                  {slot.breakStart && (
+                  🕐 {formatTime(slot.openingTime || slot.startTime)} - {formatTime(slot.closingTime || slot.endTime)}
+                  {slot.breakStartTime && (
                     <span className="break-info">
-                      (Break: {formatTime(slot.breakStart)} - {formatTime(slot.breakEnd)})
+                      (Break: {formatTime(slot.breakStartTime)} - {formatTime(slot.breakEndTime)})
                     </span>
                   )}
-                  {slot.isRecurring && <span className="recurring-info">🔄 Weekly</span>}
+                  {slot.isRepeating && <span className="recurring-info">🔄 Weekly</span>}
                 </div>
               </div>
               <div className="availability-actions">
@@ -438,11 +459,12 @@ const AvailabilityCalendar = () => {
                     setSelectedDate(new Date(slot.date));
                     setEditingSlot(slot);
                     setTimeForm({
-                      startTime: slot.startTime || '',
-                      endTime: slot.endTime || '',
-                      breakStart: slot.breakStart || '',
-                      breakEnd: slot.breakEnd || '',
-                      isRecurring: slot.isRecurring || false
+                      openingTime: slot.openingTime || slot.startTime || '',
+                      closingTime: slot.closingTime || slot.endTime || '',
+                      breakStartTime: slot.breakStartTime || slot.breakStart || '',
+                      breakEndTime: slot.breakEndTime || slot.breakEnd || '',
+                      isRepeating: slot.isRepeating || slot.isRecurring || false,
+                      duration: slot.duration || 60
                     });
                     setShowTimeForm(true);
                   }}
