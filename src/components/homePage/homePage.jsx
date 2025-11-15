@@ -1,15 +1,27 @@
 // src/components/homePage/homePage.jsx
 
 import React from 'react';
+import { useNavigate } from 'react-router';
 import Container from '../ui/Container';
 import Card from '../ui/Card';
 import { popularServices, featuredCategories, formatPrice } from '../../data/services';
 import './homePage.css';
 
 const HomePage = () => {
+  const navigate = useNavigate();
+
   const handleCategoryClick = (categoryName) => {
     // Navigate to category page or filter services
     console.log('Selected category:', categoryName);
+  };
+
+  const handleServiceClick = (service) => {
+    const serviceId = service.id; // Use service.id for static data (popularServices)
+    if (serviceId) {
+      navigate(`/services/${serviceId}`);
+    } else {
+      console.error('Service has no ID:', service);
+    }
   };
 
   return (
@@ -62,6 +74,7 @@ const HomePage = () => {
                 variant="service"
                 layout="wireframe"
                 className="service-card"
+                onClick={() => handleServiceClick(service)}
               >
                 <img
                   src={service.image}
