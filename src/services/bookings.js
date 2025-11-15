@@ -93,3 +93,15 @@ export const cancelBooking = async (bookingId) => {
     throw err;
   }
 };
+
+export const fetchProviderAvailability = async (providerId) => {
+  try {
+    const res = await fetch(`${BASE_URL}/providers/${providerId}/availability`);
+    const data = await res.json();
+    if (data.err) throw new Error(data.err || 'Failed to fetch provider availability');
+    return data;
+  } catch (err) {
+    console.error('fetchProviderAvailability', err);
+    return []; // Return empty array on error to use defaults
+  }
+};
