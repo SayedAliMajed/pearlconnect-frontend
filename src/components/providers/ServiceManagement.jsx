@@ -188,9 +188,12 @@ const ServiceManagement = () => {
 
       {/* Services List */}
       <div className="services-list">
+        {console.log('ServiceManagement - services count:', services.length)}
         {services.length > 0 ? (
-          services.map(service => (
-            <Card key={service._id || service.id} className="service-item">
+          services.map(service => {
+            console.log('Rendering service:', service.title, service._id);
+            return (
+              <Card key={service._id || service.id} className="service-item">
               <div className="service-content">
                 <div className="service-info">
                   <h4>{service.title}</h4>
@@ -221,11 +224,19 @@ const ServiceManagement = () => {
                 </div>
               </div>
 
-              <div className="service-actions" style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+              <div className="service-actions" style={{
+                display: 'flex',
+                gap: '8px',
+                marginTop: '10px',
+                backgroundColor: 'red',
+                padding: '5px',
+                borderRadius: '4px'
+              }}>
                 <Button
                   variant="secondary"
                   size="small"
                   onClick={() => handleEditService(service)}
+                  style={{ backgroundColor: 'blue', color: 'white', border: 'none' }}
                 >
                   ✏️ Edit
                 </Button>
@@ -234,12 +245,14 @@ const ServiceManagement = () => {
                   size="small"
                   onClick={() => handleDeleteService(service._id || service.id)}
                   disabled={deletingId === (service._id || service.id)}
+                  style={{ backgroundColor: 'red', color: 'white', border: 'none' }}
                 >
                   {deletingId === (service._id || service.id) ? 'Deleting...' : '🗑️ Delete'}
                 </Button>
               </div>
-            </Card>
-          ))
+              </Card>
+            );
+          })
         ) : (
           <div className="no-services">
             <div className="no-services-content">
