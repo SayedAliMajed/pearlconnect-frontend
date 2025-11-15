@@ -63,8 +63,6 @@ const NavBar = () => {
             </Link>
           </div>
 
-
-
           {/* Search Bar */}
           <div className="pc-header-search">
             <form onSubmit={handleSearch} className="pc-search-form">
@@ -81,6 +79,7 @@ const NavBar = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pc-search-input"
+                placeholder="Search services..."
               />
               <button type="submit" className="pc-search-button">
                 Search
@@ -88,72 +87,73 @@ const NavBar = () => {
             </form>
           </div>
 
-          {/* Account & Orders */}
-          <div className="pc-header-account" ref={dropdownRef}>
-            <div className="pc-account-section">
-              <button
-                className="pc-account-button"
-                onClick={() => setShowAccountDropdown(!showAccountDropdown)}
-              >
-                <span className="pc-account-greeting">
-                  {user ? `Hello, ${user.username}` : 'Hello, Sign in'}
-                </span>
-                <span className="pc-account-options">Account & Lists</span>
-              </button>
+          {/* Right Section */}
+          <div className="pc-header-right">
+            {/* Account & Orders */}
+            <div className="pc-header-account" ref={dropdownRef}>
+              <div className="pc-account-section">
+                <button
+                  className="pc-account-button"
+                  onClick={() => setShowAccountDropdown(!showAccountDropdown)}
+                >
+                  <span className="pc-account-greeting">
+                    {user ? `Hello, ${user.username}` : 'Hello, Sign in'}
+                  </span>
+                  <span className="pc-account-options">Account & Lists</span>
+                </button>
 
-              {showAccountDropdown && (
-                <div className="pc-account-dropdown">
-                  {user ? (
-                    <div className="pc-dropdown-content">
-                      {user.role === 'provider' ? (
-                        <Link to="/provider/dashboard" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>
-                          🏪 Provider Dashboard
+                {showAccountDropdown && (
+                  <div className="pc-account-dropdown">
+                    {user ? (
+                      <div className="pc-dropdown-content">
+                        {user.role === 'provider' ? (
+                          <Link to="/provider/dashboard" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>
+                            🏪 Provider Dashboard
+                          </Link>
+                        ) : (
+                          <Link to="/dashboard" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>
+                            📊 Dashboard
+                          </Link>
+                        )}
+                        <Link to="/profile" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>👤 Your Account</Link>
+                        <Link to="/orders" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>📦 Your Orders</Link>
+                        <Link to="/favorites" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>❤️ Your Favorites</Link>
+                        <button onClick={handleSignOut} className="pc-dropdown-item pc-sign-out">
+                          🚪 Sign Out
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="pc-dropdown-content">
+                        <Link to="/sign-in" className="pc-dropdown-item pc-sign-in" onClick={() => setShowAccountDropdown(false)}>
+                          Sign In
                         </Link>
-                      ) : (
-                        <Link to="/dashboard" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>
-                          📊 Dashboard
+                        <Link to="/sign-up" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>
+                          Create Account
                         </Link>
-                      )}
-                      <Link to="/profile" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>👤 Your Account</Link>
-                      <Link to="/orders" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>📦 Your Orders</Link>
-                      <Link to="/favorites" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>❤️ Your Favorites</Link>
-                      <button onClick={handleSignOut} className="pc-dropdown-item pc-sign-out">
-                        🚪 Sign Out
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="pc-dropdown-content">
-                      <Link to="/sign-in" className="pc-dropdown-item pc-sign-in" onClick={() => setShowAccountDropdown(false)}>
-                        Sign In
-                      </Link>
-                      <Link to="/sign-up" className="pc-dropdown-item" onClick={() => setShowAccountDropdown(false)}>
-                        Create Account
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* Cart */}
+            <div className="pc-header-cart">
+              <Link to="/cart" className="pc-cart-link">
+                <span className="pc-cart-icon">🛒</span>
+                <span className="pc-cart-count">0</span>
+                <span className="pc-cart-text">Cart</span>
+              </Link>
+            </div>
+
+            {/* Mobile Menu Toggle */}
+            <button
+              className="pc-mobile-menu-toggle"
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+            >
+              <span className="pc-menu-icon">☰</span>
+            </button>
           </div>
-
-
-
-          {/* Cart */}
-          <div className="pc-header-cart">
-            <Link to="/cart" className="pc-cart-link">
-              <span className="pc-cart-icon">🛒</span>
-              <span className="pc-cart-count">0</span>
-              <span className="pc-cart-text">Cart</span>
-            </Link>
-          </div>
-
-          {/* Mobile Menu Toggle */}
-          <button 
-            className="pc-mobile-menu-toggle"
-            onClick={() => setShowMobileMenu(!showMobileMenu)}
-          >
-            <span className="pc-menu-icon">☰</span>
-          </button>
         </div>
       </div>
 
