@@ -38,6 +38,7 @@ const NavBar = () => {
     navigate('/');
   };
 
+  // Handle search navigation (for form submission)
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -47,6 +48,28 @@ const NavBar = () => {
 
       // Get category if not "all"
       const categorySelect = e.target.querySelector('.pc-search-category');
+      const selectedCategory = categorySelect?.value;
+      if (selectedCategory && selectedCategory !== 'all') {
+        searchParams.set('category', selectedCategory);
+      }
+
+      const queryString = searchParams.toString();
+      navigate(`/services${queryString ? `?${queryString}` : ''}`);
+    }
+  };
+
+  // Handle real-time search (navigate immediately when typing starts)
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    // If user has typed at least 2 characters, navigate immediately
+    if (value.trim().length >= 2) {
+      const searchParams = new URLSearchParams();
+      searchParams.set('q', value.trim());
+
+      // Include current category selection
+      const categorySelect = e.target.closest('form').querySelector('.pc-search-category');
       const selectedCategory = categorySelect?.value;
       if (selectedCategory && selectedCategory !== 'all') {
         searchParams.set('category', selectedCategory);
@@ -88,7 +111,7 @@ const NavBar = () => {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
                 className="pc-search-input"
                 placeholder="Search services..."
               />
