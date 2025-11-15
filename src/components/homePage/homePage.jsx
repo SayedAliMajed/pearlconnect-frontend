@@ -1,5 +1,6 @@
 // src/components/homePage/homePage.jsx
 
+import React, { useState } from 'react';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import Container from '../ui/Container';
@@ -7,8 +8,11 @@ import Card from '../ui/Card';
 import { popularServices, featuredCategories, formatPrice } from '../../test/fixtures/test-services';
 import { fetchServices } from '../../services/bookings';
 import './homePage.css';
+import SearchBar from './searchBar';
 
 const HomePage = () => {
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
   const navigate = useNavigate();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -56,10 +60,10 @@ const HomePage = () => {
   }, []);
 
   const handleCategoryClick = (categoryName) => {
-    // Navigate to category page or filter services
     console.log('Selected category:', categoryName);
   };
 
+  const hasResults = searchResults.length > 0;
   const handleServiceClick = (service) => {
     const serviceId = service._id || service.id;
     if (serviceId) {
@@ -79,6 +83,33 @@ const HomePage = () => {
             <p className="hero-subtitle">
               Connect with trusted professionals for all your service needs
             </p>
+            {/* Search Bar */}
+            <SearchBar
+              onResults={setSearchResults}
+              onLoading={setSearchLoading}
+            />
+            {searchLoading && <p className="search-status">Searching...</p>}
+            {hasResults && (
+              <div className="search-results">
+                <h3>Search Results</h3>
+                <div className="services-grid">
+                  {searchResults.map(service => (
+                    <Card
+                      key={service._id}
+                      variant="service"
+                      layout="wireframe"
+                      className="service-card"
+                    >
+                      <div className="ui-card__content">
+                        <h4 className="ui-card__title">{service.title}</h4>
+                        {service.description && <p className="ui-card__subtitle">{service.description.slice(0,80)}{service.description.length>80?'...':''}</p>}
+                        {service.price != null && <div className="ui-card__price">BD {service.price}</div>}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </Container>
       </section>
