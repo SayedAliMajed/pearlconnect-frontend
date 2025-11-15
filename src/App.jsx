@@ -14,7 +14,6 @@ import BookingsPage from './pages/bookings/BookingsPage';
 import ReviewsPage from './pages/reviews/ReviewsPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import ProviderDashboard from './pages/providers/ProviderDashboard';
-import ServiceDetailPage from './pages/services/ServiceDetailPage';
 import { useContext } from 'react';
 import { AuthContext } from './contexts/AuthContext';
 
