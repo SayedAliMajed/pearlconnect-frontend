@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import Container from '../../components/ui/Container';
 import Card from '../../components/ui/Card';
 import { popularServices, featuredCategories, formatPrice } from '../../test/fixtures/test-services';
@@ -7,11 +7,26 @@ import { fetchServices } from '../../services/bookings';
 
 const ServicesPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [services, setServices] = useState([]);
   const [filteredServices, setFilteredServices] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // Initialize search parameters from URL on mount and location change
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const queryParam = urlParams.get('q');
+    const categoryParam = urlParams.get('category');
+
+    if (queryParam) {
+      setSearchQuery(queryParam);
+    }
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     const loadServices = async () => {

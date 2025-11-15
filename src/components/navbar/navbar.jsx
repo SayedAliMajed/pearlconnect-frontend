@@ -41,8 +41,19 @@ const NavBar = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Navigate to search results
-      console.log('Searching for:', searchQuery);
+      // Navigate to services page with search parameters
+      const searchParams = new URLSearchParams();
+      searchParams.set('q', searchQuery.trim());
+
+      // Get category if not "all"
+      const categorySelect = e.target.querySelector('.pc-search-category');
+      const selectedCategory = categorySelect?.value;
+      if (selectedCategory && selectedCategory !== 'all') {
+        searchParams.set('category', selectedCategory);
+      }
+
+      const queryString = searchParams.toString();
+      navigate(`/services${queryString ? `?${queryString}` : ''}`);
     }
   };
 
