@@ -221,7 +221,7 @@ const ServiceManagement = () => {
                 </div>
               </div>
 
-              <div className="service-actions">
+              <div className="service-actions" style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
                 <Button
                   variant="secondary"
                   size="small"
