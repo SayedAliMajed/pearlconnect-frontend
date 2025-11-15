@@ -1,16 +1,21 @@
 // src/components/homePage/homePage.jsx
 
-import React from 'react';
+import React, { useState } from 'react';
 import Container from '../ui/Container';
 import Card from '../ui/Card';
 import { popularServices, featuredCategories, formatPrice } from '../../data/services';
 import './homePage.css';
+import SearchBar from './searchBar';
 
 const HomePage = () => {
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+
   const handleCategoryClick = (categoryName) => {
-    // Navigate to category page or filter services
     console.log('Selected category:', categoryName);
   };
+
+  const hasResults = searchResults.length > 0;
 
   return (
     <div className="homepage">
@@ -22,6 +27,33 @@ const HomePage = () => {
             <p className="hero-subtitle">
               Connect with trusted professionals for all your service needs
             </p>
+            {/* Search Bar */}
+            <SearchBar
+              onResults={setSearchResults}
+              onLoading={setSearchLoading}
+            />
+            {searchLoading && <p className="search-status">Searching...</p>}
+            {hasResults && (
+              <div className="search-results">
+                <h3>Search Results</h3>
+                <div className="services-grid">
+                  {searchResults.map(service => (
+                    <Card
+                      key={service._id}
+                      variant="service"
+                      layout="wireframe"
+                      className="service-card"
+                    >
+                      <div className="ui-card__content">
+                        <h4 className="ui-card__title">{service.title}</h4>
+                        {service.description && <p className="ui-card__subtitle">{service.description.slice(0,80)}{service.description.length>80?'...':''}</p>}
+                        {service.price != null && <div className="ui-card__price">BD {service.price}</div>}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </Container>
       </section>
