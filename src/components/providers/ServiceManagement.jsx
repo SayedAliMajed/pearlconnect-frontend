@@ -22,7 +22,11 @@ const ServiceManagement = () => {
     try {
       setLoading(true);
       // Fetch services for this provider
-      const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/services?provider=${user.id || user._id}`, {
+      // Use the most compatible ID format (try multiple)
+      const providerId = user._id || user.id;
+      console.log('Loading services for provider:', providerId);
+
+      const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/services?provider=${providerId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -34,7 +38,16 @@ const ServiceManagement = () => {
         console.log('Loaded services:', data);
         // API returns {services: [...], pagination: {...}}
         const servicesArray = data.services || data || [];
-        setServices(Array.isArray(servicesArray) ? servicesArray : []);
+
+        // Fix provider field inconsistency - ensure it's an object
+        const normalizedServices = servicesArray.map(service => ({
+          ...service,
+          provider: typeof service.provider === 'object'
+            ? service.provider
+            : { _id: providerId, email: user.email, name: user.username }
+        }));
+
+        setServices(Array.isArray(normalizedServices) ? normalizedServices : []);
       } else {
         console.error('Failed to load services');
         setServices([]);
@@ -64,6 +77,31 @@ const ServiceManagement = () => {
 
     try {
       setDeletingId(serviceId);
+
+      // Find the service being deleted for debugging
+      const serviceToDelete = services.find(s => s._id === serviceId || s.id === serviceId);
+      console.log('🔍 DELETE REQUEST DEBUG:', {
+        serviceId,
+        serviceToDelete: {
+          _id: serviceToDelete?._id,
+          title: serviceToDelete?.title,
+          provider: serviceToDelete?.provider,
+          providerId: serviceToDelete?.providerId,
+          fullProviderObj: serviceToDelete?.provider
+        },
+        currentUser: {
+          _id: user?._id,
+          id: user?.id,
+          username: user?.username,
+          role: user?.role,
+          email: user?.email
+        },
+        ownershipCheck: `service.provider === user._id → ${serviceToDelete?.provider} === ${user?._id} = ${serviceToDelete?.provider === user?._id}`,
+        ownershipCheckByEmail: `service.provider.email === user.email → ${serviceToDelete?.provider?.email} === ${user?.email} = ${serviceToDelete?.provider?.email === user?.email}`,
+        token: localStorage.getItem('token') ? 'Token exists (length: ' + localStorage.getItem('token').length + ')' : 'No token',
+        apiUrl: `${import.meta.env.VITE_BACK_END_SERVER_URL}/services/${serviceId}`
+      });
+
       const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/services/${serviceId}`, {
         method: 'DELETE',
         headers: {
@@ -72,13 +110,31 @@ const ServiceManagement = () => {
         }
       });
 
+      console.log('🗑️ DELETE RESPONSE:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        url: response.url,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
       if (response.ok) {
+        console.log('✅ Service deleted successfully');
         setServices(services.filter(service => service._id !== serviceId));
       } else {
-        alert('Failed to delete service. Please try again.');
+        let errorDetails = 'Unknown error';
+        try {
+          const errorText = await response.text();
+          errorDetails = errorText || `Status ${response.status}`;
+        } catch (e) {
+          console.error('Could not read error response');
+        }
+
+        console.error('❌ Delete failed:', errorDetails);
+        alert(`Failed to delete service: ${errorDetails}`);
       }
     } catch (error) {
-      console.error('Error deleting service:', error);
+      console.error('💥 Error deleting service:', error);
       alert('Failed to delete service. Please try again.');
     } finally {
       setDeletingId(null);
@@ -151,15 +207,17 @@ const ServiceManagement = () => {
                 </div>
 
                 <div className="service-image">
-                  {service.images && service.images.length > 0 ? (
-                    <img
-                      src={service.images[0].url || service.images[0]}
-                      alt={service.images[0].alt || service.title}
-                      className="service-thumbnail"
-                    />
-                  ) : (
-                    <div className="no-image">📷</div>
-                  )}
+                  <img
+                    src={
+                      // API services have images[] array with uploaded images
+                      (service.images?.[0]?.url || service.images?.[0]) ||
+                      // If no images, show placeholder
+                      'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=100&h=60&fit=crop'
+                    }
+                    alt={service.title}
+                    className="service-thumbnail"
+                    style={service.images?.length > 0 ? {} : { opacity: 0.5 }}
+                  />
                 </div>
               </div>
 

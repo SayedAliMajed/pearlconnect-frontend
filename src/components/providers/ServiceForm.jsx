@@ -3,7 +3,7 @@ import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { AuthContext } from '../../contexts/AuthContext';
-import { featuredCategories } from '../../data/services';
+import { featuredCategories } from '../../test/fixtures/test-services';
 
 const ServiceForm = ({ service, onSuccess, onCancel }) => {
   const { user } = useContext(AuthContext);
@@ -19,6 +19,7 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [imagePreview, setImagePreview] = useState([]);
 
   useEffect(() => {
@@ -34,7 +35,17 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
         images: service.images || [],
         active: service.active !== false
       });
-      setImagePreview(service.images || []);
+      // Initialize preview from existing images
+      const existingImages = service.images || [];
+      setImagePreview(existingImages.map(img => ({
+        url: img.url || img,
+        alt: img.alt || service.title,
+        existing: true // Mark as existing to avoid re-uploading
+      })));
+    } else {
+      // Clear for new service
+      setSelectedFiles([]);
+      setImagePreview([]);
     }
   }, [service]);
 
@@ -53,25 +64,45 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
     }
   };
 
-  const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    const newImages = files.map(file => URL.createObjectURL(file));
-    setImagePreview(prev => [...prev, ...newImages]);
+  // Convert file to base64 string
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file); // This creates base64 string
+    });
+  };
 
-    // In a real app, you'd upload to a server and get URLs back
-    // For now, we'll just store the blob URLs
-    setFormData(prev => ({
-      ...prev,
-      images: [...prev.images, ...newImages]
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+
+    // Store files for processing
+    setSelectedFiles(prev => [...prev, ...files]);
+
+    // Create preview URLs for display
+    const previewUrls = files.map(file => ({
+      url: URL.createObjectURL(file),
+      alt: file.name,
+      existing: false
     }));
+
+    setImagePreview(prev => [...prev, ...previewUrls]);
   };
 
   const removeImage = (index) => {
-    setImagePreview(prev => prev.filter((_, i) => i !== index));
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
+    const newPreview = [...imagePreview];
+
+    // Clean up object URL if it was a new file (not existing)
+    if (!newPreview[index].existing) {
+      URL.revokeObjectURL(newPreview[index].url);
+      // Remove from selectedFiles as well
+      const fileIndex = newPreview.slice(0, index).filter(p => !p.existing).length;
+      setSelectedFiles(prev => prev.filter((_, i) => i !== fileIndex));
+    }
+
+    newPreview.splice(index, 1);
+    setImagePreview(newPreview);
   };
 
   const validateForm = () => {
@@ -96,16 +127,35 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
     setLoading(true);
 
     try {
-      // Convert images from blob URLs to proper image objects
-      const processedImages = formData.images.map((imageUrl, index) => ({
-        url: imageUrl,
-        alt: `Service image ${index + 1}`
-      }));
+      // Process new images (convert to base64)
+      let processedImages = [];
+
+      if (selectedFiles.length > 0) {
+        console.log('Converting', selectedFiles.length, 'new images to base64...');
+        for (let i = 0; i < selectedFiles.length; i++) {
+          const base64String = await fileToBase64(selectedFiles[i]);
+          processedImages.push({
+            url: base64String, // Base64 string as URL
+            alt: selectedFiles[i].name
+          });
+        }
+      }
+
+      // Include existing images from service being edited
+      const existingImages = imagePreview
+        .filter(img => img.existing)
+        .map(img => ({
+          url: img.url,
+          alt: img.alt
+        }));
+
+      // Combine new and existing images
+      processedImages = [...existingImages, ...processedImages];
 
       const serviceData = {
         ...formData,
         price: parseFloat(formData.price), // Convert price to number
-        images: processedImages, // Convert to proper image objects
+        images: processedImages, // Use processed images with base64
         // Omit category field for now since backend expects ObjectId
         // category: formData.category, // Commented out - needs ObjectId
         provider: user.id || user._id,
@@ -117,12 +167,39 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
         delete serviceData.category;
       }
 
-      console.log('Sending service data:', serviceData);
+      console.log('Sending service data:', {
+        ...serviceData,
+        images: `${serviceData.images.length} images` // Avoid spamming console with base64
+      });
       console.log('API URL:', `${import.meta.env.VITE_BACK_END_SERVER_URL}/services`);
       console.log('Auth token exists:', !!localStorage.getItem('token'));
 
       let response;
       if (service) {
+        console.log('🔄 UPDATE REQUEST DEBUG:', {
+          serviceId: service._id || service.id,
+          originalService: {
+            _id: service._id,
+            title: service.title,
+            provider: service.provider,
+            providerId: service.providerId
+          },
+          currentUser: {
+            _id: user?._id,
+            id: user?.id,
+            username: user?.username,
+            role: user?.role,
+            email: user?.email
+          },
+          serviceDataToSend: {
+            title: serviceData.title,
+            provider: serviceData.provider,
+            images: `${serviceData.images.length} images`
+          },
+          token: localStorage.getItem('token') ? 'Token exists' : 'No token',
+          apiUrl: `${import.meta.env.VITE_BACK_END_SERVER_URL}/services/${service._id || service.id}`
+        });
+
         // Update existing service
         response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/services/${service._id || service.id}`, {
           method: 'PUT',
@@ -311,7 +388,7 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
               <div className="image-preview">
                 {imagePreview.map((image, index) => (
                   <div key={index} className="image-item">
-                    <img src={image} alt={`Service ${index + 1}`} className="preview-image" />
+                    <img src={image.url} alt={image.alt || `Service ${index + 1}`} className="preview-image" />
                     <button
                       type="button"
                       className="remove-image"

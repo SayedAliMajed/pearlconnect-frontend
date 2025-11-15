@@ -3,7 +3,7 @@
 import { useContext, useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { AuthContext } from '../../contexts/AuthContext';
-import { featuredCategories } from '../../data/services';
+import { featuredCategories } from '../../test/fixtures/test-services';
 import './navbar.css';
 
 const NavBar = () => {
