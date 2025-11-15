@@ -80,6 +80,28 @@ const NavBar = () => {
     }
   };
 
+  // Handle real-time category change (navigate immediately when category is selected)
+  const handleCategoryChange = (e) => {
+    const selectedCategory = e.target.value;
+
+    // Always navigate immediately when category changes (even to "all")
+    const searchParams = new URLSearchParams();
+
+    // Include current search query if exists
+    if (searchQuery.trim()) {
+      searchParams.set('q', searchQuery.trim());
+    }
+
+    // Include category selection (even if it's "all" - clears category filter)
+    if (selectedCategory && selectedCategory !== 'all') {
+      searchParams.set('category', selectedCategory);
+    }
+    // If "all" is selected, don't include category param (show all categories)
+
+    const queryString = searchParams.toString();
+    navigate(`/services${queryString ? `?${queryString}` : ''}`);
+  };
+
   // Debug user object
   console.log('Navbar user object:', user);
   console.log('User role:', user?.role);
@@ -100,7 +122,7 @@ const NavBar = () => {
           {/* Search Bar */}
           <div className="pc-header-search">
             <form onSubmit={handleSearch} className="pc-search-form">
-              <select className="pc-search-category">
+              <select className="pc-search-category" onChange={handleCategoryChange}>
                 <option value="all">All Categories</option>
                 {featuredCategories.map(category => (
                   <option key={category.id} value={category.name}>
