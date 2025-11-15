@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import Container from '../../components/ui/Container';
 import Card from '../../components/ui/Card';
 import { popularServices, featuredCategories, formatPrice } from '../../test/fixtures/test-services';
 import { fetchServices } from '../../services/bookings';
 
 const ServicesPage = () => {
+  const navigate = useNavigate();
   const [services, setServices] = useState([]);
   const [filteredServices, setFilteredServices] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -63,8 +65,12 @@ const ServicesPage = () => {
   }, [services, selectedCategory, searchQuery]);
 
   const handleServiceClick = (service) => {
-    // Navigate to service detail page or open booking modal
-    console.log('Service clicked:', service);
+    const serviceId = service._id || service.id;
+    if (serviceId) {
+      navigate(`/services/${serviceId}`);
+    } else {
+      console.error('Service has no ID:', service);
+    }
   };
 
   if (loading) {
