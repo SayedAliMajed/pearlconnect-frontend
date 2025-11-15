@@ -1,5 +1,4 @@
-/* PearlConnect Header Styles - Amazon-inspired with PearlConnect branding */
-/* Updated: Logo left corner, items right edge positioning - v2 */
+/* PearlConnect Header Styles - Responsive Flexbox Layout */
 
 .pc-header {
   position: sticky;
@@ -13,8 +12,6 @@
 .pc-header-top {
   background-color: var(--primary-teal);
   padding: var(--spacing-xs) 0;
-  position: relative;
-  width: 100%;
 }
 
 .pc-header-container {
@@ -22,19 +19,15 @@
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  justify-content: space-between;
   padding: 0 var(--spacing-md);
   min-height: 60px;
-  position: relative;
+  gap: var(--spacing-md);
 }
 
 /* Logo Section */
 .pc-header-logo {
-  position: absolute !important;
-  left: var(--spacing-sm) !important; /* Closer to left edge */
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  z-index: 1001 !important;
+  flex-shrink: 0;
 }
 
 .pc-logo-link {
@@ -137,11 +130,15 @@
 
 /* Account Section */
 .pc-header-account {
-  position: absolute !important;
-  right: 112px !important; /* Position after cart */
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  z-index: 1001 !important;
+  flex-shrink: 0;
+}
+
+/* Header Right Section */
+.pc-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-shrink: 0;
 }
 
 .pc-account-section {
@@ -228,11 +225,7 @@
 
 /* Returns & Orders */
 .pc-header-returns {
-  position: absolute !important;
-  right: 248px !important; /* Position before account section */
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  z-index: 1001 !important;
+  flex-shrink: 0;
 }
 
 .pc-returns-link {
@@ -263,11 +256,7 @@
 
 /* Cart */
 .pc-header-cart {
-  position: absolute !important;
-  right: var(--spacing-md) !important; /* Right edge (corner) */
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  z-index: 1001 !important;
+  flex-shrink: 0;
 }
 
 .pc-cart-link {
@@ -313,11 +302,7 @@
 
 /* Mobile Menu Toggle */
 .pc-mobile-menu-toggle {
-  position: absolute !important;
-  right: 384px !important; /* Position before cart */
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  z-index: 1001 !important;
+  flex-shrink: 0;
   display: none;
   background: none;
   border: none;
@@ -418,10 +403,11 @@
 
   .pc-header-search {
     position: absolute;
-    left: 80px; /* Position after logo */
-    right: 450px; /* Leave space for mobile menu */
+    left: 80px;
+    right: 120px;
     margin: 0;
     max-width: none;
+    z-index: 1000;
   }
 
   .pc-mobile-menu-toggle {
@@ -448,15 +434,6 @@
   .pc-account-button {
     min-width: auto;
     padding: var(--spacing-xs);
-  }
-
-  /* Adjust positioning for mobile */
-  .pc-header-cart {
-    right: 280px;
-  }
-
-  .pc-mobile-menu-toggle {
-    right: 360px;
   }
 }
 
