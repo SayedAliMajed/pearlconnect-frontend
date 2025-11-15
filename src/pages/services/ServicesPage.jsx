@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import Container from '../../components/ui/Container';
 import Card from '../../components/ui/Card';
-import { popularServices, featuredCategories, formatPrice } from '../../data/services';
+import { popularServices, featuredCategories, formatPrice } from '../../test/fixtures/test-services';
 import { fetchServices } from '../../services/bookings';
 
 const ServicesPage = () => {
+  const navigate = useNavigate();
   const [services, setServices] = useState([]);
   const [filteredServices, setFilteredServices] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -15,15 +17,21 @@ const ServicesPage = () => {
     const loadServices = async () => {
       try {
         // Try to fetch from API first
-        const apiServices = await fetchServices();
-        if (apiServices && apiServices.length > 0) {
+        const apiResponse = await fetchServices();
+        const apiServices = apiResponse?.services || (Array.isArray(apiResponse) ? apiResponse : []);
+
+        console.log('Services Page - fetchServices returned:', Array.isArray(apiServices) ? `${apiServices.length} services` : apiServices);
+
+        if (apiServices && Array.isArray(apiServices) && apiServices.length > 0) {
+          console.log('✅ Services Page - Showing real API services');
           setServices(apiServices);
         } else {
+          console.log('⚠️ Services Page - Falling back to test data');
           // Fallback to static data
           setServices(popularServices);
         }
       } catch (error) {
-        console.log('Using static data due to API error:', error);
+        console.log('Services Page - API error, using test data:', error.message);
         // Fallback to static data
         setServices(popularServices);
       } finally {
@@ -57,8 +65,12 @@ const ServicesPage = () => {
   }, [services, selectedCategory, searchQuery]);
 
   const handleServiceClick = (service) => {
-    // Navigate to service detail page or open booking modal
-    console.log('Service clicked:', service);
+    const serviceId = service._id || service.id;
+    if (serviceId) {
+      navigate(`/services/${serviceId}`);
+    } else {
+      console.error('Service has no ID:', service);
+    }
   };
 
   if (loading) {
@@ -137,7 +149,13 @@ const ServicesPage = () => {
                     onClick={() => handleServiceClick(service)}
                   >
                     <img
-                      src={service.image || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=297&h=167&fit=crop'}
+                      src={
+                        // For API services (have _id): check service.images array
+                        service._id
+                          ? (service.images?.[0]?.url || service.images?.[0] || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=297&h=167&fit=crop')
+                          // For test services (have id): use service.image
+                          : (service.image || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=297&h=167&fit=crop')
+                      }
                       alt={service.title}
                       className="ui-card__image"
                     />

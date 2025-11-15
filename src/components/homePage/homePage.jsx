@@ -1,21 +1,77 @@
 // src/components/homePage/homePage.jsx
 
 import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import Container from '../ui/Container';
 import Card from '../ui/Card';
-import { popularServices, featuredCategories, formatPrice } from '../../data/services';
+import { popularServices, featuredCategories, formatPrice } from '../../test/fixtures/test-services';
+import { fetchServices } from '../../services/bookings';
 import './homePage.css';
 import SearchBar from './searchBar';
 
 const HomePage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const navigate = useNavigate();
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const loadServices = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        console.log('🔄 Homepage: Token check -', !!token);
+
+        if (token) {
+          // Try to fetch real services if user is authenticated
+          console.log('👤 User authenticated, attempting to fetch all services...');
+          const apiResponse = await fetchServices();
+          const apiServices = apiResponse?.services || (Array.isArray(apiResponse) ? apiResponse : []);
+          console.log('📋 fetchServices returned:', Array.isArray(apiServices) ? `${apiServices.length} services` : apiServices);
+
+          if (apiServices && Array.isArray(apiServices) && apiServices.length > 0) {
+            console.log(`✅ Found ${apiServices.length} real services, showing first 6:`, apiServices.slice(0, 3).map(s => `${s.title} (${s._id})`));
+            // Show real API services (limit to 6 for homepage display)
+            setServices(apiServices.slice(0, 6));
+            return;
+          } else {
+            console.log('⚠️ No API services found or empty response');
+          }
+        } else {
+          console.log('🚫 No authentication token found');
+        }
+
+        // Fallback to static test data if not authenticated or no API services
+        console.log('📚 Showing test data as fallback');
+        setServices(popularServices);
+
+      } catch (error) {
+        console.log('💥 Error loading services:', error.message);
+        // Always fall back to static test data on any error
+        setServices(popularServices);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadServices();
+  }, []);
 
   const handleCategoryClick = (categoryName) => {
     console.log('Selected category:', categoryName);
   };
 
   const hasResults = searchResults.length > 0;
+  const handleServiceClick = (service) => {
+    const serviceId = service._id || service.id;
+    if (serviceId) {
+      navigate(`/services/${serviceId}`);
+    } else {
+      console.error('Service has no ID:', service);
+    }
+  };
 
   return (
     <div className="homepage">
@@ -87,28 +143,41 @@ const HomePage = () => {
           <h2 className="section-title">Popular Services</h2>
           <p className="section-subtitle">Highly rated services from trusted professionals</p>
 
-          <div className="services-grid">
-            {popularServices.map(service => (
-              <Card
-                key={service.id}
-                variant="service"
-                layout="wireframe"
-                className="service-card"
-              >
-                <img
-                  src={service.image}
-                  alt={service.title}
-                  className="ui-card__image"
-                />
-                <div className="ui-card__content">
-                  <h3 className="ui-card__title">{service.title}</h3>
-                  <p className="ui-card__subtitle">{service.subtitle}</p>
-                  <div className="ui-card__price">{formatPrice(service.price, service.currency)}</div>
-                  <button className="ui-card__button">View Details</button>
-                </div>
-              </Card>
-            ))}
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+              <p>Loading services...</p>
+            </div>
+          ) : (
+            <div className="services-grid">
+              {services.map(service => (
+                <Card
+                  key={service._id || service.id}
+                  variant="service"
+                  layout="wireframe"
+                  className="service-card"
+                  onClick={() => handleServiceClick(service)}
+                >
+                  <img
+                    src={
+                      // For API services (have _id): check service.images array
+                      service._id
+                        ? (service.images?.[0]?.url || service.images?.[0])
+                        // For test services (have id): use service.image
+                        : service.image
+                    }
+                    alt={service.title}
+                    className="ui-card__image"
+                  />
+                  <div className="ui-card__content">
+                    <h3 className="ui-card__title">{service.title}</h3>
+                    <p className="ui-card__subtitle">{service.subtitle}</p>
+                    <div className="ui-card__price">{formatPrice(service.price, service.currency)}</div>
+                    <button className="ui-card__button">View Details</button>
+                  </div>
+                </Card>
+              ))}
           </div>
+          )}
         </Container>
       </section>
 

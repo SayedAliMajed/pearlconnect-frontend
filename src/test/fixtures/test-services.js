@@ -1,4 +1,8 @@
-// Service data for popular services with BD currency pricing
+// Test/Fixture data for development and UI testing
+// This data is used when backend services are not available
+// DO NOT use in production - all real data comes from the backend API
+
+// Test service data for popular services with BD currency pricing
 export const popularServices = [
   {
     id: 1,
