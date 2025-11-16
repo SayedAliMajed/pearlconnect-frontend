@@ -16,12 +16,6 @@ const LandingPage = () => {
               <span className="text-xl font-bold text-gray-900">PearlConnect</span>
             </div>
             <nav className="hidden md:flex space-x-8">
-              <Link to="/services" className="text-gray-700 hover:text-teal-600 transition">
-                Services
-              </Link>
-              <Link to="/categories" className="text-gray-700 hover:text-teal-600 transition">
-                Categories
-              </Link>
               <Link to="/sign-up" className="text-gray-700 hover:text-teal-600 transition">
                 Become a Pro
               </Link>
