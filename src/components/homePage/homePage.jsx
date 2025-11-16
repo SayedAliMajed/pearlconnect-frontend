@@ -173,44 +173,42 @@ const HomePage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center mb-4">
-                <img alt="PearlConnect Logo" className="h-6 w-6 mr-2" src="/img/logo.png" />
-                <span className="text-lg font-bold">PearlConnect</span>
+      <footer className="footer">
+        <div className="footer-container">
+          <div className="footer-content">
+            <div className="footer-section">
+              <div className="footer-logo">
+                <img alt="PearlConnect Logo" src="/img/logo.png" />
+                <span>PearlConnect</span>
               </div>
-              <p className="text-gray-400">
-                Connecting communities in Bahrain, one service at a time.
-              </p>
+              <p>Connecting communities in Bahrain, one service at a time.</p>
             </div>
-            <div>
-              <h3 className="font-semibold mb-4">Company</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link to="/about" className="hover:text-white">About Us</Link></li>
-                <li><Link to="/careers" className="hover:text-white">Careers</Link></li>
-                <li><Link to="/contact" className="hover:text-white">Contact</Link></li>
+            <div className="footer-section">
+              <h3>Company</h3>
+              <ul>
+                <li><Link to="/about">About Us</Link></li>
+                <li><Link to="/careers">Careers</Link></li>
+                <li><Link to="/contact">Contact</Link></li>
               </ul>
             </div>
-            <div>
-              <h3 className="font-semibold mb-4">Services</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link to="/services" className="hover:text-white">Find Services</Link></li>
-                <li><Link to="/categories" className="hover:text-white">Browse Categories</Link></li>
-                <li><Link to="/sign-up" className="hover:text-white">Become a Pro</Link></li>
+            <div className="footer-section">
+              <h3>Services</h3>
+              <ul>
+                <li><Link to="/services">Find Services</Link></li>
+                <li><Link to="/categories">Browse Categories</Link></li>
+                <li><Link to="/sign-up">Become a Pro</Link></li>
               </ul>
             </div>
-            <div>
-              <h3 className="font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link to="/help" className="hover:text-white">Help Center</Link></li>
-                <li><Link to="/terms" className="hover:text-white">Terms of Service</Link></li>
-                <li><Link to="/privacy" className="hover:text-white">Privacy Policy</Link></li>
+            <div className="footer-section">
+              <h3>Support</h3>
+              <ul>
+                <li><Link to="/help">Help Center</Link></li>
+                <li><Link to="/terms">Terms of Service</Link></li>
+                <li><Link to="/privacy">Privacy Policy</Link></li>
               </ul>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
+          <div className="footer-bottom">
             <p>&copy; 2024 PearlConnect Bahrain. All rights reserved.</p>
           </div>
         </div>
