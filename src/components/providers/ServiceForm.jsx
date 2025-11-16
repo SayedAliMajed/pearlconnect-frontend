@@ -24,9 +24,9 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
       tuesday: { enabled: false, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
       wednesday: { enabled: false, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
       thursday: { enabled: false, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
-      friday: { enabled: false, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
-      saturday: { enabled: false, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
-      sunday: { enabled: true, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' }
+      friday: { enabled: true, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
+      saturday: { enabled: true, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
+      sunday: { enabled: false, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' }
     },
     appointmentDuration: 60, // minutes
     bufferTime: 15, // minutes between appointments
@@ -153,7 +153,7 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
         ...acc,
         [day]: {
           ...sourceData,
-          enabled: day === 'sunday' ? true : sourceData.enabled // Keep Sunday enabled by default
+          enabled: day === 'friday' || day === 'saturday' ? true : sourceData.enabled // Keep Bahrain weekend by default
         }
       }), {})
     }));
@@ -592,11 +592,11 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
                           <span className="checkmark"></span>
                           {day.charAt(0).toUpperCase() + day.slice(1)}
                         </label>
-                        {day === 'sunday' && (
+                        {day === 'friday' && (
                           <button
                             type="button"
                             className="copy-to-all"
-                            onClick={() => copyToAllDays('sunday')}
+                            onClick={() => copyToAllDays('friday')}
                           >
                             Copy to All Days
                           </button>
