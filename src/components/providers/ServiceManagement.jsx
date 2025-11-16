@@ -225,7 +225,7 @@ const ServiceManagement = () => {
                   <h4>{service.title}</h4>
                   <p className="service-description">{service.description}</p>
                   <div className="service-meta">
-                    <span className="service-category">{service.category}</span>
+                    <span className="service-category">{service.category?.name || service.category?.title || service.category || 'N/A'}</span>
                     <span className="service-price">
                       {service.currency || 'BD'} {service.price}
                     </span>
