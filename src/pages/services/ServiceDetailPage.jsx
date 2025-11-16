@@ -5,6 +5,8 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { AuthContext } from '../../contexts/AuthContext';
 import { formatPrice } from '../../test/fixtures/test-services';
+import { fetchProviderAvailability } from '../../services/bookings';
+import { parseBahrainDate, generateTimeSlots, getTodayDateString, formatTimeTo12Hour, isSameDay } from '../../utils/dateUtils';
 import './ServiceDetailPage.css';
 
 const ServiceDetailPage = () => {
@@ -19,19 +21,20 @@ const ServiceDetailPage = () => {
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [bookingData, setBookingData] = useState({ date: '', time: '' });
   const [availableTimes, setAvailableTimes] = useState([]);
+  const [providerAvailability, setProviderAvailability] = useState([]);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewData, setReviewData] = useState({ rating: 5, comment: '' });
 
   // Load service details
   useEffect(() => {
     fetchServiceDetails();
-    fetchAvailableTimes();
   }, [serviceId]);
 
-  // Load reviews when service is loaded
+  // Load reviews and availability when service is loaded
   useEffect(() => {
     if (service) {
       fetchReviews();
+      fetchServiceAvailabilityData();
     }
   }, [service]);
 
@@ -131,14 +134,103 @@ const ServiceDetailPage = () => {
     }
   };
 
-  const fetchAvailableTimes = async () => {
+  const fetchServiceAvailabilityData = async () => {
+    if (!service) return;
+
     try {
-      // We'll implement this once we have the provider data
-      setAvailableTimes(['9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM']);
+      console.log('Fetching service availability for service:', service._id);
+      const serviceId = service._id;
+      const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/availability/service/${serviceId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const availabilityData = await response.json();
+        console.log('Service availability received:', availabilityData);
+        setProviderAvailability(Array.isArray(availabilityData) ? availabilityData : [availabilityData]);
+      } else {
+        console.log('No availability set for this service yet');
+        setProviderAvailability([]);
+      }
     } catch (err) {
-      console.error('Error fetching availability:', err);
-      setAvailableTimes([]);
+      console.error('Error fetching service availability:', err);
+      setProviderAvailability([]);
     }
+  };
+
+  const generateAvailableTimes = (selectedDate) => {
+    console.log('🔍 generateAvailableTimes called with date:', selectedDate);
+    console.log('📊 Current providerAvailability:', providerAvailability);
+
+    if (!providerAvailability.length) {
+      console.log('❌ No provider availability data available');
+      setAvailableTimes([]);
+      return;
+    }
+
+    // Try to match the selected date with availability slots
+    // Handle both DD/MM/YYYY and YYYY-MM-DD formats
+    const selectedDateObj = parseBahrainDate(selectedDate);
+    console.log('📅 Parsed selected date:', selectedDateObj);
+
+    if (!selectedDateObj) {
+      console.log('❌ Could not parse selected date');
+      setAvailableTimes([]);
+      return;
+    }
+
+    // Find matching availability slot for this date
+    let dayAvailability = null;
+    let foundSlotInfo = null;
+
+    for (const slot of providerAvailability) {
+      const slotDate = parseBahrainDate(slot.date);
+      if (slotDate && isSameDay(slotDate, selectedDateObj)) {
+        dayAvailability = slot;
+        foundSlotInfo = slot;
+        break;
+      }
+    }
+
+    console.log('🔎 Found availability slot for date:', foundSlotInfo);
+
+    if (!dayAvailability) {
+      console.log('❌ No availability found for selected date:', selectedDate);
+      setAvailableTimes([]);
+      return;
+    }
+
+    console.log('✅ Found availability for date:', selectedDate, dayAvailability);
+
+    // Generate time slots from availability
+    const openingTime = dayAvailability.openingTime || dayAvailability.startTime;
+    const closingTime = dayAvailability.closingTime || dayAvailability.endTime;
+
+    console.log('⏰ Opening time:', openingTime, 'Closing time:', closingTime);
+
+    if (!openingTime || !closingTime) {
+      console.log('❌ Missing opening or closing time in availability data');
+      setAvailableTimes([]);
+      return;
+    }
+
+    const duration = dayAvailability.duration || 60; // minutes
+    console.log('⏱️ Duration:', duration, 'minutes');
+
+    // Use the new generateTimeSlots utility
+    const slots = generateTimeSlots(openingTime, closingTime, duration);
+    console.log('🕐 Generated time slots:', slots);
+
+    setAvailableTimes(slots);
+  };
+
+  const handleDateChange = (e) => {
+    const newDate = e.target.value;
+    setBookingData({ ...bookingData, date: newDate, time: '' }); // Reset time when date changes
+    generateAvailableTimes(newDate);
   };
 
   const handleBookingSubmit = async () => {
@@ -157,7 +249,7 @@ const ServiceDetailPage = () => {
       console.log('Submitting booking...');
       const payload = {
         serviceId: service._id,
-        providerId: service.providerId || service.provider,
+        providerId: service.providerId || service.provider._id,
         customerId: user._id || user.id,
         date: bookingData.date,
         time: bookingData.time,
@@ -170,10 +262,10 @@ const ServiceDetailPage = () => {
       const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/bookings`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: new URLSearchParams(payload).toString()
+        body: JSON.stringify(payload)
       });
 
       console.log('Booking response status:', response.status);
@@ -366,8 +458,8 @@ const ServiceDetailPage = () => {
                     <input
                       type="date"
                       value={bookingData.date}
-                      onChange={(e) => setBookingData({ ...bookingData, date: e.target.value })}
-                      min={new Date().toISOString().split('T')[0]}
+                      onChange={handleDateChange}
+                      min={getTodayDateString()}
                       required
                     />
                   </div>
@@ -380,7 +472,9 @@ const ServiceDetailPage = () => {
                       disabled={!bookingData.date}
                       required
                     >
-                      <option value="">Select Time</option>
+                      <option value="">
+                        {bookingData.date && providerAvailability.length > 0 ? 'Select Time' : bookingData.date ? 'Provider has no availability for this date' : 'Select a date first'}
+                      </option>
                       {availableTimes.map(time => (
                         <option key={time} value={time}>{time}</option>
                       ))}

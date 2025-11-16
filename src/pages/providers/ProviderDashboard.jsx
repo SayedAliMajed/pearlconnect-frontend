@@ -4,7 +4,6 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { AuthContext } from '../../contexts/AuthContext';
 import ServiceManagement from '../../components/providers/ServiceManagement';
-import AvailabilityCalendar from '../../components/providers/AvailabilityCalendar';
 
 const ProviderDashboard = () => {
   const { user } = useContext(AuthContext);
@@ -40,7 +39,6 @@ const ProviderDashboard = () => {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: '📊' },
     { id: 'services', label: 'My Services', icon: '🛠️' },
-    { id: 'availability', label: 'Availability', icon: '⏰' },
     { id: 'bookings', label: 'Bookings', icon: '📅' },
     { id: 'reviews', label: 'Reviews', icon: '⭐' }
   ];
@@ -130,12 +128,6 @@ const ProviderDashboard = () => {
                   </Button>
                   <Button
                     variant="secondary"
-                    onClick={() => setActiveTab('availability')}
-                  >
-                    ⏰ Set Availability
-                  </Button>
-                  <Button
-                    variant="secondary"
                     onClick={() => setActiveTab('bookings')}
                   >
                     📅 View Bookings
@@ -147,10 +139,6 @@ const ProviderDashboard = () => {
 
           {activeTab === 'services' && (
             <ServiceManagement />
-          )}
-
-          {activeTab === 'availability' && (
-            <AvailabilityCalendar />
           )}
 
           {activeTab === 'bookings' && (

@@ -17,6 +17,22 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
     images: [],
     active: true
   });
+  const [availabilityData, setAvailabilityData] = useState({
+    scheduleType: 'weekly', // 'weekly' or 'custom'
+    workingHours: {
+      monday: { enabled: false, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
+      tuesday: { enabled: false, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
+      wednesday: { enabled: false, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
+      thursday: { enabled: false, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
+      friday: { enabled: false, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
+      saturday: { enabled: false, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
+      sunday: { enabled: true, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' }
+    },
+    appointmentDuration: 60, // minutes
+    bufferTime: 15, // minutes between appointments
+    minimumAdvanceBooking: 60 // minutes
+  });
+  const [availabilityCollapsed, setAvailabilityCollapsed] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -105,6 +121,44 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
     setImagePreview(newPreview);
   };
 
+  const handleAvailabilityChange = (field, value, day = null) => {
+    if (day) {
+      // Updating a specific day's availability
+      setAvailabilityData(prev => ({
+        ...prev,
+        workingHours: {
+          ...prev.workingHours,
+          [day]: {
+            ...prev.workingHours[day],
+            [field]: value
+          }
+        }
+      }));
+    } else {
+      // Updating a global availability field
+      setAvailabilityData(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    }
+  };
+
+  const copyToAllDays = (sourceDay) => {
+    const sourceData = availabilityData.workingHours[sourceDay];
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+    setAvailabilityData(prev => ({
+      ...prev,
+      workingHours: days.reduce((acc, day) => ({
+        ...acc,
+        [day]: {
+          ...sourceData,
+          enabled: day === 'sunday' ? true : sourceData.enabled // Keep Sunday enabled by default
+        }
+      }), {})
+    }));
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -120,7 +174,7 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    if (!validateForm() || !validateAvailability()) {
       return;
     }
 
@@ -175,6 +229,7 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
       console.log('Auth token exists:', !!localStorage.getItem('token'));
 
       let response;
+      let serviceResult;
       if (service) {
         console.log('🔄 UPDATE REQUEST DEBUG:', {
           serviceId: service._id || service.id,
@@ -209,6 +264,7 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
           },
           body: JSON.stringify(serviceData)
         });
+        serviceResult = await response.json();
       } else {
         // Create new service
         response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/services`, {
@@ -219,12 +275,10 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
           },
           body: JSON.stringify(serviceData)
         });
+        serviceResult = await response.json();
       }
 
-      if (response.ok) {
-        const result = await response.json();
-        onSuccess && onSuccess(result);
-      } else {
+      if (!response.ok) {
         let errorMessage = 'Unknown error';
         try {
           const error = await response.json();
@@ -244,6 +298,38 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
         });
 
         alert(`Failed to ${service ? 'update' : 'create'} service: ${errorMessage}`);
+        return;
+      }
+
+      // Service created/updated successfully
+      const serviceId = service?.id || service?._id || serviceResult.service?._id || serviceResult._id;
+
+      // Now submit availability data for the service
+      console.log('📅 Submitting availability for service:', serviceId);
+      console.log('📊 Availability data:', availabilityData);
+
+      const availabilityResponse = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/availability/service/${serviceId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(availabilityData)
+      });
+
+      if (availabilityResponse.ok) {
+        console.log('✅ Service availability saved successfully');
+        const result = service ? serviceResult : serviceResult;
+        onSuccess && onSuccess(result);
+      } else {
+        console.log('⚠️ Service created but availability failed. This is not critical.');
+        const errorData = await availabilityResponse.json().catch(() => ({ err: 'Unknown error' }));
+        console.error('Availability save error:', errorData);
+
+        // Still call onSuccess since the service was created successfully
+        const result = service ? serviceResult : serviceResult;
+        onSuccess && onSuccess(result);
+        alert('Service created successfully, but there was an issue saving availability settings. You can update them later from your dashboard.');
       }
     } catch (error) {
       console.error('Error saving service:', error);
@@ -251,6 +337,36 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const validateAvailability = () => {
+    // At least one day should be enabled
+    const hasEnabledDay = Object.values(availabilityData.workingHours).some(day => day.enabled);
+
+    if (!hasEnabledDay) {
+      alert('Please enable at least one day for your availability schedule.');
+      setAvailabilityCollapsed(false); // Expand availability section
+      return false;
+    }
+
+    // Check if enabled days have valid time ranges
+    for (const [day, config] of Object.entries(availabilityData.workingHours)) {
+      if (config.enabled) {
+        if (!config.startTime || !config.endTime) {
+          alert(`Please set both start and end times for ${day.charAt(0).toUpperCase() + day.slice(1)}.`);
+          setAvailabilityCollapsed(false);
+          return false;
+        }
+
+        if (config.startTime >= config.endTime) {
+          alert(`End time must be after start time for ${day.charAt(0).toUpperCase() + day.slice(1)}.`);
+          setAvailabilityCollapsed(false);
+          return false;
+        }
+      }
+    }
+
+    return true;
   };
 
   return (
@@ -418,6 +534,125 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
                 Service is active and available for booking
               </label>
             </div>
+          </div>
+
+          {/* Availability - Collapsible Section */}
+          <div className="form-section availability-section">
+            <div className="section-header" onClick={() => setAvailabilityCollapsed(!availabilityCollapsed)}>
+              <h4>Availability Schedule</h4>
+              <button type="button" className="collapse-toggle">
+                {availabilityCollapsed ? '▼' : '▲'}
+              </button>
+            </div>
+
+            {!availabilityCollapsed && (
+              <div className="availability-content">
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="appointmentDuration">Appointment Duration (minutes)</label>
+                    <Input
+                      id="appointmentDuration"
+                      name="appointmentDuration"
+                      type="number"
+                      value={availabilityData.appointmentDuration}
+                      onChange={(e) => handleAvailabilityChange('appointmentDuration', parseInt(e.target.value))}
+                      placeholder="60"
+                      min="15"
+                      max="480"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="minimumAdvanceBooking">Minimum Advance Booking (minutes)</label>
+                    <Input
+                      id="minimumAdvanceBooking"
+                      name="minimumAdvanceBooking"
+                      type="number"
+                      value={availabilityData.minimumAdvanceBooking}
+                      onChange={(e) => handleAvailabilityChange('minimumAdvanceBooking', parseInt(e.target.value))}
+                      placeholder="60"
+                      min="0"
+                    />
+                  </div>
+                </div>
+
+                <div className="weekly-schedule">
+                  <h5>Weekly Schedule</h5>
+                  <p>Set your working hours for each day of the week</p>
+
+                  {Object.entries(availabilityData.workingHours).map(([day, config]) => (
+                    <div key={day} className="schedule-day">
+                      <div className="day-header">
+                        <label className="day-label">
+                          <input
+                            type="checkbox"
+                            checked={config.enabled}
+                            onChange={(e) => handleAvailabilityChange('enabled', e.target.checked, day)}
+                          />
+                          <span className="checkmark"></span>
+                          {day.charAt(0).toUpperCase() + day.slice(1)}
+                        </label>
+                        {day === 'sunday' && (
+                          <button
+                            type="button"
+                            className="copy-to-all"
+                            onClick={() => copyToAllDays('sunday')}
+                          >
+                            Copy to All Days
+                          </button>
+                        )}
+                      </div>
+
+                      {config.enabled && (
+                        <div className="day-times">
+                          <div className="time-row">
+                            <div className="time-group">
+                              <label>Start Time</label>
+                              <input
+                                type="time"
+                                value={config.startTime}
+                                onChange={(e) => handleAvailabilityChange('startTime', e.target.value, day)}
+                                className="time-input"
+                              />
+                            </div>
+                            <div className="time-group">
+                              <label>End Time</label>
+                              <input
+                                type="time"
+                                value={config.endTime}
+                                onChange={(e) => handleAvailabilityChange('endTime', e.target.value, day)}
+                                className="time-input"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="time-row">
+                            <div className="time-group">
+                              <label>Break Start (optional)</label>
+                              <input
+                                type="time"
+                                value={config.breakStart}
+                                onChange={(e) => handleAvailabilityChange('breakStart', e.target.value, day)}
+                                className="time-input"
+                              />
+                            </div>
+                            <div className="time-group">
+                              <label>Break End (optional)</label>
+                              <input
+                                type="time"
+                                value={config.breakEnd}
+                                onChange={(e) => handleAvailabilityChange('breakEnd', e.target.value, day)}
+                                className="time-input"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
