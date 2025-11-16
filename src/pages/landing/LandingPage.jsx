@@ -2,218 +2,225 @@ import { Link } from 'react-router';
 
 const LandingPage = () => {
   return (
-    <div className="font-display bg-white dark:bg-background-dark">
-      <div className="layout-container flex h-full grow flex-col">
-        {/* Header/Navigation */}
-        <header className="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200/80 bg-white/80 px-4 py-3 backdrop-blur-sm dark:border-gray-700/80 dark:bg-background-dark/80 sm:px-6 lg:px-10">
-          <Link to="/" className="flex items-center gap-2 text-gray-900 dark:text-white">
-            <img
-              alt="PearlConnect Logo"
-              className="h-8"
-              src="/img/logo.png"
-            />
-            <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">PearlConnect</h2>
-          </Link>
-          <div className="flex flex-1 items-center justify-end gap-4 sm:gap-6">
-            <div className="hidden items-center gap-6 sm:flex">
-              <Link className="text-sm font-medium leading-normal text-gray-800 hover:text-primary dark:text-gray-200 dark:hover:text-primary" to="/services">
-                Find Services
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-4">
+              <img
+                alt="PearlConnect Logo"
+                className="h-8 w-auto"
+                src="/img/logo.png"
+              />
+              <span className="text-xl font-bold text-gray-900">PearlConnect</span>
+            </div>
+            <nav className="hidden md:flex space-x-8">
+              <Link to="/services" className="text-gray-700 hover:text-teal-600 transition">
+                Services
               </Link>
-              <Link className="text-sm font-medium leading-normal text-gray-800 hover:text-primary dark:text-gray-200 dark:hover:text-primary" to="/sign-up">
+              <Link to="/categories" className="text-gray-700 hover:text-teal-600 transition">
+                Categories
+              </Link>
+              <Link to="/sign-up" className="text-gray-700 hover:text-teal-600 transition">
                 Become a Pro
               </Link>
-            </div>
+            </nav>
             <Link to="/sign-in">
-              <button className="flex h-10 min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-gray-100 px-4 text-sm font-bold leading-normal tracking-[0.015em] text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700">
-                <span className="truncate">Log In</span>
+              <button className="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-md text-gray-900 transition">
+                Login
               </button>
             </Link>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <main className="flex flex-col">
-          {/* Hero Section */}
-          <div className="w-full max-w-5xl px-4 py-5 sm:px-6 lg:px-8 mx-auto">
-            <div className="@container">
-              <div className="py-5 @[480px]:py-8">
-                <div className="flex min-h-[480px] flex-col items-center justify-center gap-6 bg-cover bg-center bg-no-repeat p-4 text-center @[480px]:gap-8 @[480px]:rounded-xl"
-                     style={{
-                       backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.5) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuAmIy3mzad21AEh3dWnJ-L1_Ef8hW27qppsK2UYuCmaXBkZOxSMCyxvQwq8arwUn9ky4EHi85GjCqWd02WSQuMQYxRDCUkn49lCzheUL5AUKcwIay8rbjMDuTOwOKWxdbcmlAvsBqjmnLHIRyUN2Qn0cDtNI5lHAs-yVgG91EmtgytOilkrS_g41AsgXEz283SYCNgB02JO2J1LZAaapoHX_p1RKwk_x6qyBPOEdoe7tUXre5DbYV7KKB8TbrccjbDHilUBgDvlXyFj");`
-                     }}>
-                  <div className="flex flex-col gap-2">
-                    <h1 className="text-4xl font-black leading-tight tracking-[-0.033em] text-white @[480px]:text-5xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em]">
-                      Where Local Experts and Neighbors Meet
-                    </h1>
-                    <h2 className="max-w-xl text-sm font-normal leading-normal text-white @[480px]:text-base @[480px]:font-normal @[480px]:leading-normal">
-                      The trusted platform connecting you with skilled professionals for any service you need, right here in Bahrain.
-                    </h2>
-                  </div>
-                  <Link to="/sign-up">
-                    <button className="flex h-10 min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-primary px-4 text-sm font-bold leading-normal tracking-[0.015em] text-white hover:bg-primary/90 @[480px]:h-12 @[480px]:px-5 @[480px]:text-base @[480px]:font-bold @[480px]:leading-normal @[480px]:tracking-[0.015em]">
-                      <span className="truncate">Join Bahrain's Service Network</span>
-                    </button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Trust Section */}
-          <div className="flex flex-col gap-10 px-4 py-10 @container max-w-5xl mx-auto">
-            <div className="flex flex-col items-center gap-4 text-center">
-              <h1 className="max-w-[720px] text-[32px] font-bold leading-tight tracking-light text-gray-900 dark:text-white @[480px]:text-4xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em]">
-                A Platform Built on Trust
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="bg-gradient-to-r from-green-600 to-blue-600 text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div className="text-center">
+              <h1 className="text-4xl md:text-6xl font-bold mb-6">
+                Welcome to PearlConnect Bahrain
               </h1>
-              <p className="max-w-[720px] text-base font-normal leading-normal text-gray-600 dark:text-gray-300">
-                We prioritize your safety and satisfaction with every connection made on PearlConnect.
+              <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
+                Connect with trusted local professionals for all your service needs across Bahrain.
               </p>
-            </div>
-            <div className="grid grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="flex flex-1 flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-background-dark/50">
-                <span className="material-symbols-outlined text-primary" style={{ fontSize: '28px' }}>verified_user</span>
-                <div className="flex flex-col gap-1">
-                  <h2 className="text-base font-bold leading-tight text-gray-900 dark:text-white">Verified Bahraini Professionals</h2>
-                  <p className="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">Every service provider is vetted and verified to ensure quality and reliability.</p>
-                </div>
-              </div>
-              <div className="flex flex-1 flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-background-dark/50">
-                <span className="material-symbols-outlined text-primary" style={{ fontSize: '28px' }}>credit_card</span>
-                <div className="flex flex-col gap-1">
-                  <h2 className="text-base font-bold leading-tight text-gray-900 dark:text-white">Secure & Easy Payments</h2>
-                  <p className="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">Pay for services securely through our platform with complete peace of mind.</p>
-                </div>
-              </div>
-              <div className="flex flex-1 flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-background-dark/50">
-                <span className="material-symbols-outlined text-primary" style={{ fontSize: '28px' }}>support_agent</span>
-                <div className="flex flex-col gap-1">
-                  <h2 className="text-base font-bold leading-tight text-gray-900 dark:text-white">Dedicated 24/7 Bahrain Support</h2>
-                  <p className="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">Our local support team is always available to assist you with any questions.</p>
-                </div>
+              <div className="space-x-4">
+                <Link to="/sign-up">
+                  <button className="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
+                    Get Started
+                  </button>
+                </Link>
+                <Link to="/services">
+                  <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-green-600 transition">
+                    Find Services
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
+        </section>
 
-          {/* Services Section */}
-          <div className="my-10 rounded-xl bg-background-light py-10 dark:bg-black/20 max-w-5xl mx-auto">
-            <h2 className="px-4 pb-5 pt-5 text-center text-[22px] font-bold leading-tight tracking-[-0.015em] text-gray-900 dark:text-white">
-              Explore Services in Your Community
-            </h2>
-            <div className="grid grid-cols-2 gap-3 p-4 md:grid-cols-3">
-              <Link to="/services?category=Plumbing" className="flex flex-1 flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-background-dark/50 hover:border-primary/50 hover:bg-primary/5 transition-colors cursor-pointer">
-                <span className="material-symbols-outlined text-primary" style={{ fontSize: '24px' }}>home_repair_service</span>
-                <div className="flex flex-col gap-1">
-                  <h2 className="text-base font-bold leading-tight text-gray-900 dark:text-white">Home Maintenance</h2>
-                  <p className="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">Plumbing, electrical, and repairs.</p>
-                </div>
-              </Link>
-              <Link to="/services?category=Tutoring" className="flex flex-1 flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-background-dark/50 hover:border-primary/50 hover:bg-primary/5 transition-colors cursor-pointer">
-                <span className="material-symbols-outlined text-primary" style={{ fontSize: '24px' }}>school</span>
-                <div className="flex flex-col gap-1">
-                  <h2 className="text-base font-bold leading-tight text-gray-900 dark:text-white">Tutoring & Education</h2>
-                  <p className="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">Find expert tutors for all subjects.</p>
-                </div>
-              </Link>
-              <Link to="/services?category=Cleaning" className="flex flex-1 flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-background-dark/50 hover:border-primary/50 hover:bg-primary/5 transition-colors cursor-pointer">
-                <span className="material-symbols-outlined text-primary" style={{ fontSize: '24px' }}>cleaning_services</span>
-                <div className="flex flex-col gap-1">
-                  <h2 className="text-base font-bold leading-tight text-gray-900 dark:text-white">Cleaning Services</h2>
-                  <p className="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400">Residential and commercial cleaning.</p>
-                </div>
-              </Link>
-              {/* Note: These service cards link to categories but the actual service filtering is handled by the services page */}
-            </div>
-          </div>
-
-          {/* Stats Section */}
-          <div className="px-4 py-16 max-w-5xl mx-auto">
-            <div className="flex flex-col items-center gap-4 text-center">
-              <h2 className="text-3xl font-bold leading-tight tracking-[-0.015em] text-gray-900 dark:text-white">
-                Trusted by Your Neighbors
+        {/* Trust Section */}
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Why Choose PearlConnect?
               </h2>
-              <p className="max-w-2xl text-gray-600 dark:text-gray-300">
-                Join a growing community of satisfied customers and professional service providers across Bahrain.
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                We make it easy to find and connect with skilled professionals in your community.
               </p>
             </div>
-            <div className="mt-10 grid grid-cols-1 gap-8 text-center sm:grid-cols-3">
-              <div className="flex flex-col items-center">
-                <p className="text-4xl font-extrabold text-primary">5,000+</p>
-                <p className="mt-1 text-base text-gray-600 dark:text-gray-300">Services Completed</p>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Verified Providers</h3>
+                <p className="text-gray-600">All professionals are vetted and verified for quality service.</p>
               </div>
-              <div className="flex flex-col items-center">
-                <p className="text-4xl font-extrabold text-primary">1,200+</p>
-                <p className="mt-1 text-base text-gray-600 dark:text-gray-300">Verified Pros</p>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Secure Payments</h3>
+                <p className="text-gray-600">Safe and convenient payment processing for all services.</p>
               </div>
-              <div className="flex flex-col items-center">
-                <p className="text-4xl font-extrabold text-primary">4.9/5</p>
-                <p className="mt-1 text-base text-gray-600 dark:text-gray-300">Average Rating</p>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 9.5a3 3 0 01-6 1.663.75.75 0 01-.75-1.25A4.5 4.5 0 1113 10.75 1 1 0 0114 10zm-5 3a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-2">24/7 Support</h3>
+                <p className="text-gray-600">Local Bahrain support team available to help anytime.</p>
               </div>
             </div>
           </div>
+        </section>
 
-          {/* Final CTA Section */}
-          <div className="my-10 flex flex-col items-center gap-6 rounded-lg bg-primary/20 p-8 text-center dark:bg-primary/30 max-w-5xl mx-auto">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Ready to Connect? Get Started Today.</h2>
-            <p className="max-w-xl text-gray-700 dark:text-gray-200">
-              Whether you need a service or want to offer your skills, PearlConnect is the place for you.
+        {/* Services Section */}
+        <section className="py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Popular Services in Bahrain
+              </h2>
+              <p className="text-lg text-gray-600">
+                Find professionals for the most common services in your area.
+              </p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                { name: 'Home Maintenance', icon: '🔧', category: 'Plumbing', desc: 'Plumbing, electrical, repairs' },
+                { name: 'Cleaning Services', icon: '🧹', category: 'Cleaning', desc: 'Home and office cleaning' },
+                { name: 'Tutoring', icon: '📚', category: 'Tutoring', desc: 'Academic support services' },
+                { name: 'Landscaping', icon: '🌳', category: 'Landscaping', desc: 'Garden and outdoor services' },
+                { name: 'Painting', icon: '🖌️', category: 'Painting', desc: 'Interior and exterior painting' },
+                { name: 'Electrician', icon: '⚡', category: 'Electrician', desc: 'Electrical installations and repairs' }
+              ].map((service) => (
+                <Link key={service.category} to={`/services?category=${service.category}`} className="block">
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition p-6">
+                    <div className="text-4xl mb-4">{service.icon}</div>
+                    <h3 className="text-xl font-semibold mb-2">{service.name}</h3>
+                    <p className="text-gray-600">{service.desc}</p>
+                    <div className="mt-4 text-green-600 font-medium">
+                      Find professionals →
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="py-16 bg-green-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid md:grid-cols-3 gap-8 text-center">
+              <div>
+                <div className="text-5xl font-bold text-green-600 mb-2">5,000+</div>
+                <div className="text-gray-600">Services Completed</div>
+              </div>
+              <div>
+                <div className="text-5xl font-bold text-green-600 mb-2">1,200+</div>
+                <div className="text-gray-600">Verified Professionals</div>
+              </div>
+              <div>
+                <div className="text-5xl font-bold text-green-600 mb-2">4.9/5</div>
+                <div className="text-gray-600">Average Rating</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16 bg-green-600 text-white">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Ready to Get Started?
+            </h2>
+            <p className="text-xl mb-8 opacity-90">
+              Join Bahrain's trusted service network today.
             </p>
             <Link to="/sign-up">
-              <button className="flex h-12 min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-primary px-5 text-base font-bold leading-normal tracking-[0.015em] text-white hover:bg-primary/90">
-                <span className="truncate">Join Bahrain's Service Network</span>
+              <button className="bg-white text-green-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-50 transition">
+                Join PearlConnect Bahrain
               </button>
             </Link>
           </div>
-        </main>
+        </section>
+      </main>
 
-        {/* Footer */}
-        <footer className="bg-background-light text-gray-600 dark:bg-black/20 dark:text-gray-400">
-          <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <div className="size-6 text-primary">
-                    <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M24 4C25.7818 14.2173 33.7827 22.2182 44 24C33.7827 25.7818 25.7818 33.7827 24 44C22.2182 33.7827 14.2173 25.7818 4 24C14.2173 22.2182 22.2182 14.2173 24 4Z" fill="currentColor"></path>
-                    </svg>
-                  </div>
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">PearlConnect</h2>
-                </div>
-                <p className="text-sm">Connecting communities in Bahrain, one service at a time.</p>
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center mb-4">
+                <img alt="PearlConnect Logo" className="h-6 w-6 mr-2" src="/img/logo.png" />
+                <span className="text-lg font-bold">PearlConnect</span>
               </div>
-              <div>
-                <h3 className="font-bold text-gray-900 dark:text-white">Company</h3>
-                <ul className="mt-4 space-y-2 text-sm">
-                  <li><Link className="hover:text-primary" to="/about">About Us</Link></li>
-                  <li><Link className="hover:text-primary" to="/careers">Careers</Link></li>
-                  <li><Link className="hover:text-primary" to="/press">Press</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900 dark:text-white">For You</h3>
-                <ul className="mt-4 space-y-2 text-sm">
-                  <li><Link className="hover:text-primary" to="/services">Find a Pro</Link></li>
-                  <li><Link className="hover:text-primary" to="/how-it-works">How it Works</Link></li>
-                  <li><Link className="hover:text-primary" to="/trust-safety">Trust & Safety</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900 dark:text-white">For Pros</h3>
-                <ul className="mt-4 space-y-2 text-sm">
-                  <li><Link className="hover:text-primary" to="/sign-up">Become a Pro</Link></li>
-                  <li><Link className="hover:text-primary" to="/pro-center">Pro Center</Link></li>
-                  <li><Link className="hover:text-primary" to="/community">Community</Link></li>
-                </ul>
-              </div>
+              <p className="text-gray-400">
+                Connecting communities in Bahrain, one service at a time.
+              </p>
             </div>
-            <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-gray-300 pt-8 dark:border-gray-700 sm:flex-row">
-              <p className="text-sm">© 2024 PearlConnect Bahrain. All rights reserved.</p>
-              <div className="flex space-x-4">
-                <Link className="hover:text-primary" to="/terms">Terms of Service</Link>
-                <Link className="hover:text-primary" to="/privacy">Privacy Policy</Link>
-              </div>
+            <div>
+              <h3 className="font-semibold mb-4">Company</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link to="/about" className="hover:text-white">About Us</Link></li>
+                <li><Link to="/careers" className="hover:text-white">Careers</Link></li>
+                <li><Link to="/contact" className="hover:text-white">Contact</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Services</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link to="/services" className="hover:text-white">Find Services</Link></li>
+                <li><Link to="/categories" className="hover:text-white">Browse Categories</Link></li>
+                <li><Link to="/sign-up" className="hover:text-white">Become a Pro</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Support</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link to="/help" className="hover:text-white">Help Center</Link></li>
+                <li><Link to="/terms" className="hover:text-white">Terms of Service</Link></li>
+                <li><Link to="/privacy" className="hover:text-white">Privacy Policy</Link></li>
+              </ul>
             </div>
           </div>
-        </footer>
-      </div>
+          <div className="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
+            <p>&copy; 2024 PearlConnect Bahrain. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
