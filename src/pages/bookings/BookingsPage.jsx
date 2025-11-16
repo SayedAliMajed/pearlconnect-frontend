@@ -6,7 +6,7 @@ import BookingForm from '../../components/bookings/BookingForm';
 import { AuthContext } from '../../contexts/AuthContext';
 import { fetchBookings, cancelBooking } from '../../services/bookings';
 
-const BookingsPage = () => {
+const BookingsPage = ({ showNewBookingForm = true }) => {
   const { user } = useContext(AuthContext);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -109,18 +109,22 @@ const BookingsPage = () => {
       <Container size="xlarge">
         {/* Header */}
         <div className="bookings-header">
-          <h1>My Bookings</h1>
-          <p>Manage your service bookings and appointments</p>
-          <Button
-            variant="primary"
-            onClick={() => setShowBookingForm(!showBookingForm)}
-          >
-            {showBookingForm ? 'Cancel' : 'New Booking'}
-          </Button>
+          <h1>{user?.role === 'provider' ? 'My Services\' Bookings' : 'My Bookings'}</h1>
+          <p>{user?.role === 'provider'
+            ? 'View and manage customer bookings for your services'
+            : 'Manage your service bookings and appointments'}</p>
+          {showNewBookingForm && (
+            <Button
+              variant="primary"
+              onClick={() => setShowBookingForm(!showBookingForm)}
+            >
+              {showBookingForm ? 'Cancel' : 'New Booking'}
+            </Button>
+          )}
         </div>
 
-        {/* Booking Form */}
-        {showBookingForm && (
+        {/* Booking Form - Only show for customers */}
+        {showBookingForm && showNewBookingForm && (
           <div className="booking-form-section">
             <BookingForm onSuccess={handleBookingSuccess} />
           </div>
@@ -167,7 +171,12 @@ const BookingsPage = () => {
           ) : (
             <div className="no-bookings">
               <h3>No bookings found</h3>
-              <p>You haven't made any bookings yet. Click "New Booking" to get started!</p>
+              <p>
+                {user?.role === 'provider'
+                  ? 'No customers have booked your services yet. Customers can see your services and make bookings on the platform.'
+                  : 'You haven\'t made any bookings yet. Click "New Booking" to get started!'
+                }
+              </p>
             </div>
           )}
         </div>

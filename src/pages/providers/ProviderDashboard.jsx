@@ -4,6 +4,7 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { AuthContext } from '../../contexts/AuthContext';
 import ServiceManagement from '../../components/providers/ServiceManagement';
+import BookingsPage from '../bookings/BookingsPage';
 
 const ProviderDashboard = () => {
   const { user } = useContext(AuthContext);
@@ -142,10 +143,7 @@ const ProviderDashboard = () => {
           )}
 
           {activeTab === 'bookings' && (
-            <div className="bookings-tab">
-              <h3>My Bookings</h3>
-              <p>Booking management will be implemented here.</p>
-            </div>
+            <BookingsPage showNewBookingForm={false} />
           )}
 
           {activeTab === 'reviews' && (
