@@ -103,113 +103,57 @@ const CategoriesPage = () => {
 	}
 
 	return (
-		<div className="categories-page">
-			{/* Hero Section */}
-			<section className="categories-hero">
-				<Container size="xlarge" padding={false}>
-					<div className="hero-content">
-						<h1 className="hero-title">Browse Categories</h1>
-						<p className="hero-subtitle">
-							Find professionals for all your service needs across different categories
-						</p>
+		<Container size="xlarge">
+			<div className="categories-page">
+				<div className="page-header">
+					<h1 className="categories-page-title">Categories</h1>
+					<p className="categories-page-subtitle">Select a category to explore available services</p>
+				</div>
+
+				<div className="categories-filters">
+					{/* Category Selection */}
+					<div className="filter-group">
+						<label htmlFor="category-select">Select Category:</label>
+						<select
+							id="category-select"
+							value={selectedCategory}
+							onChange={(e) => {
+								const category = e.target.value;
+								setSelectedCategory(category);
+								if (category) {
+									handleCategoryClick(category);
+								}
+							}}
+							className="filter-select"
+						>
+							<option value="">Choose a category...</option>
+							{categoryNames.map(name => (
+								<option key={name} value={name}>{name}</option>
+							))}
+						</select>
 					</div>
-				</Container>
-			</section>
 
-			{/* Filters Section */}
-			<section className="categories-filters">
-				<Container size="xlarge">
-					<div className="filters-container">
-						{/* Search Filter */}
-						<div className="filter-group">
-							<label htmlFor="search-input">Search Categories:</label>
-							<input
-								id="search-input"
-								type="text"
-								value={searchQuery}
-								onChange={(e) => setSearchQuery(e.target.value)}
-								placeholder="Search categories..."
-								className="filter-input"
-							/>
-						</div>
-
-						{/* Category Filter */}
-						<div className="filter-group">
-							<label htmlFor="category-select">Specific Category:</label>
-							<select
-								id="category-select"
-								value={selectedCategory}
-								onChange={(e) => setSelectedCategory(e.target.value)}
-								className="filter-select"
-							>
-								<option value="">All Categories</option>
-								{categoryNames.map(name => (
-									<option key={name} value={name}>{name}</option>
-								))}
-							</select>
-						</div>
-
-						{/* Sort Options */}
-						<div className="filter-group">
-							<label htmlFor="sort-select">Sort By:</label>
-							<select
-								id="sort-select"
-								value={sortType}
-								onChange={(e) => setSortType(e.target.value)}
-								className="filter-select"
-							>
-								<option value="name">Name (A-Z)</option>
-								<option value="services-desc">Most Services</option>
-								<option value="services-asc">Fewest Services</option>
-							</select>
-						</div>
+					{/* Sort Options - Just for display, no navigation on change */}
+					<div className="filter-group">
+						<label htmlFor="sort-select">Sort By:</label>
+						<select
+							id="sort-select"
+							value={sortType}
+							onChange={(e) => setSortType(e.target.value)}
+							className="filter-select"
+						>
+							<option value="name">Name (A-Z)</option>
+							<option value="services-desc">Most Services</option>
+							<option value="services-asc">Fewest Services</option>
+						</select>
 					</div>
-				</Container>
-			</section>
+				</div>
 
-			{/* Categories Grid */}
-			<section className="categories-grid-section">
-				<Container size="xlarge">
-					{filteredCategories.length > 0 ? (
-						<>
-							<div className="categories-count">
-								<p>{filteredCategories.length} categor{filteredCategories.length !== 1 ? 'ies' : 'y'} found</p>
-							</div>
-							<div className="categories-grid">
-								{filteredCategories.map(category => (
-									<Card
-										key={category._id || category.name}
-										variant="category"
-										className="category-card"
-										onClick={() => handleCategoryClick(category.name)}
-									>
-										<div className="category-icon">
-											{categoryIcons[category.name] || categoryIcons.default}
-										</div>
-										<div className="category-content">
-											<h3 className="category-name">{category.name}</h3>
-											<p className="category-description">
-												{category.description || 'Professional services available'}
-											</p>
-											<div className="category-meta">
-												<span className="service-count">
-													{category.serviceCount || 0} service{category.serviceCount !== 1 ? 's' : ''}
-												</span>
-											</div>
-										</div>
-									</Card>
-								))}
-							</div>
-						</>
-					) : (
-						<div className="no-categories">
-							<h3>No categories found</h3>
-							<p>Try adjusting your search terms or filters.</p>
-						</div>
-					)}
-				</Container>
-			</section>
-		</div>
+				<div className="categories-info">
+					<p>You will be redirected to the services page with your selected category.</p>
+				</div>
+			</div>
+		</Container>
 	);
 };
 
