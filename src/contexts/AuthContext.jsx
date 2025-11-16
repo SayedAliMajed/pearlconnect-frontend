@@ -6,22 +6,35 @@ const AuthContext = createContext();
 
 function AuthProvider({ children }) {
   const getUserFromToken = () => {
-    const token = localStorage.getItem('token');
+    console.log('🔐 [DEBUG] AuthContext: getUserFromToken called');
 
-    if (!token) return null;
+    const token = localStorage.getItem('token');
+    console.log('🔐 [DEBUG] AuthContext: localStorage check - available:', !!window.localStorage);
+    console.log('🔐 [DEBUG] AuthContext: token exists:', !!token);
+
+    if (!token) {
+      console.log('🔐 [DEBUG] AuthContext: No token found, returning null');
+      return null;
+    }
 
     try {
       // Try to decode the token payload
-      return JSON.parse(atob(token.split('.')[1]));
+      const userData = JSON.parse(atob(token.split('.')[1]));
+      console.log('🔐 [DEBUG] AuthContext: Token decoded successfully, user:', userData);
+      return userData;
     } catch (err) {
       // If token decoding fails, return null
-      console.log('Token decoding failed:', err);
+      console.log('🔐 [DEBUG] AuthContext: Token decoding failed:', err);
+      console.log('🔐 [DEBUG] AuthContext: Raw token:', token?.substring(0, 50) + '...');
       return null;
     }
   };
 
   // Create state just like you normally would in any other component
-  const [user, setUser] = useState(getUserFromToken());
+  console.log('🔐 [DEBUG] AuthContext: Initializing user state');
+  const initialUser = getUserFromToken();
+  console.log('🔐 [DEBUG] AuthContext: Initial user value:', initialUser);
+  const [user, setUser] = useState(initialUser);
   // This is the user state and the setUser function that will update it!
   // This variable name isn't special; it's just convention to use `value`.
   const value = { user, setUser };
