@@ -983,6 +983,37 @@
   border-top: 1px solid #eee;
 }
 
+/* Availability Management Styles */
+.availability-management {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.availability-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.availability-header h4 {
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.availability-header p {
+  color: #666;
+  margin: 0;
+}
+
+.availability-actions {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #eee;
+  text-align: center;
+}
+
 /* Availability Calendar Styles */
 .availability-calendar {
   display: flex;
