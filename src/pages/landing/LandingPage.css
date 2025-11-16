@@ -59,6 +59,28 @@
   justify-content: center;
 }
 
+.hero-signin {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.signin-link {
+  background: none;
+  border: none;
+  color: #ffd700;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.3s ease;
+}
+
+.signin-link:hover {
+  color: #ffffff;
+}
+
 .hero-visual {
   display: flex;
   justify-content: center;
@@ -390,6 +412,28 @@
   gap: 1rem;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+.cta-secondary {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.cta-link {
+  background: none;
+  border: none;
+  color: #ffd700;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.3s ease;
+}
+
+.cta-link:hover {
+  color: #ffffff;
 }
 
 /* Footer */

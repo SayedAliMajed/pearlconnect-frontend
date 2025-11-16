@@ -76,6 +76,16 @@ const LandingPage = () => {
                 Become a Service Provider
               </Button>
             </div>
+            <div className="hero-signin">
+              <span>Already have an account? </span>
+              <button
+                type="button"
+                className="signin-link"
+                onClick={() => navigate('/sign-in')}
+              >
+                Sign In
+              </button>
+            </div>
           </div>
           <div className="hero-visual">
             <div className="hero-image">
@@ -233,9 +243,19 @@ const LandingPage = () => {
               <Button variant="primary" size="large" onClick={() => navigate('/sign-up')}>
                 Get Started For Free
               </Button>
-              <Button variant="link" size="large" onClick={() => navigate('/sign-in')}>
-                Already have an account? Sign In
+              <Button variant="secondary" size="large" onClick={() => navigate('/sign-in')}>
+                Sign In to Your Account
               </Button>
+            </div>
+            <div className="cta-secondary">
+              <span>Are you a service professional? </span>
+              <button
+                type="button"
+                className="cta-link"
+                onClick={() => navigate('/sign-up?type=provider')}
+              >
+                Join as a Provider
+              </button>
             </div>
           </div>
         </Container>
