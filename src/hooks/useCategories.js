@@ -30,14 +30,24 @@ export const useCategories = () => {
       setLoading(true);
       setError(null);
 
+      console.log('📂 useCategories: Fetching categories from API...');
       const categoryData = await fetchCategories();
-      setCategories(categoryData);
+      console.log('📂 useCategories: Received categories data:', categoryData);
+
+      if (Array.isArray(categoryData) && categoryData.length > 0) {
+        console.log(`✅ useCategories: Loaded ${categoryData.length} categories successfully`);
+        setCategories(categoryData);
+      } else {
+        console.log('⚠️ useCategories: Empty or no categories returned from API');
+        setCategories([]);
+      }
     } catch (err) {
-      console.error('Error loading categories:', err);
+      console.error('❌ useCategories: Error loading categories:', err);
       setError(err.message);
       setCategories([]); // Fallback to empty array
     } finally {
       setLoading(false);
+      console.log('📂 useCategories: Loading state set to false');
     }
   };
 

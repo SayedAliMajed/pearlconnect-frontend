@@ -12,6 +12,8 @@ import './homePage.css';
 const HomePage = () => {
   const navigate = useNavigate();
   const { categories: featuredCategories, loading: categoriesLoading, error: categoriesError } = useCategories();
+
+
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -58,7 +60,10 @@ const HomePage = () => {
   }, []);
 
   const handleCategoryClick = (categoryName) => {
-    console.log('Selected category:', categoryName);
+    console.log('Navigating to category:', categoryName);
+    // Navigate to categories page with the selected category as a query parameter
+    const encodedCategory = encodeURIComponent(categoryName);
+    navigate(`/categories?category=${encodedCategory}`);
   };
 
   const handleServiceClick = (service) => {
@@ -91,18 +96,30 @@ const HomePage = () => {
           <p className="section-subtitle">Browse our most popular service categories</p>
 
           <div className="categories-grid">
-            {featuredCategories.map(category => (
-              <Card
-                key={category.id}
-                variant="category"
-                onClick={() => handleCategoryClick(category.name)}
-                className="category-card"
-              >
-                <h3 className="category-name">{category.name}</h3>
-                <p className="category-description">{category.description}</p>
-                <span className="category-count">{category.serviceCount} services</span>
-              </Card>
-            ))}
+            {categoriesLoading ? (
+              <div style={{ textAlign: 'center', padding: '2rem', width: '100%' }}>
+                <p>Loading categories...</p>
+              </div>
+            ) : Array.isArray(featuredCategories) && featuredCategories.length > 0 ? (
+              featuredCategories.map(category => (
+                <Card
+                  key={category._id || category.id || category.name}
+                  variant="category"
+                  onClick={() => handleCategoryClick(category.name)}
+                  className="category-card"
+                >
+                  <h3 className="category-name">{category.name}</h3>
+                  <p className="category-description">{category.description || 'Professional services'}</p>
+                  <span className="category-count">{category.serviceCount || 0} services</span>
+                </Card>
+              ))
+            ) : (
+              !categoriesLoading && !categoriesError && (
+                <div style={{ textAlign: 'center', padding: '2rem', width: '100%' }}>
+                  <p>No categories available yet. Categories will appear here once added to the database.</p>
+                </div>
+              )
+            )}
           </div>
         </Container>
       </section>

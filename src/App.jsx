@@ -10,6 +10,7 @@ import HomePage from './components/homePage/homePage';
 import Dashboard from './components/dashboard/dashboard';
 import ServicesPage from './pages/services/ServicesPage';
 import ServiceDetailPage from './pages/services/ServiceDetailPage';
+import CategoriesPage from './pages/categories/CategoriesPage';
 import BookingsPage from './pages/bookings/BookingsPage';
 import ReviewsPage from './pages/reviews/ReviewsPage';
 import ProfilePage from './pages/profile/ProfilePage';
@@ -35,6 +36,7 @@ const App = () => {
         <Route path='/' element={<HomePage/>}/>
         <Route path='/services/:serviceId' element={<ServiceDetailPage/>}/>
         <Route path='/services' element={<ServicesPage/>}/>
+        <Route path='/categories' element={<CategoriesPage/>}/>
         <Route path='/bookings' element={<BookingsPage/>}/>
         <Route path='/reviews' element={<ReviewsPage/>}/>
         <Route path='/dashboard' element={<Dashboard/>}/>

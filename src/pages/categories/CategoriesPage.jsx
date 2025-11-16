@@ -1,32 +1,29 @@
-import React, { useEffect, useState } from 'react';
-
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router';
+import { useCategories } from '../../hooks/useCategories';
+import Container from '../../components/ui/Container';
 
 const CategoriesPage = () => {
-	const [allowedNames, setAllowedNames] = useState([]);
+	const { categories: allCategories, loading, error } = useCategories();
 	const [selectedCategory, setSelectedCategory] = useState('');
-	const [categories, setCategories] = useState([]);
 	const [sortType, setSortType] = useState(''); // '', 'price-asc', 'price-desc', 'rating-asc', 'rating-desc'
+	const [searchParams, setSearchParams] = useSearchParams();
 
-	// Fetch allowed category names for dropdown
+	// Handle URL parameters for category filter
 	useEffect(() => {
-		fetch('/api/categories/names')
-			.then(res => res.json())
-			.then(data => setAllowedNames(data))
-			.catch(() => setAllowedNames([]));
-	}, []);
+		const categoryParam = searchParams.get('category');
+		if (categoryParam) {
+			setSelectedCategory(categoryParam);
+		}
+	}, [searchParams]);
 
-	// Fetch all categories
-	useEffect(() => {
-		fetch('/api/categories')
-			.then(res => res.json())
-			.then(data => setCategories(data))
-			.catch(() => setCategories([]));
-	}, []);
+	// Get unique category names for dropdown
+	const categoryNames = [...new Set(allCategories.map(cat => cat.name))];
 
 	// Filter categories by selected name
 	let filteredCategories = selectedCategory
-		? categories.filter(cat => cat.name === selectedCategory)
-		: categories;
+		? allCategories.filter(cat => cat.name === selectedCategory)
+		: allCategories;
 
 	// Sort filtered categories
 	if (sortType === 'price-asc') {
@@ -49,10 +46,10 @@ const CategoriesPage = () => {
 					value={selectedCategory}
 					onChange={e => setSelectedCategory(e.target.value)}
 				>
-					<option value="">All</option>
-					{allowedNames.map(name => (
-						<option key={name} value={name}>{name}</option>
-					))}
+				<option value="">All</option>
+				{categoryNames.map(name => (
+					<option key={name} value={name}>{name}</option>
+				))}
 				</select>
 			</div>
 			<div className="category-sort">

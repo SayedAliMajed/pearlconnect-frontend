@@ -43,38 +43,7 @@ const ServiceDetailPage = () => {
       setLoading(true);
       setError(null);
 
-      // Check if this looks like a static test service ID (short numeric ID)
-      // MongoDB ObjectIds are 24-character hex strings
-      const isStaticServiceId = serviceId && /^\d+$/.test(serviceId) && serviceId.length < 10;
-
-      if (isStaticServiceId) {
-        // Handle static test service - show demo data
-        console.log('Static test service detected, showing demo data for ID:', serviceId);
-
-        // Import static test services and find by ID
-        const { popularServices } = await import('../../test/fixtures/test-services');
-        const staticService = popularServices.find(s => s.id == serviceId);
-
-        if (staticService) {
-          // Convert static service format to match expected display
-          const serviceData = {
-            ...staticService,
-            _id: staticService.id.toString(), // Use id as _id
-            description: staticService.subtitle || staticService.description,
-            subtitle: staticService.subtitle,
-            providerId: 'demo-provider', // Mock provider
-            provider: { name: 'Demo Provider', email: 'demo@example.com' },
-            images: staticService.image ? [{
-              url: staticService.image,
-              alt: staticService.title
-            }] : [], // Convert single image string to images array
-            createdAt: new Date().toISOString(),
-            isDemoService: true // Mark as demo
-          };
-          setService(serviceData);
-          return;
-        }
-      }
+      // Only serve live data from backend API - no static test services
 
       // Handle real API service
       const token = localStorage.getItem('token');
