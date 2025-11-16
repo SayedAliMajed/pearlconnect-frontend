@@ -6,6 +6,7 @@ import NavBar from './components/navbar/navbar';
 // Import the new auth page components
 import SignUpPage from './components/auth/SignUpPage';
 import SignInPage from './components/auth/SignInPage';
+import LandingPage from './pages/landing/LandingPage';
 import HomePage from './components/homePage/homePage';
 import Dashboard from './components/dashboard/dashboard';
 import ServicesPage from './pages/services/ServicesPage';
@@ -23,16 +24,16 @@ const App = () => {
 
   return (
     <>
-      {/* Hide NavBar on auth pages for cleaner design */}
-      {!(location.pathname === '/sign-in' || location.pathname === '/sign-up') && <NavBar />}
+      {/* Hide NavBar on auth pages and guest landing page for cleaner design */}
+      {!(location.pathname === '/sign-in' || location.pathname === '/sign-up' || (!user && location.pathname === '/')) && <NavBar />}
 
       <Routes>
         {/* Auth Routes - Full page design without navbar */}
         <Route path='/sign-up' element={<SignUpPage />} />
         <Route path='/sign-in' element={<SignInPage />} />
 
-        {/* Main App Routes - Homepage for everyone */}
-        <Route path='/' element={<HomePage/>}/>
+        {/* Main App Routes - Conditional homepage */}
+        <Route path='/' element={user ? <HomePage/> : <LandingPage/>}/>
         <Route path='/services/:serviceId' element={<ServiceDetailPage/>}/>
         <Route path='/services' element={<ServicesPage/>}/>
         <Route path='/bookings' element={<BookingsPage/>}/>
