@@ -66,9 +66,11 @@ export const fetchProviders = async () => {
   }
 };
 
-export const fetchBookings = async () => {
+export const fetchBookings = async (userRole) => {
   try {
-    const res = await fetch(`${BASE_URL}/bookings`, { headers: headers() });
+    // Use role-appropriate endpoints
+    const endpoint = userRole === 'provider' ? '/provider-bookings' : '/my-bookings';
+    const res = await fetch(`${BASE_URL}${endpoint}`, { headers: headers() });
     const data = await res.json();
     if (data.err) throw new Error(data.err || 'Failed to fetch bookings');
     return data;

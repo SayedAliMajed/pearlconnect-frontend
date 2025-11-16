@@ -24,10 +24,25 @@ const BookingsPage = () => {
   const loadBookings = async () => {
     try {
       setLoading(true);
-      const userBookings = await fetchBookings();
+      console.log('📋 BOOKINGS DEBUG - Loading bookings for user:', {
+        userId: user?.id || user?._id,
+        userRole: user?.role,
+        username: user?.username
+      });
+
+      const userBookings = await fetchBookings(user?.role);
+
+      console.log('📋 BOOKINGS DEBUG - API response:', {
+        receivedData: userBookings,
+        dataType: typeof userBookings,
+        isArray: Array.isArray(userBookings),
+        arrayLength: Array.isArray(userBookings) ? userBookings?.length : 'N/A',
+        sampleItem: Array.isArray(userBookings) && userBookings.length > 0 ? userBookings[0] : 'Empty array'
+      });
+
       setBookings(Array.isArray(userBookings) ? userBookings : []);
     } catch (error) {
-      console.error('Failed to load bookings:', error);
+      console.error('📋 BOOKINGS DEBUG - Failed to load bookings:', error);
       setBookings([]);
     } finally {
       setLoading(false);
