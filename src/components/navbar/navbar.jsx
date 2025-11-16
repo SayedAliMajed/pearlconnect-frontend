@@ -3,11 +3,12 @@
 import { useContext, useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { AuthContext } from '../../contexts/AuthContext';
-import { featuredCategories } from '../../test/fixtures/test-services';
+import { useCategories } from '../../hooks/useCategories';
 import './navbar.css';
 
 const NavBar = () => {
   const { user, setUser } = useContext(AuthContext);
+  const { categories: navCategories, loading: navCategoriesLoading } = useCategories();
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -124,8 +125,8 @@ const NavBar = () => {
             <form onSubmit={handleSearch} className="pc-search-form">
               <select className="pc-search-category" onChange={handleCategoryChange}>
                 <option value="all">All Categories</option>
-                {featuredCategories.map(category => (
-                  <option key={category.id} value={category.name}>
+                {navCategories.map(category => (
+                  <option key={category._id || category.id} value={category.name}>
                     {category.name}
                   </option>
                 ))}

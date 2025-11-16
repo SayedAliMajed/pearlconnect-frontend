@@ -4,12 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import Container from '../ui/Container';
 import Card from '../ui/Card';
-import { popularServices, featuredCategories, formatPrice } from '../../test/fixtures/test-services';
+import { useCategories } from '../../hooks/useCategories';
+import { formatPrice } from '../../utils/dateUtils';
 import { fetchServices } from '../../services/bookings';
 import './homePage.css';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const { categories: featuredCategories, loading: categoriesLoading, error: categoriesError } = useCategories();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -39,14 +41,14 @@ const HomePage = () => {
           console.log('🚫 No authentication token found');
         }
 
-        // Fallback to static test data if not authenticated or no API services
-        console.log('📚 Showing test data as fallback');
-        setServices(popularServices);
+        // No fallback data - only live data available
+        console.log('� No live data available - user needs to authenticate to view services');
+        setServices([]);
 
       } catch (error) {
         console.log('💥 Error loading services:', error.message);
-        // Always fall back to static test data on any error
-        setServices(popularServices);
+        // No fallback data - only live data available
+        setServices([]);
       } finally {
         setLoading(false);
       }
@@ -115,7 +117,7 @@ const HomePage = () => {
             <div style={{ textAlign: 'center', padding: '2rem' }}>
               <p>Loading services...</p>
             </div>
-          ) : (
+          ) : services.length > 0 ? (
             <div className="services-grid">
               {services.map(service => (
                 <Card
@@ -144,7 +146,11 @@ const HomePage = () => {
                   </div>
                 </Card>
               ))}
-          </div>
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+              <p>Please sign in to view available services.</p>
+            </div>
           )}
         </Container>
       </section>

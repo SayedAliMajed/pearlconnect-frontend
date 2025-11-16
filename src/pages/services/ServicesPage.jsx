@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import Container from '../../components/ui/Container';
 import Card from '../../components/ui/Card';
-import { popularServices, featuredCategories, formatPrice } from '../../test/fixtures/test-services';
+import { useCategories } from '../../hooks/useCategories';
+import { formatPrice } from '../../utils/dateUtils';
 import { fetchServices } from '../../services/bookings';
 
 const ServicesPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { categories: allCategories } = useCategories();
   const [services, setServices] = useState([]);
   const [filteredServices, setFilteredServices] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -43,12 +45,13 @@ const ServicesPage = () => {
         } else {
           console.log('⚠️ Services Page - Falling back to test data');
           // Fallback to static data
-          setServices(popularServices);
+          console.log('⚠️ Services Page - No live services available');
+          setServices([]);
         }
       } catch (error) {
-        console.log('Services Page - API error, using test data:', error.message);
-        // Fallback to static data
-        setServices(popularServices);
+        console.log('Services Page - API error:', error.message);
+        // No fallback data - only live data available
+        setServices([]);
       } finally {
         setLoading(false);
       }
@@ -122,8 +125,8 @@ const ServicesPage = () => {
                 className="filter-select"
               >
                 <option value="all">All Categories</option>
-                {featuredCategories.map(category => (
-                  <option key={category.id} value={category.name}>
+                {allCategories.map(category => (
+                  <option key={category._id || category.id} value={category.name}>
                     {category.name}
                   </option>
                 ))}

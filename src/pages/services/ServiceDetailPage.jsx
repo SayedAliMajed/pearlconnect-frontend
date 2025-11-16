@@ -4,7 +4,7 @@ import Container from '../../components/ui/Container';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { AuthContext } from '../../contexts/AuthContext';
-import { formatPrice } from '../../test/fixtures/test-services';
+import { formatPrice } from '../../utils/dateUtils';
 import { fetchProviderAvailability } from '../../services/bookings';
 import { parseBahrainDate, generateTimeSlots, getTodayDateString, formatTimeTo12Hour, isSameDay } from '../../utils/dateUtils';
 import './ServiceDetailPage.css';
