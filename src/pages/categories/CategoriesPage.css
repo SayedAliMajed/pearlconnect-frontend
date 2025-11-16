@@ -1,7 +1,7 @@
 /* Categories Page - Services Display */
 .services-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 320px));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
   margin-top: 2rem;
   justify-content: start;
@@ -62,10 +62,31 @@
   margin-bottom: 0.5rem;
 }
 
-/* Mobile Responsiveness */
+/* Responsive Grid - Ensure minimum 3 cards per row on larger screens */
+@media (min-width: 1024px) {
+  .services-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 1023px) and (min-width: 768px) {
+  .services-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Tablet - 2 cards per row */
+@media (max-width: 767px) and (min-width: 576px) {
+  .services-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile - 1 card per row */
 @media (max-width: 768px) {
   .services-grid {
     grid-template-columns: 1fr;
     max-width: 100%;
+    gap: 1rem;
   }
 }
