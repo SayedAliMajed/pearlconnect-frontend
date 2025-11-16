@@ -1,7 +1,7 @@
 // src/components/homePage/homePage.jsx
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, Link } from 'react-router';
 import Container from '../ui/Container';
 import Card from '../ui/Card';
 import { useCategories } from '../../hooks/useCategories';
