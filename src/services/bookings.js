@@ -1,4 +1,4 @@
-const BASE_URL = `${import.meta.env.VITE_BACK_END_SERVER_URL}`;
+const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 const headers = () => ({
   'Content-Type': 'application/json',
   Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -77,6 +77,26 @@ export const fetchBookings = async (userRole) => {
   } catch (err) {
     console.error('fetchBookings', err);
     return [];
+  }
+};
+
+export const updateBookingStatus = async (bookingId, status) => {
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${BASE_URL}/bookings/${bookingId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status }),
+    });
+    const data = await res.json();
+    if (data.err) throw new Error(data.err || 'Failed to update booking status');
+    return data;
+  } catch (err) {
+    console.error('updateBookingStatus', err);
+    throw err;
   }
 };
 

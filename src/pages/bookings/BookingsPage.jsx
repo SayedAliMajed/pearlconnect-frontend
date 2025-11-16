@@ -4,7 +4,7 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import BookingForm from '../../components/bookings/BookingForm';
 import { AuthContext } from '../../contexts/AuthContext';
-import { fetchBookings, cancelBooking } from '../../services/bookings';
+import { fetchBookings, cancelBooking, updateBookingStatus } from '../../services/bookings';
 
 const BookingsPage = ({ showNewBookingForm = true }) => {
   const { user } = useContext(AuthContext);
@@ -12,6 +12,7 @@ const BookingsPage = ({ showNewBookingForm = true }) => {
   const [loading, setLoading] = useState(true);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [cancellingId, setCancellingId] = useState(null);
+  const [updatingStatusId, setUpdatingStatusId] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -52,6 +53,114 @@ const BookingsPage = ({ showNewBookingForm = true }) => {
     }
   };
 
+  const handleUpdateStatus = async (bookingId, newStatus) => {
+    try {
+      setUpdatingStatusId(bookingId);
+      await updateBookingStatus(bookingId, newStatus);
+      // Update the booking status in the local state
+      setBookings(bookings.map(booking =>
+        booking._id === bookingId || booking.id === bookingId
+          ? { ...booking, status: newStatus }
+          : booking
+      ));
+    } catch (error) {
+      console.error('Failed to update booking status:', error);
+      alert('Failed to update booking status. Please try again.');
+    } finally {
+      setUpdatingStatusId(null);
+    }
+  };
+
+  const getProviderActions = (booking) => {
+    const actions = [];
+    const isUpdating = updatingStatusId === (booking._id || booking.id);
+
+    switch (booking.status?.toLowerCase()) {
+      case 'pending':
+        actions.push(
+          <Button
+            key="accept"
+            variant="primary"
+            size="small"
+            onClick={() => handleUpdateStatus(booking._id || booking.id, 'confirmed')}
+            disabled={isUpdating}
+          >
+            {isUpdating ? 'Updating...' : 'Accept Order'}
+          </Button>
+        );
+        break;
+
+      case 'confirmed':
+        actions.push(
+          <Button
+            key="start"
+            variant="success"
+            size="small"
+            onClick={() => handleUpdateStatus(booking._id || booking.id, 'in-progress')}
+            disabled={isUpdating}
+          >
+            {isUpdating ? 'Updating...' : 'Start Service'}
+          </Button>
+        );
+        break;
+
+      case 'in-progress':
+        actions.push(
+          <Button
+            key="complete"
+            variant="success"
+            size="small"
+            onClick={() => handleUpdateStatus(booking._id || booking.id, 'completed')}
+            disabled={isUpdating}
+          >
+            {isUpdating ? 'Updating...' : 'Mark Complete'}
+          </Button>
+        );
+        break;
+
+      case 'completed':
+      case 'cancelled':
+        return null; // No actions for completed/cancelled bookings
+
+      default:
+        break;
+    }
+
+    // Add cancel option for all non-completed bookings
+    if (booking.status !== 'completed') {
+      actions.push(
+        <Button
+          key="cancel"
+          variant="danger"
+          size="small"
+          onClick={() => handleCancelBooking(booking._id || booking.id)}
+          disabled={cancellingId === (booking._id || booking.id)}
+        >
+          {cancellingId === (booking._id || booking.id) ? 'Cancelling...' : 'Cancel'}
+        </Button>
+      );
+    }
+
+    return actions;
+  };
+
+  const getCustomerActions = (booking) => {
+    // Customers can only cancel pending or confirmed bookings
+    if (booking.status !== 'cancelled' && booking.status !== 'completed') {
+      return (
+        <Button
+          variant="danger"
+          size="small"
+          onClick={() => handleCancelBooking(booking._id || booking.id)}
+          disabled={cancellingId === (booking._id || booking.id)}
+        >
+          {cancellingId === (booking._id || booking.id) ? 'Cancelling...' : 'Cancel'}
+        </Button>
+      );
+    }
+    return null;
+  };
+
   const handleBookingSuccess = (newBooking) => {
     setShowBookingForm(false);
     // Add the new booking to the list
@@ -72,12 +181,14 @@ const BookingsPage = ({ showNewBookingForm = true }) => {
     switch (status?.toLowerCase()) {
       case 'confirmed':
         return '#4CAF50';
+      case 'in-progress':
+        return '#2196F3';
       case 'pending':
         return '#FF9800';
       case 'cancelled':
         return '#F44336';
       case 'completed':
-        return '#2196F3';
+        return '#9C27B0';
       default:
         return '#666';
     }
@@ -138,15 +249,22 @@ const BookingsPage = ({ showNewBookingForm = true }) => {
                 <div className="booking-content">
                   <div className="booking-info">
                     <h3>{booking.service?.title || 'Service'}</h3>
-                    <p className="booking-provider">
-                      Provider: {booking.provider?.name || booking.provider?.username || 'N/A'}
-                    </p>
+                    {user?.role === 'customer' && (
+                      <p className="booking-provider">
+                        Provider: {booking.provider?.name || booking.provider?.username || 'N/A'}
+                      </p>
+                    )}
+                    {user?.role === 'provider' && booking.customer && (
+                      <p className="booking-customer">
+                        Customer: {booking.customer?.name || booking.customer?.username || booking.customer?.email || 'N/A'}
+                      </p>
+                    )}
                     <p className="booking-date">
                       📅 {formatDate(booking.date)}
                     </p>
                     <p className="booking-status">
                       Status: <span style={{ color: getStatusColor(booking.status) }}>
-                        {booking.status || 'Pending'}
+                        {booking.status?.charAt(0).toUpperCase() + booking.status?.slice(1).toLowerCase() || 'Pending'}
                       </span>
                     </p>
                     {booking.notes && (
@@ -154,16 +272,10 @@ const BookingsPage = ({ showNewBookingForm = true }) => {
                     )}
                   </div>
                   <div className="booking-actions">
-                    {booking.status !== 'cancelled' && booking.status !== 'completed' && (
-                      <Button
-                        variant="danger"
-                        size="small"
-                        onClick={() => handleCancelBooking(booking._id || booking.id)}
-                        disabled={cancellingId === (booking._id || booking.id)}
-                      >
-                        {cancellingId === (booking._id || booking.id) ? 'Cancelling...' : 'Cancel'}
-                      </Button>
-                    )}
+                    {user?.role === 'provider'
+                      ? getProviderActions(booking)
+                      : getCustomerActions(booking)
+                    }
                   </div>
                 </div>
               </Card>
