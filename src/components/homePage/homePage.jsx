@@ -22,33 +22,24 @@ const HomePage = () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        console.log('🔄 Homepage: Token check -', !!token);
 
         if (token) {
           // Try to fetch real services if user is authenticated
-          console.log('👤 User authenticated, attempting to fetch all services...');
           const apiResponse = await fetchServices();
           const apiServices = apiResponse?.services || (Array.isArray(apiResponse) ? apiResponse : []);
-          console.log('📋 fetchServices returned:', Array.isArray(apiServices) ? `${apiServices.length} services` : apiServices);
 
           if (apiServices && Array.isArray(apiServices) && apiServices.length > 0) {
-            console.log(`✅ Found ${apiServices.length} real services, showing first 6:`, apiServices.slice(0, 3).map(s => `${s.title} (${s._id})`));
             // Show real API services (limit to 6 for homepage display)
             setServices(apiServices.slice(0, 6));
             return;
-          } else {
-            console.log('⚠️ No API services found or empty response');
           }
-        } else {
-          console.log('🚫 No authentication token found');
         }
 
         // No fallback data - only live data available
-        console.log('� No live data available - user needs to authenticate to view services');
         setServices([]);
 
       } catch (error) {
-        console.log('💥 Error loading services:', error.message);
+        console.error('Error loading services:', error);
         // No fallback data - only live data available
         setServices([]);
       } finally {
@@ -60,7 +51,6 @@ const HomePage = () => {
   }, []);
 
   const handleCategoryClick = (categoryName) => {
-    console.log('Navigating to category:', categoryName);
     // Navigate to categories page with the selected category as a query parameter
     const encodedCategory = encodeURIComponent(categoryName);
     navigate(`/categories?category=${encodedCategory}`);
