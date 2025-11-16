@@ -306,7 +306,9 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
 
       // Now submit availability data for the service
       console.log('📅 Submitting availability for service:', serviceId);
-      console.log('📊 Availability data:', availabilityData);
+      console.log('📊 Availability data structure:', JSON.stringify(availabilityData, null, 2));
+      console.log('🔗 Availability API URL:', `${import.meta.env.VITE_BACK_END_SERVER_URL}/availability/service/${serviceId}`);
+      console.log('🔐 Auth token exists:', !!localStorage.getItem('token'));
 
       const availabilityResponse = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/availability/service/${serviceId}`, {
         method: 'POST',
@@ -317,19 +319,45 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
         body: JSON.stringify(availabilityData)
       });
 
+      console.log('📡 Availability API Response:', {
+        status: availabilityResponse.status,
+        statusText: availabilityResponse.statusText,
+        ok: availabilityResponse.ok,
+        headers: Object.fromEntries(availabilityResponse.headers.entries()),
+        url: availabilityResponse.url
+      });
+
+      let responseBody = null;
+      try {
+        responseBody = await availabilityResponse.text();
+        if (responseBody) {
+          responseBody = JSON.parse(responseBody);
+          console.log('📄 Response body:', responseBody);
+        } else {
+          console.log('📄 Response body: empty');
+        }
+      } catch (e) {
+        console.log('📄 Response body (raw):', responseBody);
+      }
+
       if (availabilityResponse.ok) {
         console.log('✅ Service availability saved successfully');
         const result = service ? serviceResult : serviceResult;
         onSuccess && onSuccess(result);
       } else {
-        console.log('⚠️ Service created but availability failed. This is not critical.');
-        const errorData = await availabilityResponse.json().catch(() => ({ err: 'Unknown error' }));
-        console.error('Availability save error:', errorData);
+        console.log('❌ Availability API failed');
+        console.log('🔍 Frontend sent data:', JSON.stringify(availabilityData, null, 2));
+        console.log('🔍 Backend responded:', responseBody);
+
+        // For debugging - temporarily remove error alert until API is fixed
+        // alert('Service created successfully, but availability settings could not be saved. Please try editing the service again.');
 
         // Still call onSuccess since the service was created successfully
         const result = service ? serviceResult : serviceResult;
         onSuccess && onSuccess(result);
-        alert('Service created successfully, but there was an issue saving availability settings. You can update them later from your dashboard.');
+
+        console.log('⚠️ Temporarily hiding availability error alert until API is fixed');
+        console.log('💡 Providers should be able to edit the service again to set availability');
       }
     } catch (error) {
       console.error('Error saving service:', error);
