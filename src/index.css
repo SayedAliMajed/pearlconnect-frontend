@@ -1,4 +1,29 @@
-/* Import Lato font from Google Fonts */
+/* Import fonts for PearlConnect landing page */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');
+
+/* Import Tailwind CSS via CDN - simulated configuration */
+/* Tailwind Utilities for Landing Page */
+/*
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        primary: "#00ad96",
+        "background-light": "#f5f8f8",
+        "background-dark": "#0f2320",
+      },
+      fontFamily: {
+        display: ["Manrope"],
+      },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+    },
+  },
+};
+*/
+
+/* Import Lato font from Google Fonts (fallback) */
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
 
 /* CSS Custom Properties for Design System */
