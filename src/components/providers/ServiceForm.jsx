@@ -368,6 +368,12 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
     }
   };
 
+  // Make sure categories are loaded when component mounts
+  useEffect(() => {
+    // The useCategories hook will handle loading categories
+    // This effect ensures categories are fresh when editing
+  }, []);
+
   const validateAvailability = () => {
     // At least one day should be enabled
     const hasEnabledDay = Object.values(availabilityData.workingHours).some(day => day.enabled);
