@@ -103,21 +103,7 @@ const NavBar = () => {
     navigate(`/services${queryString ? `?${queryString}` : ''}`);
   };
 
-  // 🔍 [DEBUG] Authentication State Analysis
-  console.log('🧭 [DEBUG] Navbar user object:', user);
-  console.log('🧭 [DEBUG] User role:', user?.role);
-  console.log('🧭 [DEBUG] Is provider?', user?.role === 'provider');
-  console.log('🧭 [DEBUG] localStorage available:', !!window.localStorage);
-  console.log('🧭 [DEBUG] Token exists:', !!localStorage.getItem('token'));
-
-  // Additional production debugging
   const token = localStorage.getItem('token');
-  if (token) {
-    console.log('🧭 [DEBUG] Token present, length:', token.length);
-    console.log('🧭 [DEBUG] Token starts with:', token.substring(0, 20) + '...');
-  } else {
-    console.log('🧭 [DEBUG] No token found in localStorage');
-  }
 
   return (
     <header className="pc-header">
