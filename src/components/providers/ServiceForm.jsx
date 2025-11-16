@@ -3,10 +3,11 @@ import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { AuthContext } from '../../contexts/AuthContext';
-import { featuredCategories } from '../../test/fixtures/test-services';
+import { useCategories } from '../../hooks/useCategories';
 
 const ServiceForm = ({ service, onSuccess, onCancel }) => {
   const { user } = useContext(AuthContext);
+  const { categories, loading: categoriesLoading, error: categoriesError } = useCategories();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -441,18 +442,29 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
 
             <div className="form-group">
               <label htmlFor="category">Category *</label>
-              <select
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                className={`form-select ${errors.category ? 'error' : ''}`}
-              >
-                <option value="">Select a category</option>
-                {featuredCategories.map(cat => (
-                  <option key={cat.id} value={cat.name}>{cat.name}</option>
-                ))}
-              </select>
+              {categoriesLoading ? (
+                <div style={{ padding: '8px', color: '#666' }}>
+                  Loading categories...
+                </div>
+              ) : categoriesError ? (
+                <div style={{ padding: '8px', color: '#d32f2f' }}>
+                  Error loading categories. Please refresh and try again.
+                </div>
+              ) : (
+                <select
+                  id="category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  className={`form-select ${errors.category ? 'error' : ''}`}
+                  disabled={categoriesLoading}
+                >
+                  <option value="">Select a category</option>
+                  {categories.map(cat => (
+                    <option key={cat._id || cat.id} value={cat.name}>{cat.name}</option>
+                  ))}
+                </select>
+              )}
               {errors.category && <span className="error-message">{errors.category}</span>}
             </div>
           </div>
