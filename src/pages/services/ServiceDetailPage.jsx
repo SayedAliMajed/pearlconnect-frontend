@@ -120,6 +120,14 @@ const ServiceDetailPage = () => {
       // Use the same fetchProviderAvailability function as BookingForm
       const availabilityData = await fetchProviderAvailability(providerId);
       console.log('Provider availability received:', availabilityData);
+      console.log('🧪 Sample availability entry:', availabilityData[0]);
+      console.log('📋 All availability entries:', availabilityData.map((slot, index) => ({
+        index,
+        date: slot.date,
+        openingTime: slot.openingTime || slot.startTime,
+        closingTime: slot.closingTime || slot.endTime,
+        provider: slot.provider
+      })));
       setProviderAvailability(Array.isArray(availabilityData) ? availabilityData : [availabilityData]);
     } catch (err) {
       console.error('Error fetching provider availability:', err);
