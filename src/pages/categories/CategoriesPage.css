@@ -1,0 +1,71 @@
+/* Categories Page - Services Display */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 320px));
+  gap: 1.5rem;
+  margin-top: 2rem;
+  justify-content: start;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.service-card {
+  transition: transform 0.2s;
+}
+
+.service-card:hover {
+  transform: translateY(-2px);
+}
+
+.service-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.5rem 0;
+}
+
+.service-category {
+  background-color: #00AD96;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.service-rating {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.services-count {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.services-count p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.no-services {
+  text-align: center;
+  padding: 3rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-top: 2rem;
+}
+
+.no-services h3 {
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+    max-width: 100%;
+  }
+}

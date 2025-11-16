@@ -3,34 +3,20 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { useCategories } from '../../hooks/useCategories';
 import Container from '../../components/ui/Container';
 import Card from '../../components/ui/Card';
-
-// Category icons mapping
-const categoryIcons = {
-	'Home Repair': '🔧',
-	'Plumbing': '🚰',
-	'Electrician': '⚡',
-	'Cleaning': '🧹',
-	'Tutoring': '📚',
-	'Landscaping': '🌳',
-	'Painting': '🎨',
-	'Catering': '🍽️',
-	'Automotive': '🚗',
-	'Beauty': '✨',
-	'Pet Care': '🐾',
-	'Legal': '⚖️',
-	'Photography': '📷',
-	'Tech Support': '💻',
-	'Fitness': '💪',
-	'default': '📋'
-};
+import { fetchServices } from '../../services/bookings';
+import { formatPrice } from '../../utils/dateUtils';
+import './CategoriesPage.css';
 
 const CategoriesPage = () => {
 	const navigate = useNavigate();
-	const { categories: allCategories, loading, error } = useCategories();
+	const { categories: allCategories } = useCategories();
 	const [selectedCategory, setSelectedCategory] = useState('');
-	const [searchQuery, setSearchQuery] = useState('');
-	const [sortType, setSortType] = useState('name'); // name, services-asc, services-desc
-	const [searchParams, setSearchParams] = useSearchParams();
+	const [services, setServices] = useState([]);
+	const [filteredServices, setFilteredServices] = useState([]);
+	const [sortType, setSortType] = useState('price-asc'); // price-asc, price-desc, rating-asc, rating-desc
+	const [servicesLoading, setServicesLoading] = useState(true);
+	const [servicesError, setServicesError] = useState('');
+	const [searchParams] = useSearchParams();
 
 	// Handle URL parameters for category filter
 	useEffect(() => {
@@ -43,64 +29,56 @@ const CategoriesPage = () => {
 	// Get unique category names for dropdown
 	const categoryNames = [...new Set(allCategories.map(cat => cat.name))];
 
-	// Filter and search categories
-	let filteredCategories = allCategories;
+	// Load services on mount
+	useEffect(() => {
+		const loadServices = async () => {
+			try {
+				setServicesLoading(true);
+				const apiResponse = await fetchServices();
+				const apiServices = apiResponse?.services || (Array.isArray(apiResponse) ? apiResponse : []);
+				setServices(apiServices);
+			} catch (error) {
+				console.error('Error loading services:', error);
+				setServicesError(error.message || 'Failed to load services');
+			} finally {
+				setServicesLoading(false);
+			}
+		};
 
-	// Filter by search query
-	if (searchQuery.trim()) {
-		filteredCategories = filteredCategories.filter(cat =>
-			cat.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			cat.description?.toLowerCase().includes(searchQuery.toLowerCase())
-		);
-	}
+		loadServices();
+	}, []);
 
-	// Filter by selected category name (for URL compatibility)
-	if (selectedCategory) {
-		filteredCategories = filteredCategories.filter(cat =>
-			cat.name === selectedCategory
-		);
-	}
+	// Filter and sort services whenever dependencies change
+	useEffect(() => {
+		let filtered = services;
 
-	// Sort categories
-	if (sortType === 'name') {
-		filteredCategories = [...filteredCategories].sort((a, b) =>
-			a.name.localeCompare(b.name)
-		);
-	} else if (sortType === 'services-asc') {
-		filteredCategories = [...filteredCategories].sort((a, b) =>
-			(a.serviceCount || 0) - (b.serviceCount || 0)
-		);
-	} else if (sortType === 'services-desc') {
-		filteredCategories = [...filteredCategories].sort((a, b) =>
-			(b.serviceCount || 0) - (a.serviceCount || 0)
-		);
-	}
+		// Filter by category
+		if (selectedCategory) {
+			filtered = filtered.filter(service =>
+				service.category?.toLowerCase() === selectedCategory.toLowerCase()
+			);
+		}
 
-	const handleCategoryClick = (categoryName) => {
-		// Navigate to services page filtered by category
-		const encodedCategory = encodeURIComponent(categoryName);
-		navigate(`/services?category=${encodedCategory}`);
+		// Sort services
+		if (sortType === 'price-asc') {
+			filtered = [...filtered].sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+		} else if (sortType === 'price-desc') {
+			filtered = [...filtered].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+		} else if (sortType === 'rating-asc') {
+			filtered = [...filtered].sort((a, b) => (a.rating ?? 0) - (b.rating ?? 0));
+		} else if (sortType === 'rating-desc') {
+			filtered = [...filtered].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+		}
+
+		setFilteredServices(filtered);
+	}, [services, selectedCategory, sortType]);
+
+	const handleServiceClick = (service) => {
+		const serviceId = service._id || service.id;
+		if (serviceId) {
+			navigate(`/services/${serviceId}`);
+		}
 	};
-
-	if (loading) {
-		return (
-			<Container size="xlarge">
-				<div className="loading-state">
-					<p>Loading categories...</p>
-				</div>
-			</Container>
-		);
-	}
-
-	if (error) {
-		return (
-			<Container size="xlarge">
-				<div className="error-state">
-					<p>Error loading categories: {error}</p>
-				</div>
-			</Container>
-		);
-	}
 
 	return (
 		<Container size="xlarge">
@@ -117,23 +95,17 @@ const CategoriesPage = () => {
 						<select
 							id="category-select"
 							value={selectedCategory}
-							onChange={(e) => {
-								const category = e.target.value;
-								setSelectedCategory(category);
-								if (category) {
-									handleCategoryClick(category);
-								}
-							}}
+							onChange={(e) => setSelectedCategory(e.target.value)}
 							className="filter-select"
 						>
-							<option value="">Choose a category...</option>
+							<option value="">All Categories</option>
 							{categoryNames.map(name => (
 								<option key={name} value={name}>{name}</option>
 							))}
 						</select>
 					</div>
 
-					{/* Sort Options - Just for display, no navigation on change */}
+					{/* Sort Options */}
 					<div className="filter-group">
 						<label htmlFor="sort-select">Sort By:</label>
 						<select
@@ -142,16 +114,78 @@ const CategoriesPage = () => {
 							onChange={(e) => setSortType(e.target.value)}
 							className="filter-select"
 						>
-							<option value="name">Name (A-Z)</option>
-							<option value="services-desc">Most Services</option>
-							<option value="services-asc">Fewest Services</option>
+							<option value="price-asc">Price (Low to High)</option>
+							<option value="price-desc">Price (High to Low)</option>
+							<option value="rating-asc">Rating (Low to High)</option>
+							<option value="rating-desc">Rating (High to Low)</option>
 						</select>
 					</div>
 				</div>
 
-				<div className="categories-info">
-					<p>You will be redirected to the services page with your selected category.</p>
-				</div>
+				{/* Services Display Section */}
+				<section className="categories-services-section">
+					{servicesLoading ? (
+						<div className="loading-state">
+							<p>Loading services...</p>
+						</div>
+					) : servicesError ? (
+						<div className="error-state">
+							<p>Error: {servicesError}</p>
+						</div>
+					) : (
+						<>
+							{filteredServices.length > 0 ? (
+								<>
+									<div className="services-count">
+										<p>{filteredServices.length} service{filteredServices.length !== 1 ? 's' : ''} found {selectedCategory && `in ${selectedCategory}`}</p>
+									</div>
+									<div className="services-grid">
+										{filteredServices.map(service => (
+											<Card
+												key={service._id || service.id}
+												variant="service"
+												layout="wireframe"
+												className="service-card"
+												onClick={() => handleServiceClick(service)}
+											>
+												<img
+													src={
+														// For API services (have _id): check service.images array
+														service._id
+															? (service.images?.[0]?.url || service.images?.[0] || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=297&h=167&fit=crop')
+															// For test services (have id): use service.image
+															: (service.image || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=297&h=167&fit=crop')
+													}
+													alt={service.title}
+													className="ui-card__image"
+												/>
+												<div className="ui-card__content">
+													<h3 className="ui-card__title">{service.title}</h3>
+													<p className="ui-card__subtitle">{service.subtitle}</p>
+													<div className="service-meta">
+														<span className="service-category">{service.category}</span>
+														<div className="service-rating">
+															⭐ {service.rating || 'N/A'} ({service.reviews || 0} reviews)
+														</div>
+													</div>
+													<div className="ui-card__price">
+														{formatPrice(service.price, service.currency)}
+													</div>
+													<button className="ui-card__button">View Details</button>
+												</div>
+											</Card>
+										))}
+									</div>
+								</>
+							) : (
+								<div className="no-services">
+									<h3>{selectedCategory ? `No services found in ${selectedCategory}` : 'No services found'}</h3>
+									<p>Try selecting a different category or adjusting your filters.</p>
+								</div>
+							)}
+						</>
+					)}
+				</section>
 			</div>
 		</Container>
 	);
