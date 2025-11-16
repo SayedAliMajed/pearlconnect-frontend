@@ -107,25 +107,22 @@ const ServiceDetailPage = () => {
     if (!service) return;
 
     try {
-      console.log('Fetching service availability for service:', service._id);
-      const serviceId = service._id;
-      const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/availability/service/${serviceId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      console.log('Fetching provider availability for service:', service._id);
+      const providerId = service.providerId || service.provider._id || service.provider;
+      console.log('Provider ID:', providerId);
 
-      if (response.ok) {
-        const availabilityData = await response.json();
-        console.log('Service availability received:', availabilityData);
-        setProviderAvailability(Array.isArray(availabilityData) ? availabilityData : [availabilityData]);
-      } else {
-        console.log('No availability set for this service yet');
+      if (!providerId) {
+        console.log('No provider ID found for this service');
         setProviderAvailability([]);
+        return;
       }
+
+      // Use the same fetchProviderAvailability function as BookingForm
+      const availabilityData = await fetchProviderAvailability(providerId);
+      console.log('Provider availability received:', availabilityData);
+      setProviderAvailability(Array.isArray(availabilityData) ? availabilityData : [availabilityData]);
     } catch (err) {
-      console.error('Error fetching service availability:', err);
+      console.error('Error fetching provider availability:', err);
       setProviderAvailability([]);
     }
   };
