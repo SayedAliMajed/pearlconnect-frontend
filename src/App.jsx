@@ -32,8 +32,8 @@ const App = () => {
         <Route path='/sign-up' element={<SignUpPage />} />
         <Route path='/sign-in' element={<SignInPage />} />
 
-        {/* Main App Routes - Homepage for everyone */}
-        <Route path='/' element={<HomePage/>}/>
+        {/* Main App Routes - Landing page for guests, homepage for users */}
+        <Route path='/' element={user ? <HomePage/> : <LandingPage/>}/>
         <Route path='/services/:serviceId' element={<ServiceDetailPage/>}/>
         <Route path='/services' element={<ServicesPage/>}/>
         <Route path='/categories' element={<CategoriesPage/>}/>
