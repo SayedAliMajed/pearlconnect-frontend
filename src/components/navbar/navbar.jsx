@@ -221,8 +221,6 @@ const NavBar = () => {
             <Link to="/" className="pc-nav-link">Home</Link>
             <Link to="/services" className="pc-nav-link">Services</Link>
             <Link to="/categories" className="pc-nav-link">Categories</Link>
-            <Link to="/bookings" className="pc-nav-link">Bookings</Link>
-            <Link to="/reviews" className="pc-nav-link">Reviews</Link>
           </div>
         </div>
       </div>
@@ -239,12 +237,6 @@ const NavBar = () => {
             </Link>
             <Link to="/categories" className="pc-mobile-link" onClick={() => setShowMobileMenu(false)}>
               Categories
-            </Link>
-            <Link to="/bookings" className="pc-mobile-link" onClick={() => setShowMobileMenu(false)}>
-              Bookings
-            </Link>
-            <Link to="/reviews" className="pc-mobile-link" onClick={() => setShowMobileMenu(false)}>
-              Reviews
             </Link>
             {user ? (
               <>
