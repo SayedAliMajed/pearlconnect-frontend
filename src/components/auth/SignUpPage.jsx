@@ -160,51 +160,63 @@ const SignUpPage = () => {
                 {currentStep === 1 && (
                   <div className="form-step">
                     <h2 className="step-title">Account Information</h2>
-                    
-                    <Input
-                      type="text"
-                      name="username"
-                      placeholder="Choose a username"
-                      value={username}
-                      onChange={handleChange}
-                      error={errors.username}
-                      fullWidth
-                      className="signup-input"
-                    />
 
-                    <Input
-                      type="email"
-                      name="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={handleChange}
-                      error={errors.email}
-                      fullWidth
-                      className="signup-input"
-                    />
+                    <div className="form-group">
+                      <label className="form-label">Username *</label>
+                      <Input
+                        type="text"
+                        name="username"
+                        placeholder="Choose a username"
+                        value={username}
+                        onChange={handleChange}
+                        error={errors.username}
+                        fullWidth
+                        className="signup-input"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Email *</label>
+                      <Input
+                        type="email"
+                        name="email"
+                        placeholder="Enter your email"
+                        value={email}
+                        onChange={handleChange}
+                        error={errors.email}
+                        fullWidth
+                        className="signup-input"
+                      />
+                    </div>
 
                     <div className="form-row">
-                      <Input
-                        type="password"
-                        name="password"
-                        placeholder="Create a password"
-                        value={password}
-                        onChange={handleChange}
-                        error={errors.password}
-                        fullWidth
-                        className="signup-input"
-                      />
+                      <div className="form-group">
+                        <label className="form-label">Password *</label>
+                        <Input
+                          type="password"
+                          name="password"
+                          placeholder="Create a password"
+                          value={password}
+                          onChange={handleChange}
+                          error={errors.password}
+                          fullWidth
+                          className="signup-input"
+                        />
+                      </div>
 
-                      <Input
-                        type="password"
-                        name="confirmPassword"
-                        placeholder="Confirm password"
-                        value={confirmPassword}
-                        onChange={handleChange}
-                        error={errors.confirmPassword}
-                        fullWidth
-                        className="signup-input"
-                      />
+                      <div className="form-group">
+                        <label className="form-label">Confirm Password *</label>
+                        <Input
+                          type="password"
+                          name="confirmPassword"
+                          placeholder="Confirm password"
+                          value={confirmPassword}
+                          onChange={handleChange}
+                          error={errors.confirmPassword}
+                          fullWidth
+                          className="signup-input"
+                        />
+                      </div>
                     </div>
 
                     <div className="role-selection">
