@@ -260,16 +260,19 @@ const SignUpPage = () => {
                     <h2 className="step-title">Profile Information</h2>
                     <p className="step-description">Complete your profile information</p>
                     
-                    <Input
-                      type="text"
-                      name="fullName"
-                      placeholder="Full name"
-                      value={fullName}
-                      onChange={handleChange}
-                      error={errors.fullName}
-                      fullWidth
-                      className="signup-input"
-                    />
+                    <div className="form-group">
+                      <label className="form-label">Full Name *</label>
+                      <Input
+                        type="text"
+                        name="fullName"
+                        placeholder="Enter your full name"
+                        value={fullName}
+                        onChange={handleChange}
+                        error={errors.fullName}
+                        fullWidth
+                        className="signup-input"
+                      />
+                    </div>
 
                     <Input
                       type="tel"
