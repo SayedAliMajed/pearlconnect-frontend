@@ -4,7 +4,7 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import BookingForm from '../../components/bookings/BookingForm';
 import { AuthContext } from '../../contexts/AuthContext';
-import { fetchBookings, cancelBooking } from '../../services/bookings';
+import { fetchCustomerBookings, cancelBooking } from '../../services/bookings';
 
 const BookingsPage = () => {
   const { user } = useContext(AuthContext);
@@ -24,7 +24,7 @@ const BookingsPage = () => {
   const loadBookings = async () => {
     try {
       setLoading(true);
-      const userBookings = await fetchBookings();
+      const userBookings = await fetchCustomerBookings();
       setBookings(Array.isArray(userBookings) ? userBookings : []);
     } catch (error) {
       console.error('Failed to load bookings:', error);

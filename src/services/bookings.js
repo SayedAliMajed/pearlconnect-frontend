@@ -78,6 +78,18 @@ export const fetchBookings = async () => {
   }
 };
 
+export const fetchCustomerBookings = async () => {
+  try {
+    const res = await fetch(`${BASE_URL}/my-bookings`, { headers: headers() });
+    const data = await res.json();
+    if (data.err) throw new Error(data.err || 'Failed to fetch customer bookings');
+    return data;
+  } catch (err) {
+    console.error('fetchCustomerBookings', err);
+    return [];
+  }
+};
+
 export const fetchProviderBookings = async (providerId) => {
   try {
     const res = await fetch(`${BASE_URL}/provider-bookings`, { headers: headers() });
