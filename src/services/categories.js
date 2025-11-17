@@ -8,12 +8,17 @@ const API_BASE = import.meta.env.VITE_BACK_END_SERVER_URL;
  */
 export const fetchCategories = async () => {
   try {
-    const response = await fetch(`${API_BASE}/categories`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+
+    // Add auth token only if available (for authenticated requests)
+    const token = localStorage.getItem('token');
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE}/categories`, { headers });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
