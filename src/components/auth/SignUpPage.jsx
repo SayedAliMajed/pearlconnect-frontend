@@ -59,33 +59,41 @@ const SignUpPage = () => {
 
   const validateStep = (step) => {
     const newErrors = {};
-    
+
     if (step === 1) {
       if (!username.trim()) {
         newErrors.username = 'Username is required';
       } else if (username.length < 3) {
         newErrors.username = 'Username must be at least 3 characters';
       }
-      
+
       if (!email) {
         newErrors.email = 'Email is required';
       } else if (!/\S+@\S+\.\S+/.test(email)) {
         newErrors.email = 'Email is invalid';
       }
-      
+
       if (!password) {
         newErrors.password = 'Password is required';
       } else if (password.length < 6) {
         newErrors.password = 'Password must be at least 6 characters';
       }
-      
+
       if (!confirmPassword) {
         newErrors.confirmPassword = 'Please confirm your password';
       } else if (password !== confirmPassword) {
         newErrors.confirmPassword = 'Passwords do not match';
       }
+    } else if (step === 2) {
+      if (!fullName.trim()) {
+        newErrors.fullName = 'Full name is required';
+      } else if (fullName.trim().length < 2) {
+        newErrors.fullName = 'Full name must be at least 2 characters';
+      } else if (!/^[a-zA-Z\s]+$/.test(fullName.trim())) {
+        newErrors.fullName = 'Full name can only contain letters and spaces';
+      }
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -249,8 +257,8 @@ const SignUpPage = () => {
                 {/* Step 2: Profile Information */}
                 {currentStep === 2 && (
                   <div className="form-step">
-                    <h2 className="step-title">Profile Information (Optional)</h2>
-                    <p className="step-description">Tell us a bit more about yourself</p>
+                    <h2 className="step-title">Profile Information</h2>
+                    <p className="step-description">Complete your profile information</p>
                     
                     <Input
                       type="text"
@@ -258,6 +266,7 @@ const SignUpPage = () => {
                       placeholder="Full name"
                       value={fullName}
                       onChange={handleChange}
+                      error={errors.fullName}
                       fullWidth
                       className="signup-input"
                     />
