@@ -43,10 +43,14 @@ const ServiceDetailPage = () => {
       setLoading(true);
       setError(null);
 
-      // Only serve live data from backend API - no static test services
-
-      // Handle real API service
+      // Check authentication first
       const token = localStorage.getItem('token');
+      if (!token) {
+        console.warn('No auth token found - redirecting to sign-in');
+        navigate('/sign-in');
+        return;
+      }
+
       console.log('Fetching real service details for ID:', serviceId);
       console.log('API URL:', `${import.meta.env.VITE_BACK_END_SERVER_URL}/services/${serviceId}`);
       console.log('Auth token exists:', !!token);
@@ -61,9 +65,21 @@ const ServiceDetailPage = () => {
       console.log('Service detail response status:', response.status);
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Service detail error:', response.status, errorText);
-        throw new Error(`Failed to fetch service: ${response.status}`);
+        if (response.status === 401) {
+          // Authentication failed - token invalid/expired
+          console.warn('Authentication failed - clearing token and redirecting');
+          localStorage.removeItem('token');
+          navigate('/sign-in');
+          return;
+        } else if (response.status === 404) {
+          // Service not found
+          throw new Error('Service not found');
+        } else {
+          // Other server error
+          const errorText = await response.text();
+          console.error('Service detail error:', response.status, errorText);
+          throw new Error(`Failed to fetch service: ${response.status}`);
+        }
       }
 
       const serviceData = await response.json();
@@ -72,7 +88,7 @@ const ServiceDetailPage = () => {
 
     } catch (err) {
       console.error('Error fetching service:', err);
-      setError('Failed to load service details. Service may not exist or authentication may be required.');
+      setError(err.message || 'Failed to load service details');
     } finally {
       setLoading(false);
     }
@@ -109,9 +125,17 @@ const ServiceDetailPage = () => {
     try {
       console.log('Fetching service availability for service:', service._id);
       const serviceId = service._id;
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        console.warn('No auth token for availability - redirecting');
+        navigate('/sign-in');
+        return;
+      }
+
       const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/availability/service/${serviceId}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -120,6 +144,11 @@ const ServiceDetailPage = () => {
         const availabilityData = await response.json();
         console.log('Service availability received:', availabilityData);
         setProviderAvailability(Array.isArray(availabilityData) ? availabilityData : [availabilityData]);
+      } else if (response.status === 401) {
+        // Authentication failed for availability
+        console.warn('Auth failed for availability - redirecting');
+        localStorage.removeItem('token');
+        navigate('/sign-in');
       } else {
         console.log('No availability set for this service yet');
         setProviderAvailability([]);
