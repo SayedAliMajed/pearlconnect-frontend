@@ -30,7 +30,7 @@ const ProviderDashboard = () => {
 
       // Fetch services count
       const servicesRes = await fetch(
-        `${import.meta.env.VITE_BACK_END_SERVER_URL}/services?provider=${providerId}`,
+        `${import.meta.env.VITE_API_URL}/services?provider=${providerId}`,
         {
           headers: { 'Authorization': `Bearer ${token}` }
         }
@@ -42,7 +42,7 @@ const ProviderDashboard = () => {
       let activeBookings = 0;
       try {
         const bookingsRes = await fetch(
-          `${import.meta.env.VITE_BACK_END_SERVER_URL}/bookings?provider=${providerId}`,
+          `${import.meta.env.VITE_API_URL}/bookings?provider=${providerId}`,
           {
             headers: { 'Authorization': `Bearer ${token}` }
           }
@@ -60,7 +60,7 @@ const ProviderDashboard = () => {
       let averageRating = 0;
       try {
         const reviewsRes = await fetch(
-          `${import.meta.env.VITE_BACK_END_SERVER_URL}/reviews?providerId=${providerId}`,
+          `${import.meta.env.VITE_API_URL}/reviews?providerId=${providerId}`,
           {
             headers: { 'Authorization': `Bearer ${token}` }
           }

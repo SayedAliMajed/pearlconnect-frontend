@@ -226,7 +226,7 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
         ...serviceData,
         images: `${serviceData.images.length} images` // Avoid spamming console with base64
       });
-      console.log('API URL:', `${import.meta.env.VITE_BACK_END_SERVER_URL}/services`);
+      console.log('API URL:', `${import.meta.env.VITE_API_URL}/services`);
       console.log('Auth token exists:', !!localStorage.getItem('token'));
 
       let response;
@@ -253,11 +253,11 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
             images: `${serviceData.images.length} images`
           },
           token: localStorage.getItem('token') ? 'Token exists' : 'No token',
-          apiUrl: `${import.meta.env.VITE_BACK_END_SERVER_URL}/services/${service._id || service.id}`
+          apiUrl: `${import.meta.env.VITE_API_URL}/services/${service._id || service.id}`
         });
 
         // Update existing service
-        response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/services/${service._id || service.id}`, {
+        response = await fetch(`${import.meta.env.VITE_API_URL}/services/${service._id || service.id}`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -268,7 +268,7 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
         serviceResult = await response.json();
       } else {
         // Create new service
-        response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/services`, {
+        response = await fetch(`${import.meta.env.VITE_API_URL}/services`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -308,10 +308,10 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
       // Now submit availability data for the service
       console.log('📅 Submitting availability for service:', serviceId);
       console.log('📊 Availability data structure:', JSON.stringify(availabilityData, null, 2));
-      console.log('🔗 Availability API URL:', `${import.meta.env.VITE_BACK_END_SERVER_URL}/availability/service/${serviceId}`);
+      console.log('🔗 Availability API URL:', `${import.meta.env.VITE_API_URL}/availability/service/${serviceId}`);
       console.log('🔐 Auth token exists:', !!localStorage.getItem('token'));
 
-      const availabilityResponse = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/availability/service/${serviceId}`, {
+      const availabilityResponse = await fetch(`${import.meta.env.VITE_API_URL}/availability/service/${serviceId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
