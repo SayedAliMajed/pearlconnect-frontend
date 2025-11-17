@@ -30,7 +30,7 @@ const ProviderDashboard = () => {
 
       // Fetch services count
       const servicesRes = await fetch(
-        `${import.meta.env.VITE_BACK_END_SERVER_URL}/services?provider=${providerId}`,
+        `${import.meta.env.VITE_API_URL}/services?provider=${providerId}`,
         {
           headers: { 'Authorization': `Bearer ${token}` }
         }
@@ -42,14 +42,18 @@ const ProviderDashboard = () => {
       let activeBookings = 0;
       try {
         const bookingsRes = await fetch(
-          `${import.meta.env.VITE_BACK_END_SERVER_URL}/bookings?provider=${providerId}`,
+          `${import.meta.env.VITE_API_URL}/bookings?provider=${providerId}`,
           {
             headers: { 'Authorization': `Bearer ${token}` }
           }
         );
         if (bookingsRes.ok) {
           const bookingsData = await bookingsRes.json();
-          activeBookings = bookingsData.bookings?.length || 0;
+          // Assume bookingsData is array, filter to only active bookings (not cancelled/completed)
+          const allBookings = Array.isArray(bookingsData) ? bookingsData : bookingsData.bookings || [];
+          activeBookings = allBookings.filter(booking =>
+            booking.status !== 'cancelled' && booking.status !== 'completed'
+          ).length;
         }
       } catch (err) {
         console.log('Bookings endpoint not available yet');
@@ -60,7 +64,7 @@ const ProviderDashboard = () => {
       let averageRating = 0;
       try {
         const reviewsRes = await fetch(
-          `${import.meta.env.VITE_BACK_END_SERVER_URL}/reviews?providerId=${providerId}`,
+          `${import.meta.env.VITE_API_URL}/reviews?providerId=${providerId}`,
           {
             headers: { 'Authorization': `Bearer ${token}` }
           }
