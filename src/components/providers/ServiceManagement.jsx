@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import ServiceForm from './ServiceForm';
+import AvailabilityCalendar from './AvailabilityCalendar';
 import { AuthContext } from '../../contexts/AuthContext';
 
 const ServiceManagement = () => {
@@ -11,6 +12,7 @@ const ServiceManagement = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [managingAvailability, setManagingAvailability] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -152,6 +154,14 @@ const ServiceManagement = () => {
     setEditingService(null);
   };
 
+  const handleManageAvailability = (service) => {
+    setManagingAvailability(service);
+  };
+
+  const handleAvailabilityDone = () => {
+    setManagingAvailability(null);
+  };
+
   if (loading) {
     return (
       <div className="service-management">
@@ -186,6 +196,22 @@ const ServiceManagement = () => {
         </div>
       )}
 
+      {/* Availability Management */}
+      {managingAvailability && (
+        <div className="availability-management">
+          <div className="availability-header">
+            <h4>Manage Availability for: {managingAvailability.title}</h4>
+            <p>Set your working hours and availability for this service</p>
+          </div>
+          <AvailabilityCalendar serviceId={managingAvailability._id} />
+          <div className="availability-actions">
+            <Button variant="secondary" onClick={handleAvailabilityDone}>
+              Done
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Services List */}
       <div className="services-list">
         {console.log('ServiceManagement - services count:', services.length)}
@@ -199,7 +225,7 @@ const ServiceManagement = () => {
                   <h4>{service.title}</h4>
                   <p className="service-description">{service.description}</p>
                   <div className="service-meta">
-                    <span className="service-category">{service.category}</span>
+                    <span className="service-category">{service.category?.name || service.category?.title || service.category || 'N/A'}</span>
                     <span className="service-price">
                       {service.currency || 'BD'} {service.price}
                     </span>
@@ -228,7 +254,8 @@ const ServiceManagement = () => {
                 display: 'flex',
                 gap: '8px',
                 marginTop: '10px',
-                justifyContent: 'flex-end'
+                justifyContent: 'flex-end',
+                flexWrap: 'wrap'
               }}>
                 <Button
                   variant="secondary"
@@ -236,6 +263,13 @@ const ServiceManagement = () => {
                   onClick={() => handleEditService(service)}
                 >
                   ✏️ Edit
+                </Button>
+                <Button
+                  variant="primary"
+                  size="small"
+                  onClick={() => handleManageAvailability(service)}
+                >
+                  📅 Availability
                 </Button>
                 <Button
                   variant="danger"

@@ -4,7 +4,7 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { AuthContext } from '../../contexts/AuthContext';
 import ServiceManagement from '../../components/providers/ServiceManagement';
-import BookingList from '../../components/bookings/BookingList';
+import BookingsPage from '../bookings/BookingsPage';
 import ReviewsList from '../../components/reviews/ReviewsList';
 
 const ProviderDashboard = () => {
@@ -194,10 +194,7 @@ const ProviderDashboard = () => {
           )}
 
           {activeTab === 'bookings' && (
-            <div className="bookings-tab">
-              <h3>My Bookings</h3>
-              <BookingList showAll={false} />
-            </div>
+            <BookingsPage showNewBookingForm={false} />
           )}
 
           {activeTab === 'reviews' && (

@@ -235,14 +235,8 @@ const AvailabilityCalendar = () => {
       <div className="calendar-header">
         <div className="header-content">
           <h3>Set Your Availability</h3>
-          <p>Manage your working hours and time slots for customer bookings</p>
+          <p>Click on calendar dates to set your working hours for this service</p>
         </div>
-        <Button
-          variant="primary"
-          onClick={() => setShowTimeForm(true)}
-        >
-          ➕ Add Time Slot
-        </Button>
       </div>
 
       {/* Calendar Grid */}
@@ -255,6 +249,10 @@ const AvailabilityCalendar = () => {
             onClick={() => {
               const newDate = new Date(selectedDate);
               newDate.setMonth(newDate.getMonth() - 1);
+              console.log('🗓️ Nav to previous month:', {
+                from: selectedDate.toLocaleDateString(),
+                to: newDate.toLocaleDateString()
+              });
               setSelectedDate(newDate);
             }}
           >
@@ -269,6 +267,10 @@ const AvailabilityCalendar = () => {
             onClick={() => {
               const newDate = new Date(selectedDate);
               newDate.setMonth(newDate.getMonth() + 1);
+              console.log('🗓️ Nav to next month:', {
+                from: selectedDate.toLocaleDateString(),
+                to: newDate.toLocaleDateString()
+              });
               setSelectedDate(newDate);
             }}
           >
@@ -289,7 +291,18 @@ const AvailabilityCalendar = () => {
             <div
               key={index}
               className={`calendar-day ${!day.isCurrentMonth ? 'other-month' : ''} ${day.isToday ? 'today' : ''} ${day.availability ? 'has-availability' : ''}`}
-              onClick={() => day.isCurrentMonth && handleDateClick(day.date)}
+              onClick={() => {
+                console.log('🗓️ Calendar click:', {
+                  date: day.date,
+                  isCurrentMonth: day.isCurrentMonth,
+                  isPast: day.date < new Date(),
+                  today: new Date().toDateString(),
+                  clickedDate: day.date.toDateString()
+                });
+                if (day.isCurrentMonth) {
+                  handleDateClick(day.date);
+                }
+              }}
             >
               <div className="day-number">{day.date.getDate()}</div>
               {day.availability && (
@@ -486,7 +499,7 @@ const AvailabilityCalendar = () => {
             </Card>
           ))
         ) : (
-          <p className="no-availability">No availability set yet. Click "Add Time Slot" to get started.</p>
+          <p className="no-availability">No availability set yet. Click on calendar dates above to add your working hours.</p>
         )}
       </div>
     </div>

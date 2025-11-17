@@ -66,15 +66,37 @@ export const fetchProviders = async () => {
   }
 };
 
-export const fetchBookings = async () => {
+export const fetchBookings = async (userRole) => {
   try {
-    const res = await fetch(`${BASE_URL}/bookings`, { headers: headers() });
+    // Use role-appropriate endpoints
+    const endpoint = userRole === 'provider' ? '/provider-bookings' : '/my-bookings';
+    const res = await fetch(`${BASE_URL}${endpoint}`, { headers: headers() });
     const data = await res.json();
     if (data.err) throw new Error(data.err || 'Failed to fetch bookings');
     return data;
   } catch (err) {
     console.error('fetchBookings', err);
     return [];
+  }
+};
+
+export const updateBookingStatus = async (bookingId, status) => {
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${BASE_URL}/bookings/${bookingId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status }),
+    });
+    const data = await res.json();
+    if (data.err) throw new Error(data.err || 'Failed to update booking status');
+    return data;
+  } catch (err) {
+    console.error('updateBookingStatus', err);
+    throw err;
   }
 };
 
@@ -96,7 +118,7 @@ export const cancelBooking = async (bookingId) => {
 
 export const fetchProviderAvailability = async (providerId) => {
   try {
-    const res = await fetch(`${BASE_URL}/providers/${providerId}/availability`);
+    const res = await fetch(`${BASE_URL}/providers/${providerId}/availability`, { headers: headers() });
     const data = await res.json();
     if (data.err) throw new Error(data.err || 'Failed to fetch provider availability');
     return data;

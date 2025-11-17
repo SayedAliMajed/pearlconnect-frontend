@@ -48,10 +48,10 @@ const ServiceDetailPage = () => {
       // Handle real API service
       const token = localStorage.getItem('token');
       console.log('Fetching real service details for ID:', serviceId);
-      console.log('API URL:', `${import.meta.env.VITE_API_URL}/services/${serviceId}`);
+      console.log('API URL:', `${import.meta.env.VITE_BACK_END_SERVER_URL}/services/${serviceId}`);
       console.log('Auth token exists:', !!token);
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/services/${serviceId}`, {
+      const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/services/${serviceId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -84,7 +84,7 @@ const ServiceDetailPage = () => {
     try {
       console.log('Fetching reviews for service:', service._id);
       const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/reviews?serviceId=${service._id}`, {
+      const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/reviews?serviceId=${service._id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -107,25 +107,30 @@ const ServiceDetailPage = () => {
     if (!service) return;
 
     try {
-      console.log('Fetching service availability for service:', service._id);
-      const serviceId = service._id;
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/availability/service/${serviceId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      console.log('Fetching provider availability for service:', service._id);
+      const providerId = service.providerId || service.provider._id || service.provider;
+      console.log('Provider ID:', providerId);
 
-      if (response.ok) {
-        const availabilityData = await response.json();
-        console.log('Service availability received:', availabilityData);
-        setProviderAvailability(Array.isArray(availabilityData) ? availabilityData : [availabilityData]);
-      } else {
-        console.log('No availability set for this service yet');
+      if (!providerId) {
+        console.log('No provider ID found for this service');
         setProviderAvailability([]);
+        return;
       }
+
+      // Use the same fetchProviderAvailability function as BookingForm
+      const availabilityData = await fetchProviderAvailability(providerId);
+      console.log('Provider availability received:', availabilityData);
+      console.log('🧪 Sample availability entry:', availabilityData[0]);
+      console.log('📋 All availability entries:', availabilityData.map((slot, index) => ({
+        index,
+        date: slot.date,
+        openingTime: slot.openingTime || slot.startTime,
+        closingTime: slot.closingTime || slot.endTime,
+        provider: slot.provider
+      })));
+      setProviderAvailability(Array.isArray(availabilityData) ? availabilityData : [availabilityData]);
     } catch (err) {
-      console.error('Error fetching service availability:', err);
+      console.error('Error fetching provider availability:', err);
       setProviderAvailability([]);
     }
   };
@@ -228,7 +233,7 @@ const ServiceDetailPage = () => {
       console.log('Booking payload:', payload);
 
       const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/bookings`, {
+      const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/bookings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -280,7 +285,7 @@ const ServiceDetailPage = () => {
       console.log('Review payload:', payload);
 
       const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/reviews`, {
+      const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/reviews`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -384,7 +389,7 @@ const ServiceDetailPage = () => {
                 <span className="service-rating">
                   ⭐ {service.averageRating || service.rating || 'N/A'} ({service.reviewCount || service.reviews || 0} reviews)
                 </span>
-                <span className="service-category">{service.category}</span>
+                <span className="service-category">{service.category?.name || service.category?.title || service.category || 'N/A'}</span>
               </div>
 
               <div className="service-price">
