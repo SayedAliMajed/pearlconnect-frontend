@@ -80,7 +80,7 @@ export const fetchBookings = async () => {
 
 export const fetchProviderBookings = async (providerId) => {
   try {
-    const res = await fetch(`${BASE_URL}/bookings?provider=${providerId}`, { headers: headers() });
+    const res = await fetch(`${BASE_URL}/provider-bookings`, { headers: headers() });
     const data = await res.json();
     if (data.err) throw new Error(data.err || 'Failed to fetch provider bookings');
     return data;

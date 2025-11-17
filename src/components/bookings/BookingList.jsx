@@ -11,6 +11,8 @@ const BookingList = ({ showAll = false, providerMode = false }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const userId = user?.id || user?._id || null;
+
   useEffect(() => {
     let mounted = true;
     const load = async () => {
@@ -40,8 +42,6 @@ const BookingList = ({ showAll = false, providerMode = false }) => {
       setError(err?.message || 'Failed to cancel booking');
     }
   };
-
-  const userId = user?.id || user?._id || null;
 
   const visible = bookings.filter(b => {
     if (showAll) return true;
