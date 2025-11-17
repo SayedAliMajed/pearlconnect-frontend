@@ -28,7 +28,7 @@ const ServiceManagement = () => {
       const providerId = user._id || user.id;
       console.log('Loading services for provider:', providerId);
 
-      const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/services?provider=${providerId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/services?provider=${providerId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -101,10 +101,10 @@ const ServiceManagement = () => {
         ownershipCheck: `service.provider === user._id → ${serviceToDelete?.provider} === ${user?._id} = ${serviceToDelete?.provider === user?._id}`,
         ownershipCheckByEmail: `service.provider.email === user.email → ${serviceToDelete?.provider?.email} === ${user?.email} = ${serviceToDelete?.provider?.email === user?.email}`,
         token: localStorage.getItem('token') ? 'Token exists (length: ' + localStorage.getItem('token').length + ')' : 'No token',
-        apiUrl: `${import.meta.env.VITE_BACK_END_SERVER_URL}/services/${serviceId}`
+        apiUrl: `${import.meta.env.VITE_API_URL}/services/${serviceId}`
       });
 
-      const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/services/${serviceId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/services/${serviceId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

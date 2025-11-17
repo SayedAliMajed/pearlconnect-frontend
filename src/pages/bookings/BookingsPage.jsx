@@ -93,20 +93,6 @@ const BookingsPage = ({ showNewBookingForm = true }) => {
       case 'confirmed':
         actions.push(
           <Button
-            key="start"
-            variant="success"
-            size="small"
-            onClick={() => handleUpdateStatus(booking._id || booking.id, 'in-progress')}
-            disabled={isUpdating}
-          >
-            {isUpdating ? 'Updating...' : 'Start Service'}
-          </Button>
-        );
-        break;
-
-      case 'in-progress':
-        actions.push(
-          <Button
             key="complete"
             variant="success"
             size="small"
@@ -127,7 +113,7 @@ const BookingsPage = ({ showNewBookingForm = true }) => {
     }
 
     // Add cancel option for all non-completed bookings
-    if (booking.status !== 'completed') {
+    if (booking.status !== 'completed' && booking.status !== 'cancelled') {
       actions.push(
         <Button
           key="cancel"
@@ -181,8 +167,6 @@ const BookingsPage = ({ showNewBookingForm = true }) => {
     switch (status?.toLowerCase()) {
       case 'confirmed':
         return '#4CAF50';
-      case 'in-progress':
-        return '#2196F3';
       case 'pending':
         return '#FF9800';
       case 'cancelled':
