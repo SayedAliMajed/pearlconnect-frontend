@@ -78,6 +78,18 @@ export const fetchBookings = async () => {
   }
 };
 
+export const fetchProviderBookings = async () => {
+  try {
+    const res = await fetch(`${BASE_URL}/provider-bookings`, { headers: headers() });
+    const data = await res.json();
+    if (data.err) throw new Error(data.err || 'Failed to fetch provider bookings');
+    return data;
+  } catch (err) {
+    console.error('fetchProviderBookings', err);
+    return [];
+  }
+};
+
 export const cancelBooking = async (bookingId) => {
   try {
     const token = localStorage.getItem('token');
