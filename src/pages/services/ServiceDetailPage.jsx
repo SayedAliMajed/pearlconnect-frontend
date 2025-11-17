@@ -48,10 +48,10 @@ const ServiceDetailPage = () => {
       // Handle real API service
       const token = localStorage.getItem('token');
       console.log('Fetching real service details for ID:', serviceId);
-      console.log('API URL:', `${import.meta.env.VITE_BACK_END_SERVER_URL}/services/${serviceId}`);
+      console.log('API URL:', `${import.meta.env.VITE_API_URL}/services/${serviceId}`);
       console.log('Auth token exists:', !!token);
 
-      const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/services/${serviceId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/services/${serviceId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -84,7 +84,7 @@ const ServiceDetailPage = () => {
     try {
       console.log('Fetching reviews for service:', service._id);
       const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/reviews?serviceId=${service._id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/reviews?serviceId=${service._id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -109,7 +109,7 @@ const ServiceDetailPage = () => {
     try {
       console.log('Fetching service availability for service:', service._id);
       const serviceId = service._id;
-      const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/availability/service/${serviceId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/availability/service/${serviceId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -228,7 +228,7 @@ const ServiceDetailPage = () => {
       console.log('Booking payload:', payload);
 
       const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/bookings`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/bookings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -280,7 +280,7 @@ const ServiceDetailPage = () => {
       console.log('Review payload:', payload);
 
       const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/reviews`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/reviews`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,6 +1,6 @@
 // Categories API service - Live data only, no hardcoded fixtures
 
-const API_BASE = import.meta.env.VITE_BACK_END_SERVER_URL;
+const API_BASE = import.meta.env.VITE_API_URL;
 
 /**
  * Fetch all categories from the backend

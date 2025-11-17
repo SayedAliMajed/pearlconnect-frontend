@@ -20,7 +20,7 @@ function useReview(jwt) {
 	async function getReviews() {
 		try {
 			setLoading(true);
-			const res = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/reviews`, { headers: authHeaders });
+			const res = await fetch(`${import.meta.env.VITE_API_URL}/reviews`, { headers: authHeaders });
 			const data = await res.json();
 			if (!res.ok) throw new Error(data.err || 'Failed to fetch reviews');
 			setReviews(data);
