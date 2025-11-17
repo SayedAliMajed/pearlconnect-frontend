@@ -181,7 +181,7 @@ const ServicesPage = () => {
                       <h3 className="ui-card__title">{service.title}</h3>
                       <p className="ui-card__subtitle">{service.subtitle}</p>
                       <div className="service-meta">
-                        <span className="service-category">{service.category}</span>
+                        <span className="service-category">{service.category?.name || service.category}</span>
                         <div className="service-rating">
                           ⭐ {service.rating || 'N/A'} ({service.reviews || 0} reviews)
                         </div>

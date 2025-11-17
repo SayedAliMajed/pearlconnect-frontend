@@ -78,6 +78,22 @@
   box-shadow: var(--shadow-md);
 }
 
+.ui-button--success {
+  background-color: #4CAF50;
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.ui-button--success:hover:not(:disabled) {
+  background-color: #388E3C;
+  box-shadow: var(--shadow-md);
+}
+
+.ui-button--success:active:not(:disabled) {
+  background-color: #2E7D32;
+  box-shadow: var(--shadow-sm);
+}
+
 /* Button Sizes */
 .ui-button--small {
   padding: 8px 16px;

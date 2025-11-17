@@ -3,9 +3,9 @@ import Container from '../ui/Container';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { AuthContext } from '../../contexts/AuthContext';
-import { fetchBookings, cancelBooking } from '../../services/bookings';
+import { fetchBookings, fetchProviderBookings, cancelBooking, updateBookingStatus } from '../../services/bookings';
 
-const BookingList = ({ showAll = false }) => {
+const BookingList = ({ showAll = false, fetchProviderBookings: shouldFetchProviderBookings = false, statusFilter = 'all' }) => {
   const { user } = useContext(AuthContext);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +18,10 @@ const BookingList = ({ showAll = false }) => {
     const load = async () => {
       setLoading(true);
       try {
-        const data = await fetchBookings();
+        // Choose API endpoint based on whether this is for provider dashboard
+        const data = shouldFetchProviderBookings
+          ? await fetchProviderBookings()
+          : await fetchBookings();
         if (mounted) setBookings(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error(err);
@@ -29,7 +32,7 @@ const BookingList = ({ showAll = false }) => {
     };
     load();
     return () => { mounted = false; };
-  }, [userId]);
+  }, [userId, shouldFetchProviderBookings]);
 
   const handleCancel = async (id) => {
     if (!confirm('Cancel this booking?')) return;
@@ -42,7 +45,29 @@ const BookingList = ({ showAll = false }) => {
     }
   };
 
+  const handleStatusUpdate = async (id, newStatus, actionName) => {
+    if (!confirm(`Mark this booking as ${actionName}?`)) return;
+    try {
+      await updateBookingStatus(id, newStatus);
+      // Update the booking status in the local state
+      setBookings(prev =>
+        prev.map(b =>
+          (b._id || b.id) === id ? { ...b, status: newStatus } : b
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      setError(err?.message || `Failed to ${actionName.toLowerCase()} booking`);
+    }
+  };
+
   const visible = bookings.filter(b => {
+    // Status filtering first
+    if (statusFilter !== 'all') {
+      const bookingStatus = b.status?.toLowerCase() || 'pending';
+      if (bookingStatus !== statusFilter.toLowerCase()) return false;
+    }
+
     if (showAll) return true;
     if (!userId) return true;
     const bCust = b.customerId && ((b.customerId._id || b.customerId) === userId);
@@ -73,11 +98,42 @@ const BookingList = ({ showAll = false }) => {
                 <div><strong>Status:</strong> {b.status}</div>
                 <div><strong>Provider:</strong> {providerName}</div>
                 <div><strong>Customer:</strong> {customerName}</div>
-                {b.status !== 'cancelled' && (
-                  <div>
-                    <Button variant="danger" size="small" onClick={() => handleCancel(id)}>Cancel</Button>
-                  </div>
-                )}
+                <div className="booking-actions" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {/* Provider status management actions */}
+                  {shouldFetchProviderBookings && (
+                    <>
+                      {(b.status === 'pending' || !b.status) && (
+                        <Button
+                          variant="success"
+                          size="small"
+                          onClick={() => handleStatusUpdate(id, 'confirmed', 'Confirmed')}
+                        >
+                          ✅ Confirm
+                        </Button>
+                      )}
+                      {b.status === 'confirmed' && (
+                        <Button
+                          variant="primary"
+                          size="small"
+                          onClick={() => handleStatusUpdate(id, 'completed', 'Completed')}
+                        >
+                          🎉 Complete
+                        </Button>
+                      )}
+                    </>
+                  )}
+
+                  {/* Cancel button (available for both providers and customers) */}
+                  {b.status !== 'cancelled' && b.status !== 'completed' && (
+                    <Button
+                      variant="danger"
+                      size="small"
+                      onClick={() => handleCancel(id)}
+                    >
+                      ❌ Cancel
+                    </Button>
+                  )}
+                </div>
               </div>
             </Card>
           );

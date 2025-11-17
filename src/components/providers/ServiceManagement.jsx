@@ -33,23 +33,34 @@ const ServiceManagement = () => {
         }
       });
 
+      // Quick diagnostic
+      const responseText = await response.text();
+      console.log('Status:', response.status);
+      console.log('Raw response:', responseText);
+
       if (response.ok) {
-        const data = await response.json();
-        console.log('Loaded services:', data);
-        // API returns {services: [...], pagination: {...}}
-        const servicesArray = data.services || data || [];
+        try {
+          const data = JSON.parse(responseText);
+          console.log('Loaded services:', data);
+          // API returns {services: [...], pagination: {...}}
+          const servicesArray = data.services || data || [];
 
-        // Fix provider field inconsistency - ensure it's an object
-        const normalizedServices = servicesArray.map(service => ({
-          ...service,
-          provider: typeof service.provider === 'object'
-            ? service.provider
-            : { _id: providerId, email: user.email, name: user.username }
-        }));
+          // Fix provider field inconsistency - ensure it's an object
+          const normalizedServices = servicesArray.map(service => ({
+            ...service,
+            provider: typeof service.provider === 'object'
+              ? service.provider
+              : { _id: providerId, email: user.email, name: user.username }
+          }));
 
-        setServices(Array.isArray(normalizedServices) ? normalizedServices : []);
+          setServices(Array.isArray(normalizedServices) ? normalizedServices : []);
+        } catch (jsonError) {
+          console.error('JSON parse failed:', jsonError);
+          console.error('Response was:', responseText);
+          setServices([]);
+        }
       } else {
-        console.error('Failed to load services');
+        console.error('Request failed:', response.status, responseText);
         setServices([]);
       }
     } catch (error) {
@@ -199,7 +210,7 @@ const ServiceManagement = () => {
                   <h4>{service.title}</h4>
                   <p className="service-description">{service.description}</p>
                   <div className="service-meta">
-                    <span className="service-category">{service.category}</span>
+                    <span className="service-category">{service.category?.name || service.category}</span>
                     <span className="service-price">
                       {service.currency || 'BD'} {service.price}
                     </span>

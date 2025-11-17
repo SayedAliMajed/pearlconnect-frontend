@@ -118,6 +118,45 @@ export const cancelBooking = async (bookingId) => {
   }
 };
 
+export const updateBookingStatus = async (bookingId, status) => {
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${BASE_URL}/bookings/${bookingId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status }),
+    });
+
+    // Enhanced diagnostic logging
+    console.log('🔄 PUT /bookings/:id - URL:', `${BASE_URL}/bookings/${bookingId}`);
+    console.log('🔄 PUT /bookings/:id - Status:', res.status);
+    console.log('🔄 PUT /bookings/:id - Headers:', Object.fromEntries(res.headers));
+
+    const responseText = await res.text();
+    console.log('🔄 PUT /bookings/:id - Raw response:', responseText.substring(0, 200) + (responseText.length > 200 ? '...' : ''));
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+      console.log('✅ PUT /bookings/:id - Parsed JSON:', data);
+    } catch (jsonErr) {
+      console.error('❌ PUT /bookings/:id - JSON parse failed:', jsonErr);
+      console.error('❌ Response body (first 500 chars):', responseText.substring(0, 500));
+      console.error('❌ This is likely HTML error page instead of JSON response');
+      throw new Error(`Server returned non-JSON response: ${res.status} ${res.statusText}`);
+    }
+
+    if (data.err) throw new Error(data.err || 'Failed to update booking status');
+    return data;
+  } catch (err) {
+    console.error('💥 updateBookingStatus complete error:', err);
+    throw err;
+  }
+};
+
 export const fetchProviderAvailability = async (providerId) => {
   try {
     const res = await fetch(`${BASE_URL}/providers/${providerId}/availability`);

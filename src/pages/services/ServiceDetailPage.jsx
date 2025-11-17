@@ -243,7 +243,7 @@ const ServiceDetailPage = () => {
         alert('Booking created successfully!');
         setShowBookingForm(false);
         setBookingData({ date: '', time: '' });
-        navigate('/bookings');
+        navigate('/orders');
       } else {
         const errorData = await response.json();
         console.error('Booking error:', errorData);
@@ -384,7 +384,7 @@ const ServiceDetailPage = () => {
                 <span className="service-rating">
                   ⭐ {service.averageRating || service.rating || 'N/A'} ({service.reviewCount || service.reviews || 0} reviews)
                 </span>
-                <span className="service-category">{service.category}</span>
+                <span className="service-category">{service.category?.name || service.category}</span>
               </div>
 
               <div className="service-price">

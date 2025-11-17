@@ -15,6 +15,7 @@ import BookingsPage from './pages/bookings/BookingsPage';
 import ReviewsPage from './pages/reviews/ReviewsPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import ProviderDashboard from './pages/providers/ProviderDashboard';
+import OrdersPage from './pages/orders/OrdersPage';
 import { useContext } from 'react';
 import { AuthContext } from './contexts/AuthContext';
 
@@ -44,7 +45,7 @@ const App = () => {
         <Route path='/products' element={<h1>Products</h1>}/>
         <Route path='/favs' element={<h1>Favorites</h1>}/>
         <Route path='/profile' element={<ProfilePage/>}/>
-        <Route path='/orders' element={<h1>Orders</h1>}/>
+        <Route path='/orders' element={<BookingsPage/>}/>
       </Routes>
     </>
   );

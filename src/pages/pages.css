@@ -403,6 +403,53 @@
   padding: 2rem 0;
 }
 
+/* Status Filters */
+.status-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+}
+
+.status-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.status-filter:hover {
+  border-color: #00AD96;
+  background-color: #f8f9fa;
+}
+
+.status-filter.active {
+  border-color: #00AD96;
+  background-color: #e8f5e8;
+  color: #2563eb;
+}
+
+.status-filter.active .filter-icon {
+  color: #00AD96;
+}
+
+.filter-icon {
+  font-size: 1rem;
+  color: #666;
+}
+
+.filter-label {
+  white-space: nowrap;
+}
+
 .dashboard-header {
   text-align: center;
   margin-bottom: 2rem;

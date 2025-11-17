@@ -10,6 +10,7 @@ import ReviewsList from '../../components/reviews/ReviewsList';
 const ProviderDashboard = () => {
   const { user } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState('overview');
+  const [bookingsStatusFilter, setBookingsStatusFilter] = useState('all');
   const [stats, setStats] = useState({
     totalServices: 0,
     activeBookings: 0,
@@ -199,8 +200,33 @@ const ProviderDashboard = () => {
 
           {activeTab === 'bookings' && (
             <div className="bookings-tab">
-              <h3>My Bookings</h3>
-              <BookingList showAll={false} />
+              <h3>Received Bookings</h3>
+
+              {/* Status Filter Tabs */}
+              <div className="status-filters">
+                {[
+                  { key: 'all', label: 'All', icon: '📋' },
+                  { key: 'pending', label: 'Pending', icon: '⏳' },
+                  { key: 'confirmed', label: 'Confirmed', icon: '✅' },
+                  { key: 'completed', label: 'Completed', icon: '🎉' },
+                  { key: 'cancelled', label: 'Cancelled', icon: '❌' }
+                ].map(filter => (
+                  <button
+                    key={filter.key}
+                    className={`status-filter ${bookingsStatusFilter === filter.key ? 'active' : ''}`}
+                    onClick={() => setBookingsStatusFilter(filter.key)}
+                  >
+                    <span className="filter-icon">{filter.icon}</span>
+                    <span className="filter-label">{filter.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <BookingList
+                showAll={false}
+                fetchProviderBookings={true}
+                statusFilter={bookingsStatusFilter}
+              />
             </div>
           )}
 
