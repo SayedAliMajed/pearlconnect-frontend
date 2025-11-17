@@ -18,7 +18,7 @@ const ReviewsList = () => {
       setLoading(true);
       const providerId = user._id || user.id;
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/reviews?providerId=${providerId}`,
+        `${import.meta.env.VITE_API_URL}/provider-reviews`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`

@@ -60,7 +60,7 @@ const ProviderDashboard = () => {
       let averageRating = 0;
       try {
         const reviewsRes = await fetch(
-          `${import.meta.env.VITE_API_URL}/reviews?providerId=${providerId}`,
+          `${import.meta.env.VITE_API_URL}/provider-reviews`,
           {
             headers: { 'Authorization': `Bearer ${token}` }
           }
