@@ -154,7 +154,7 @@ const NavBar = () => {
                   onClick={() => setShowAccountDropdown(!showAccountDropdown)}
                 >
                   <span className="pc-account-greeting">
-                    {user ? `Hello, ${user.username}` : 'Hello, Sign in'}
+                    {user ? `Hello, ${user.profile?.fullName || user.username}` : 'Hello, Sign in'}
                   </span>
                   <span className="pc-account-options">Account & Lists</span>
                 </button>
