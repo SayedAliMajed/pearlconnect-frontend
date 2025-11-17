@@ -28,7 +28,7 @@ const SignUpPage = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [authError, setAuthError] = useState('');
-  const [currentStep, setCurrentStep] = useState(1);
+
 
   const {
     username,
@@ -57,61 +57,49 @@ const SignUpPage = () => {
     }
   };
 
-  const validateStep = (step) => {
+  const validateForm = () => {
     const newErrors = {};
 
-    if (step === 1) {
-      if (!fullName.trim()) {
-        newErrors.fullName = 'Full name is required';
-      } else if (fullName.trim().length < 2) {
-        newErrors.fullName = 'Full name must be at least 2 characters';
-      } else if (!/^[a-zA-Z\s]+$/.test(fullName.trim())) {
-        newErrors.fullName = 'Full name can only contain letters and spaces';
-      }
+    if (!fullName.trim()) {
+      newErrors.fullName = 'Full name is required';
+    } else if (fullName.trim().length < 2) {
+      newErrors.fullName = 'Full name must be at least 2 characters';
+    } else if (!/^[a-zA-Z\s]+$/.test(fullName.trim())) {
+      newErrors.fullName = 'Full name can only contain letters and spaces';
+    }
 
-      if (!username.trim()) {
-        newErrors.username = 'Username is required';
-      } else if (username.length < 3) {
-        newErrors.username = 'Username must be at least 3 characters';
-      }
+    if (!username.trim()) {
+      newErrors.username = 'Username is required';
+    } else if (username.length < 3) {
+      newErrors.username = 'Username must be at least 3 characters';
+    }
 
-      if (!email) {
-        newErrors.email = 'Email is required';
-      } else if (!/\S+@\S+\.\S+/.test(email)) {
-        newErrors.email = 'Email is invalid';
-      }
+    if (!email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Email is invalid';
+    }
 
-      if (!password) {
-        newErrors.password = 'Password is required';
-      } else if (password.length < 6) {
-        newErrors.password = 'Password must be at least 6 characters';
-      }
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
 
-      if (!confirmPassword) {
-        newErrors.confirmPassword = 'Please confirm your password';
-      } else if (password !== confirmPassword) {
-        newErrors.confirmPassword = 'Passwords do not match';
-      }
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNext = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep(prev => prev + 1);
-    }
-  };
-
-  const handlePrevious = () => {
-    setCurrentStep(prev => prev - 1);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateStep(currentStep)) {
+    if (!validateForm()) {
       return;
     }
 
@@ -142,208 +130,150 @@ const SignUpPage = () => {
                 </p>
               </div>
 
-              {/* Progress Indicator */}
-              <div className="signup-progress">
-                <div className={`progress-step ${currentStep >= 1 ? 'active' : ''} ${currentStep > 1 ? 'completed' : ''}`}>
-                  <span className="step-number">1</span>
-                  <span className="step-label">Account</span>
-                </div>
-                <div className="progress-line"></div>
-                <div className={`progress-step ${currentStep >= 2 ? 'active' : ''}`}>
-                  <span className="step-number">2</span>
-                  <span className="step-label">Profile</span>
-                </div>
-              </div>
-
               <form onSubmit={handleSubmit} className="signup-form">
-                {/* Step 1: Account Information */}
-                {currentStep === 1 && (
-                  <div className="form-step">
-                    <h2 className="step-title">Account Information</h2>
-
-                    <div className="form-group">
-                      <label className="form-label">Full Name *</label>
-                      <Input
-                        type="text"
-                        name="fullName"
-                        placeholder="Enter your full name"
-                        value={fullName}
-                        onChange={handleChange}
-                        error={errors.fullName}
-                        fullWidth
-                        className="signup-input"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="form-label">Username *</label>
-                      <Input
-                        type="text"
-                        name="username"
-                        placeholder="Choose a username"
-                        value={username}
-                        onChange={handleChange}
-                        error={errors.username}
-                        fullWidth
-                        className="signup-input"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="form-label">Email *</label>
-                      <Input
-                        type="email"
-                        name="email"
-                        placeholder="Enter your email"
-                        value={email}
-                        onChange={handleChange}
-                        error={errors.email}
-                        fullWidth
-                        className="signup-input"
-                      />
-                    </div>
-
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label className="form-label">Password *</label>
-                        <Input
-                          type="password"
-                          name="password"
-                          placeholder="Create a password"
-                          value={password}
-                          onChange={handleChange}
-                          error={errors.password}
-                          fullWidth
-                          className="signup-input"
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label className="form-label">Confirm Password *</label>
-                        <Input
-                          type="password"
-                          name="confirmPassword"
-                          placeholder="Confirm password"
-                          value={confirmPassword}
-                          onChange={handleChange}
-                          error={errors.confirmPassword}
-                          fullWidth
-                          className="signup-input"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="role-selection">
-                      <label className="role-label">I want to:</label>
-                      <div className="role-options">
-                        <label className="role-option">
-                          <input
-                            type="radio"
-                            name="role"
-                            value="customer"
-                            checked={role === 'customer'}
-                            onChange={handleChange}
-                          />
-                          <div className="role-content">
-                            <span className="role-title">Find Services</span>
-                            <span className="role-description">Book local services</span>
-                          </div>
-                        </label>
-                        
-                        <label className="role-option">
-                          <input
-                            type="radio"
-                            name="role"
-                            value="provider"
-                            checked={role === 'provider'}
-                            onChange={handleChange}
-                          />
-                          <div className="role-content">
-                            <span className="role-title">Provide Services</span>
-                            <span className="role-description">Offer your services</span>
-                          </div>
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="form-actions">
-                      <Button
-                        type="button"
-                        variant="primary"
-                        size="large"
-                        onClick={handleNext}
-                        className="next-button"
-                      >
-                        Next Step
-                      </Button>
-                    </div>
+                <div className="form-section">
+                  <div className="form-group">
+                    <label className="form-label">Full Name *</label>
+                    <Input
+                      type="text"
+                      name="fullName"
+                      placeholder="Enter your full name"
+                      value={fullName}
+                      onChange={handleChange}
+                      error={errors.fullName}
+                      fullWidth
+                      className="signup-input"
+                    />
                   </div>
-                )}
 
-                {/* Step 2: Profile Information */}
-                {currentStep === 2 && (
-                  <div className="form-step">
-                    <h2 className="step-title">Profile Information</h2>
-                    <p className="step-description">Complete your profile information</p>
-                    
-                    <div className="form-group">
-                      <label className="form-label">Full Name *</label>
-                      <Input
-                        type="text"
-                        name="fullName"
-                        placeholder="Enter your full name"
-                        value={fullName}
-                        onChange={handleChange}
-                        error={errors.fullName}
-                        fullWidth
-                        className="signup-input"
-                      />
-                    </div>
+                  <div className="form-group">
+                    <label className="form-label">Username *</label>
+                    <Input
+                      type="text"
+                      name="username"
+                      placeholder="Choose a username"
+                      value={username}
+                      onChange={handleChange}
+                      error={errors.username}
+                      fullWidth
+                      className="signup-input"
+                    />
+                  </div>
 
+                  <div className="form-group">
+                    <label className="form-label">Email *</label>
+                    <Input
+                      type="email"
+                      name="email"
+                      placeholder="Enter your email"
+                      value={email}
+                      onChange={handleChange}
+                      error={errors.email}
+                      fullWidth
+                      className="signup-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Phone Number</label>
                     <Input
                       type="tel"
                       name="phone"
-                      placeholder="Phone number"
+                      placeholder="Enter your phone number"
                       value={phone}
                       onChange={handleChange}
                       fullWidth
                       className="signup-input"
                     />
+                  </div>
 
-                    <div className="textarea-group">
-                      <textarea
-                        name="address"
-                        placeholder="Address (optional)"
-                        value={address}
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label className="form-label">Password *</label>
+                      <Input
+                        type="password"
+                        name="password"
+                        placeholder="Create a password"
+                        value={password}
                         onChange={handleChange}
-                        className="signup-textarea"
-                        rows="3"
+                        error={errors.password}
+                        fullWidth
+                        className="signup-input"
                       />
                     </div>
 
-                    <div className="form-actions">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="large"
-                        onClick={handlePrevious}
-                        className="back-button"
-                      >
-                        Back
-                      </Button>
-                      
-                      <Button
-                        type="submit"
-                        variant="primary"
-                        size="large"
-                        disabled={loading}
-                        className="signup-button"
-                      >
-                        {loading ? 'Creating Account...' : 'Create Account'}
-                      </Button>
+                    <div className="form-group">
+                      <label className="form-label">Confirm Password *</label>
+                      <Input
+                        type="password"
+                        name="confirmPassword"
+                        placeholder="Confirm password"
+                        value={confirmPassword}
+                        onChange={handleChange}
+                        error={errors.confirmPassword}
+                        fullWidth
+                        className="signup-input"
+                      />
                     </div>
                   </div>
-                )}
+
+                  <div className="role-selection">
+                    <label className="role-label">I want to:</label>
+                    <div className="role-options">
+                      <label className="role-option">
+                        <input
+                          type="radio"
+                          name="role"
+                          value="customer"
+                          checked={role === 'customer'}
+                          onChange={handleChange}
+                        />
+                        <div className="role-content">
+                          <span className="role-title">Find Services</span>
+                          <span className="role-description">Book local services</span>
+                        </div>
+                      </label>
+
+                      <label className="role-option">
+                        <input
+                          type="radio"
+                          name="role"
+                          value="provider"
+                          checked={role === 'provider'}
+                          onChange={handleChange}
+                        />
+                        <div className="role-content">
+                          <span className="role-title">Provide Services</span>
+                          <span className="role-description">Offer your services</span>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="textarea-group">
+                    <label className="form-label">Address</label>
+                    <textarea
+                      name="address"
+                      placeholder="Enter your address (optional)"
+                      value={address}
+                      onChange={handleChange}
+                      className="signup-textarea"
+                      rows="3"
+                    />
+                  </div>
+
+                  <div className="form-actions">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="large"
+                      disabled={loading}
+                      className="signup-button"
+                    >
+                      {loading ? 'Creating Account...' : 'Create Account'}
+                    </Button>
+                  </div>
+                </div>
 
                 {authError && (
                   <div className="signup-error-message">
