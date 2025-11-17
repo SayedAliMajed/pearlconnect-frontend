@@ -9,10 +9,7 @@ const ProfilePage = () => {
   const { user, setUser } = useContext(AuthContext);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    firstName: '',
-    lastName: '',
+    fullName: '',
     phone: '',
     address: ''
   });
@@ -22,10 +19,7 @@ const ProfilePage = () => {
   useEffect(() => {
     if (user) {
       setFormData({
-        username: user.username || '',
-        email: user.email || '',
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
+        fullName: user.profile?.fullName || '',
         phone: user.phone || '',
         address: user.address || ''
       });
@@ -63,10 +57,7 @@ const ProfilePage = () => {
   const handleCancel = () => {
     // Reset form data to original user data
     setFormData({
-      username: user.username || '',
-      email: user.email || '',
-      firstName: user.firstName || '',
-      lastName: user.lastName || '',
+      fullName: user.profile?.fullName || '',
       phone: user.phone || '',
       address: user.address || ''
     });
@@ -125,63 +116,28 @@ const ProfilePage = () => {
               <div className="form-row">
                 <div className="form-group">
                   <label>Username</label>
-                  {isEditing ? (
-                    <Input
-                      type="text"
-                      name="username"
-                      value={formData.username}
-                      onChange={handleInputChange}
-                      fullWidth
-                    />
-                  ) : (
-                    <p className="form-value">{user.username}</p>
-                  )}
+                  <p className="form-value">{user.username}</p>
                 </div>
 
                 <div className="form-group">
                   <label>Email</label>
-                  {isEditing ? (
-                    <Input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      fullWidth
-                    />
-                  ) : (
-                    <p className="form-value">{user.email}</p>
-                  )}
+                  <p className="form-value">{user.email}</p>
                 </div>
               </div>
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>First Name</label>
+                  <label>Full Name</label>
                   {isEditing ? (
                     <Input
                       type="text"
-                      name="firstName"
-                      value={formData.firstName}
+                      name="fullName"
+                      value={formData.fullName}
                       onChange={handleInputChange}
                       fullWidth
                     />
                   ) : (
-                    <p className="form-value">{user.firstName || 'Not provided'}</p>
-                  )}
-                </div>
-
-                <div className="form-group">
-                  <label>Last Name</label>
-                  {isEditing ? (
-                    <Input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      fullWidth
-                    />
-                  ) : (
-                    <p className="form-value">{user.lastName || 'Not provided'}</p>
+                    <p className="form-value">{user.profile?.fullName || 'Not provided'}</p>
                   )}
                 </div>
               </div>
