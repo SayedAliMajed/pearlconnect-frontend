@@ -61,6 +61,14 @@ const SignUpPage = () => {
     const newErrors = {};
 
     if (step === 1) {
+      if (!fullName.trim()) {
+        newErrors.fullName = 'Full name is required';
+      } else if (fullName.trim().length < 2) {
+        newErrors.fullName = 'Full name must be at least 2 characters';
+      } else if (!/^[a-zA-Z\s]+$/.test(fullName.trim())) {
+        newErrors.fullName = 'Full name can only contain letters and spaces';
+      }
+
       if (!username.trim()) {
         newErrors.username = 'Username is required';
       } else if (username.length < 3) {
@@ -83,14 +91,6 @@ const SignUpPage = () => {
         newErrors.confirmPassword = 'Please confirm your password';
       } else if (password !== confirmPassword) {
         newErrors.confirmPassword = 'Passwords do not match';
-      }
-    } else if (step === 2) {
-      if (!fullName.trim()) {
-        newErrors.fullName = 'Full name is required';
-      } else if (fullName.trim().length < 2) {
-        newErrors.fullName = 'Full name must be at least 2 characters';
-      } else if (!/^[a-zA-Z\s]+$/.test(fullName.trim())) {
-        newErrors.fullName = 'Full name can only contain letters and spaces';
       }
     }
 
@@ -160,6 +160,20 @@ const SignUpPage = () => {
                 {currentStep === 1 && (
                   <div className="form-step">
                     <h2 className="step-title">Account Information</h2>
+
+                    <div className="form-group">
+                      <label className="form-label">Full Name *</label>
+                      <Input
+                        type="text"
+                        name="fullName"
+                        placeholder="Enter your full name"
+                        value={fullName}
+                        onChange={handleChange}
+                        error={errors.fullName}
+                        fullWidth
+                        className="signup-input"
+                      />
+                    </div>
 
                     <div className="form-group">
                       <label className="form-label">Username *</label>
