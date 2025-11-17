@@ -1,7 +1,7 @@
 // src/components/homePage/homePage.jsx
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, Link } from 'react-router';
 import Container from '../ui/Container';
 import Card from '../ui/Card';
 import { useCategories } from '../../hooks/useCategories';
@@ -163,45 +163,45 @@ const HomePage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="homepage-footer">
-        <Container size="xlarge">
+      <footer className="footer">
+        <div className="footer-container">
           <div className="footer-content">
             <div className="footer-section">
-              <h4>PearlConnect</h4>
-              <p>Your trusted platform for local services in Bahrain</p>
+              <div className="footer-logo">
+                <img alt="PearlConnect Logo" src="/img/logo.png" />
+                <span>PearlConnect</span>
+              </div>
+              <p>Connecting communities in Bahrain, one service at a time.</p>
             </div>
             <div className="footer-section">
-              <h4>Services</h4>
+              <h3>Company</h3>
               <ul>
-                <li>Home Repair</li>
-                <li>Cleaning</li>
-                <li>Automotive</li>
-                <li>Wellness</li>
+                <li><Link to="/about">About Us</Link></li>
+                <li><Link to="/careers">Careers</Link></li>
+                <li><Link to="/contact">Contact</Link></li>
               </ul>
             </div>
             <div className="footer-section">
-              <h4>Company</h4>
+              <h3>Services</h3>
               <ul>
-                <li>About Us</li>
-                <li>Contact</li>
-                <li>Privacy Policy</li>
-                <li>Terms of Service</li>
+                <li><Link to="/services">Find Services</Link></li>
+                <li><Link to="/categories">Browse Categories</Link></li>
+                <li><Link to="/sign-up">Become a Pro</Link></li>
               </ul>
             </div>
             <div className="footer-section">
-              <h4>Support</h4>
+              <h3>Support</h3>
               <ul>
-                <li>Help Center</li>
-                <li>FAQ</li>
-                <li>Customer Service</li>
-                <li>Feedback</li>
+                <li><Link to="/help">Help Center</Link></li>
+                <li><Link to="/terms">Terms of Service</Link></li>
+                <li><Link to="/privacy">Privacy Policy</Link></li>
               </ul>
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2025 PearlConnect. All rights reserved. Made with Visily</p>
+            <p>&copy; 2024 PearlConnect Bahrain. All rights reserved.</p>
           </div>
-        </Container>
+        </div>
       </footer>
     </div>
   );
