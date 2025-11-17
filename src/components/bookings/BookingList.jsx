@@ -3,9 +3,9 @@ import Container from '../ui/Container';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { AuthContext } from '../../contexts/AuthContext';
-import { fetchBookings, cancelBooking } from '../../services/bookings';
+import { fetchBookings, cancelBooking, fetchProviderBookings } from '../../services/bookings';
 
-const BookingList = ({ showAll = false }) => {
+const BookingList = ({ showAll = false, providerMode = false }) => {
   const { user } = useContext(AuthContext);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,7 +16,8 @@ const BookingList = ({ showAll = false }) => {
     const load = async () => {
       setLoading(true);
       try {
-        const data = await fetchBookings();
+        const fetchFunc = providerMode ? fetchProviderBookings : fetchBookings;
+        const data = providerMode ? await fetchProviderBookings(userId) : await fetchBookings();
         if (mounted) setBookings(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error(err);
@@ -27,7 +28,7 @@ const BookingList = ({ showAll = false }) => {
     };
     load();
     return () => { mounted = false; };
-  }, []);
+  }, [providerMode, userId]);
 
   const handleCancel = async (id) => {
     if (!confirm('Cancel this booking?')) return;

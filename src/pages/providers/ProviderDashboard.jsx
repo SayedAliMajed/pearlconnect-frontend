@@ -200,7 +200,7 @@ const ProviderDashboard = () => {
           {activeTab === 'bookings' && (
             <div className="bookings-tab">
               <h3>My Bookings</h3>
-              <BookingList showAll={false} />
+              <BookingList showAll={false} providerMode={true} />
             </div>
           )}
 

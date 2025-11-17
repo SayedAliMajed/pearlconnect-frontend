@@ -1,4 +1,4 @@
-const BASE_URL = `${import.meta.env.VITE_BACK_END_SERVER_URL}`;
+const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 const headers = () => ({
   'Content-Type': 'application/json',
   Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -74,6 +74,18 @@ export const fetchBookings = async () => {
     return data;
   } catch (err) {
     console.error('fetchBookings', err);
+    return [];
+  }
+};
+
+export const fetchProviderBookings = async (providerId) => {
+  try {
+    const res = await fetch(`${BASE_URL}/bookings?provider=${providerId}`, { headers: headers() });
+    const data = await res.json();
+    if (data.err) throw new Error(data.err || 'Failed to fetch provider bookings');
+    return data;
+  } catch (err) {
+    console.error('fetchProviderBookings', err);
     return [];
   }
 };
