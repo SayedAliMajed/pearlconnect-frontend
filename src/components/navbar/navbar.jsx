@@ -103,10 +103,7 @@ const NavBar = () => {
     navigate(`/services${queryString ? `?${queryString}` : ''}`);
   };
 
-  // Debug user object
-  console.log('Navbar user object:', user);
-  console.log('User role:', user?.role);
-  console.log('Is provider?', user?.role === 'provider');
+  const token = localStorage.getItem('token');
 
   return (
     <header className="pc-header">
