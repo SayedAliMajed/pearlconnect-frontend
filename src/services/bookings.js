@@ -1,4 +1,4 @@
-const BASE_URL = `${import.meta.env.VITE_BACK_END_SERVER_URL}`;
+const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 const headers = () => ({
   'Content-Type': 'application/json',
   Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -42,9 +42,20 @@ export const createBooking = async (payload) => {
   }
 };
 
-export const fetchServices = async () => {
+export const fetchServices = async (limit = 6) => {
   try {
-    const res = await fetch(`${BASE_URL}/services`, { headers: headers() });
+    const servicesHeaders = {
+      'Content-Type': 'application/json'
+    };
+
+    // Add auth token only if available (for authenticated requests)
+    const token = localStorage.getItem('token');
+    if (token) {
+      servicesHeaders['Authorization'] = `Bearer ${token}`;
+    }
+
+    const url = limit ? `${BASE_URL}/services?limit=${limit}` : `${BASE_URL}/services`;
+    const res = await fetch(url, { headers: servicesHeaders });
     const data = await res.json();
     if (data.err) throw new Error(data.err || 'Failed to fetch services');
     return data;
@@ -78,6 +89,18 @@ export const fetchBookings = async () => {
   }
 };
 
+export const fetchProviderBookings = async () => {
+  try {
+    const res = await fetch(`${BASE_URL}/provider-bookings`, { headers: headers() });
+    const data = await res.json();
+    if (data.err) throw new Error(data.err || 'Failed to fetch provider bookings');
+    return data;
+  } catch (err) {
+    console.error('fetchProviderBookings', err);
+    return [];
+  }
+};
+
 export const cancelBooking = async (bookingId) => {
   try {
     const token = localStorage.getItem('token');
@@ -90,6 +113,26 @@ export const cancelBooking = async (bookingId) => {
     return data;
   } catch (err) {
     console.error('cancelBooking', err);
+    throw err;
+  }
+};
+
+export const updateBookingStatus = async (bookingId, status) => {
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${BASE_URL}/bookings/${bookingId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status }),
+    });
+    const data = await res.json();
+    if (data.err) throw new Error(data.err || 'Failed to update booking status');
+    return data;
+  } catch (err) {
+    console.error('updateBookingStatus', err);
     throw err;
   }
 };

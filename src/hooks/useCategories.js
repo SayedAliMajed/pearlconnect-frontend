@@ -15,12 +15,10 @@ export const useCategories = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Load categories when user is available
+  // Load categories on component mount (available to everyone)
   useEffect(() => {
-    if (user) {
-      loadCategories();
-    }
-  }, [user]);
+    loadCategories();
+  }, []);
 
   /**
    * Fetch categories from backend API

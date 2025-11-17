@@ -28,7 +28,7 @@ const AvailabilityCalendar = () => {
   const loadAvailability = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/providers/availability`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/providers/availability`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -104,13 +104,13 @@ const AvailabilityCalendar = () => {
       };
 
       console.log('Sending availability data:', slotData);
-      console.log('API URL:', `${import.meta.env.VITE_BACK_END_SERVER_URL}/providers/availability`);
+      console.log('API URL:', `${import.meta.env.VITE_API_URL}/providers/availability`);
       console.log('Auth token exists:', !!localStorage.getItem('token'));
 
       let response;
       if (editingSlot) {
         // Update existing slot
-        response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/providers/availability/${editingSlot._id}`, {
+        response = await fetch(`${import.meta.env.VITE_API_URL}/providers/availability/${editingSlot._id}`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -120,7 +120,7 @@ const AvailabilityCalendar = () => {
         });
       } else {
         // Create new slot
-        response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/providers/availability`, {
+        response = await fetch(`${import.meta.env.VITE_API_URL}/providers/availability`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -151,7 +151,7 @@ const AvailabilityCalendar = () => {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/providers/availability/${slotId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/providers/availability/${slotId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

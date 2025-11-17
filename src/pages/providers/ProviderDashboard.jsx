@@ -4,10 +4,13 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { AuthContext } from '../../contexts/AuthContext';
 import ServiceManagement from '../../components/providers/ServiceManagement';
+import BookingList from '../../components/bookings/BookingList';
+import ReviewsList from '../../components/reviews/ReviewsList';
 
 const ProviderDashboard = () => {
   const { user } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState('overview');
+  const [bookingsStatusFilter, setBookingsStatusFilter] = useState('all');
   const [stats, setStats] = useState({
     totalServices: 0,
     activeBookings: 0,
@@ -23,13 +26,63 @@ const ProviderDashboard = () => {
 
   const loadDashboardStats = async () => {
     try {
-      // This would aggregate data from multiple API endpoints
-      // For now, we'll use placeholder data
+      const token = localStorage.getItem('token');
+      const providerId = user._id || user.id;
+
+      // Fetch services count
+      const servicesRes = await fetch(
+        `${import.meta.env.VITE_API_URL}/services?provider=${providerId}`,
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
+      const servicesData = await servicesRes.json();
+      const totalServices = servicesData.services?.length || 0;
+
+      // Fetch bookings (if endpoint exists)
+      let activeBookings = 0;
+      try {
+        const bookingsRes = await fetch(
+          `${import.meta.env.VITE_API_URL}/bookings?provider=${providerId}`,
+          {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }
+        );
+        if (bookingsRes.ok) {
+          const bookingsData = await bookingsRes.json();
+          activeBookings = bookingsData.bookings?.length || 0;
+        }
+      } catch (err) {
+        console.log('Bookings endpoint not available yet');
+      }
+
+      // Fetch reviews (if endpoint exists)
+      let totalReviews = 0;
+      let averageRating = 0;
+      try {
+        const reviewsRes = await fetch(
+          `${import.meta.env.VITE_API_URL}/reviews?providerId=${providerId}`,
+          {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }
+        );
+        if (reviewsRes.ok) {
+          const reviewsData = await reviewsRes.json();
+          totalReviews = reviewsData.length || 0;
+          if (totalReviews > 0) {
+            const sum = reviewsData.reduce((acc, review) => acc + (review.rating || 0), 0);
+            averageRating = sum / totalReviews;
+          }
+        }
+      } catch (err) {
+        console.log('Reviews endpoint not available yet');
+      }
+
       setStats({
-        totalServices: 0,
-        activeBookings: 0,
-        totalReviews: 0,
-        averageRating: 0
+        totalServices,
+        activeBookings,
+        totalReviews,
+        averageRating
       });
     } catch (error) {
       console.error('Failed to load dashboard stats:', error);
@@ -143,15 +196,40 @@ const ProviderDashboard = () => {
 
           {activeTab === 'bookings' && (
             <div className="bookings-tab">
-              <h3>My Bookings</h3>
-              <p>Booking management will be implemented here.</p>
+              <h3>Received Bookings</h3>
+
+              {/* Status Filter Tabs */}
+              <div className="status-filters">
+                {[
+                  { key: 'all', label: 'All', icon: '📋' },
+                  { key: 'pending', label: 'Pending', icon: '⏳' },
+                  { key: 'confirmed', label: 'Confirmed', icon: '✅' },
+                  { key: 'completed', label: 'Completed', icon: '🎉' },
+                  { key: 'cancelled', label: 'Cancelled', icon: '❌' }
+                ].map(filter => (
+                  <button
+                    key={filter.key}
+                    className={`status-filter ${bookingsStatusFilter === filter.key ? 'active' : ''}`}
+                    onClick={() => setBookingsStatusFilter(filter.key)}
+                  >
+                    <span className="filter-icon">{filter.icon}</span>
+                    <span className="filter-label">{filter.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <BookingList
+                showAll={false}
+                fetchProviderBookings={true}
+                statusFilter={bookingsStatusFilter}
+              />
             </div>
           )}
 
           {activeTab === 'reviews' && (
             <div className="reviews-tab">
               <h3>My Reviews</h3>
-              <p>Review management will be implemented here.</p>
+              <ReviewsList />
             </div>
           )}
         </div>
