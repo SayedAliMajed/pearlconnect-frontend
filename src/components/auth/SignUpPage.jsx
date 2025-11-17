@@ -250,17 +250,7 @@ const SignUpPage = () => {
                     </div>
                   </div>
 
-                  <div className="textarea-group">
-                    <label className="form-label">Address</label>
-                    <textarea
-                      name="address"
-                      placeholder="Enter your address (optional)"
-                      value={address}
-                      onChange={handleChange}
-                      className="signup-textarea"
-                      rows="3"
-                    />
-                  </div>
+                  {/* Address field removed - only required fields now */}
 
                   <div className="form-actions">
                     <Button
