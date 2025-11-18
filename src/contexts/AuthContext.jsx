@@ -1,41 +1,68 @@
-// src/contexts/AuthContext.jsx
+/**
+ * @fileoverview Authentication Context Provider for PearlConnect
+ *
+ * This context provides authentication state management throughout the application.
+ * It handles JWT token storage, decoding, and user state persistence across page reloads.
+ * All components that need access to user authentication state use this context.
+ */
 
 import { createContext, useState } from 'react';
 
+/**
+ * AuthContext - React Context object for authentication state
+ * Exported to allow components to consume authentication data
+ */
 const AuthContext = createContext();
 
+/**
+ * AuthProvider Component
+ *
+ * Wraps the application to provide authentication context to all child components.
+ * Manages user state and provides login/logout functionality through setUser.
+ *
+ * @param {Object} props - React component props
+ * @param {ReactNode} props.children - Child components that need auth access
+ */
 function AuthProvider({ children }) {
+  /**
+   * Decodes JWT token to extract user information
+   *
+   * JWT tokens consist of three parts: header.payload.signature
+   * We decode the base64-encoded payload to get user data
+   *
+   * @returns {Object|null} Decoded user object or null if no/invalid token
+   */
   const getUserFromToken = () => {
     const token = localStorage.getItem('token');
 
+    // If no token exists, user is not authenticated
     if (!token) return null;
 
     try {
-      // Try to decode the token payload
-      return JSON.parse(atob(token.split('.')[1]));
+      // Decode the JWT payload (second part of token)
+      // JWT format: header.payload.signature
+      const decodedPayload = JSON.parse(atob(token.split('.')[1]));
+      return decodedPayload;
     } catch (err) {
-      // If token decoding fails, return null
+      // Token is invalid or corrupted
       console.log('Token decoding failed:', err);
       return null;
     }
   };
 
-  // Create state just like you normally would in any other component
+  // Initialize user state from stored token on app load
   const [user, setUser] = useState(getUserFromToken());
-  // This is the user state and the setUser function that will update it!
-  // This variable name isn't special; it's just convention to use `value`.
+
+  // Context value object contains user data and setter function
   const value = { user, setUser };
 
   return (
     <AuthContext.Provider value={value}>
-      {/* The data we pass to the value prop above is now available to */}
-      {/* all the children of the AuthProvider component. */}
+      {/* All child components can now access user state and setUser function */}
       {children}
     </AuthContext.Provider>
   );
 };
 
-// When components need to use the value of the user context, they will need
-// access to the AuthContext object to know which context to access.
-// Therefore, we export it here.
+// Export both the Provider component and Context for use throughout the app
 export { AuthProvider, AuthContext };

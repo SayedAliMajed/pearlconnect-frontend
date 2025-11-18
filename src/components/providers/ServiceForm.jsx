@@ -213,7 +213,7 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
         images: processedImages, // Use processed images with base64
         // Omit category field for now since backend expects ObjectId
         // category: formData.category, // Commented out - needs ObjectId
-        provider: user.id || user._id,
+        provider: user._id || user.id,
         providerName: user.username || user.name
       };
 

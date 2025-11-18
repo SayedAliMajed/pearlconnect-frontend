@@ -65,18 +65,20 @@ const ServicesPage = () => {
 
     // Filter by category
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter(service =>
-        service.category?.toLowerCase() === selectedCategory.toLowerCase()
-      );
+      filtered = filtered.filter(service => {
+        const categoryName = service.category?.name || service.category;
+        return categoryName?.toLowerCase() === selectedCategory.toLowerCase();
+      });
     }
 
     // Filter by search query
     if (searchQuery.trim()) {
-      filtered = filtered.filter(service =>
-        service.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        service.subtitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        service.category?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      filtered = filtered.filter(service => {
+        const categoryName = service.category?.name || service.category;
+        return service.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               service.subtitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               categoryName?.toLowerCase().includes(searchQuery.toLowerCase());
+      });
     }
 
     setFilteredServices(filtered);
@@ -181,7 +183,7 @@ const ServicesPage = () => {
                       <h3 className="ui-card__title">{service.title}</h3>
                       <p className="ui-card__subtitle">{service.subtitle}</p>
                       <div className="service-meta">
-                        <span className="service-category">{service.category}</span>
+                        <span className="service-category">{service.category?.name || service.category}</span>
                         <div className="service-rating">
                           ⭐ {service.rating || 'N/A'} ({service.reviews || 0} reviews)
                         </div>

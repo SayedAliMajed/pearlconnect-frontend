@@ -1,13 +1,38 @@
-// useCategories hook - Live categories data from backend API
-// No more hardcoded fixtures - only live data
+/**
+ * @fileoverview Custom React hook for managing service categories
+ *
+ * This hook provides a complete interface for fetching, filtering, and managing
+ * service categories from the backend API. It handles loading states, error states,
+ * and provides utility methods for category operations throughout the application.
+ *
+ * Features:
+ * - Fetches categories from backend API on mount
+ * - Handles loading and error states
+ * - Provides search and filtering utilities
+ * - Compatible with both authenticated and public access
+ */
 
 import { useState, useEffect, useContext } from 'react';
 import { fetchCategories, getCategoryByName } from '../services/categories';
 import { AuthContext } from '../contexts/AuthContext';
 
 /**
- * Hook to fetch and manage categories data from backend
- * @returns {Object} Categories state and methods
+ * Custom hook for fetching and managing service categories
+ *
+ * Provides comprehensive category management including fetching from API,
+ * searching by name/ID, filtering, sorting, and state management.
+ *
+ * @returns {Object} Categories state and utility functions
+ * @property {Array} categories - Array of category objects from backend
+ * @property {boolean} loading - Whether categories are currently loading
+ * @property {string|null} error - Error message if loading failed
+ * @property {Function} loadCategories - Manually refresh categories data
+ * @property {Function} findCategoryByName - Find category by name (API call)
+ * @property {Function} findCategoryById - Find category by ID (local search)
+ * @property {Function} getCategoriesForSelect - Get formatted options for dropdowns
+ * @property {Function} getCategoryCount - Get total number of categories
+ * @property {Function} getCategoriesByServiceCount - Get categories sorted by popularity
+ * @property {Function} refreshCategories - Refresh data (authenticated users only)
  */
 export const useCategories = () => {
   const { user } = useContext(AuthContext);
