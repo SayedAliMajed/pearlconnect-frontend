@@ -18,25 +18,9 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
     images: [],
     active: true
   });
-  const [availabilityData, setAvailabilityData] = useState({
-    scheduleType: 'weekly', // 'weekly' or 'custom'
-    workingHours: {
-      monday: { enabled: false, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
-      tuesday: { enabled: false, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
-      wednesday: { enabled: false, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
-      thursday: { enabled: false, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
-      friday: { enabled: true, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
-      saturday: { enabled: true, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' },
-      sunday: { enabled: false, startTime: '09:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00' }
-    },
-    appointmentDuration: 60, // minutes
-    bufferTime: 15, // minutes between appointments
-    minimumAdvanceBooking: 60 // minutes
-  });
-  const [availabilityCollapsed, setAvailabilityCollapsed] = useState(true);
+
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [availabilityError, setAvailabilityError] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [imagePreview, setImagePreview] = useState([]);
 
@@ -115,43 +99,6 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
     setImagePreview(newPreview);
   };
 
-  const handleAvailabilityChange = (field, value, day = null) => {
-    if (day) {
-      // Updating a specific day's availability
-      setAvailabilityData(prev => ({
-        ...prev,
-        workingHours: {
-          ...prev.workingHours,
-          [day]: {
-            ...prev.workingHours[day],
-            [field]: value
-          }
-        }
-      }));
-    } else {
-      // Updating a global availability field
-      setAvailabilityData(prev => ({
-        ...prev,
-        [field]: value
-      }));
-    }
-  };
-
-  const copyToAllDays = (sourceDay) => {
-    const sourceData = availabilityData.workingHours[sourceDay];
-    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-
-    setAvailabilityData(prev => ({
-      ...prev,
-      workingHours: days.reduce((acc, day) => ({
-        ...acc,
-        [day]: {
-          ...sourceData,
-          enabled: day === 'friday' || day === 'saturday' ? true : sourceData.enabled // Keep Bahrain weekend by default
-        }
-      }), {})
-    }));
-  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -501,130 +448,7 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
             </div>
           </div>
 
-          {/* Availability - Collapsible Section */}
-          <div className="form-section availability-section">
-            <div className="section-header" onClick={() => setAvailabilityCollapsed(!availabilityCollapsed)}>
-              <h4>Availability Schedule</h4>
-              <button type="button" className="collapse-toggle">
-                {availabilityCollapsed ? '▼' : '▲'}
-              </button>
-            </div>
-
-            {!availabilityCollapsed && (
-              <div className="availability-content">
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="appointmentDuration">Appointment Duration (minutes)</label>
-                    <Input
-                      id="appointmentDuration"
-                      name="appointmentDuration"
-                      type="number"
-                      value={availabilityData.appointmentDuration}
-                      onChange={(e) => handleAvailabilityChange('appointmentDuration', parseInt(e.target.value))}
-                      placeholder="60"
-                      min="15"
-                      max="480"
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="minimumAdvanceBooking">Minimum Advance Booking (minutes)</label>
-                    <Input
-                      id="minimumAdvanceBooking"
-                      name="minimumAdvanceBooking"
-                      type="number"
-                      value={availabilityData.minimumAdvanceBooking}
-                      onChange={(e) => handleAvailabilityChange('minimumAdvanceBooking', parseInt(e.target.value))}
-                      placeholder="60"
-                      min="0"
-                    />
-                  </div>
-                </div>
-
-                {availabilityError && (
-                  <div className="availability-error" style={{ color: '#d32f2f', marginBottom: '1rem', fontSize: '0.9rem' }}>
-                    {availabilityError}
-                  </div>
-                )}
-
-                <div className="weekly-schedule">
-                  <h5>Weekly Schedule</h5>
-                  <p>Set your working hours for each day of the week</p>
-
-                  {Object.entries(availabilityData.workingHours).map(([day, config]) => (
-                    <div key={day} className="schedule-day">
-                      <div className="day-header">
-                        <label className="day-label">
-                          <input
-                            type="checkbox"
-                            checked={config.enabled}
-                            onChange={(e) => handleAvailabilityChange('enabled', e.target.checked, day)}
-                          />
-                          <span className="checkmark"></span>
-                          {day.charAt(0).toUpperCase() + day.slice(1)}
-                        </label>
-                        {day === 'friday' && (
-                          <button
-                            type="button"
-                            className="copy-to-all"
-                            onClick={() => copyToAllDays('friday')}
-                          >
-                            Copy to All Days
-                          </button>
-                        )}
-                      </div>
-
-                      {config.enabled && (
-                        <div className="day-times">
-                          <div className="time-row">
-                            <div className="time-group">
-                              <label>Start Time</label>
-                              <input
-                                type="time"
-                                value={config.startTime}
-                                onChange={(e) => handleAvailabilityChange('startTime', e.target.value, day)}
-                                className="time-input"
-                              />
-                            </div>
-                            <div className="time-group">
-                              <label>End Time</label>
-                              <input
-                                type="time"
-                                value={config.endTime}
-                                onChange={(e) => handleAvailabilityChange('endTime', e.target.value, day)}
-                                className="time-input"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="time-row">
-                            <div className="time-group">
-                              <label>Break Start (optional)</label>
-                              <input
-                                type="time"
-                                value={config.breakStart}
-                                onChange={(e) => handleAvailabilityChange('breakStart', e.target.value, day)}
-                                className="time-input"
-                              />
-                            </div>
-                            <div className="time-group">
-                              <label>Break End (optional)</label>
-                              <input
-                                type="time"
-                                value={config.breakEnd}
-                                onChange={(e) => handleAvailabilityChange('breakEnd', e.target.value, day)}
-                                className="time-input"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Note: Availability is managed globally per provider via backend /availability/provider/:id endpoints */}
         </div>
 
         {/* Form Actions */}
