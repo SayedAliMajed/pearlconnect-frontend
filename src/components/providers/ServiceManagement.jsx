@@ -152,17 +152,9 @@ const ServiceManagement = () => {
     setEditingService(null);
   };
 
-  if (loading) {
+  // Error boundary - prevent white screen
+  try {
     return (
-      <div className="service-management">
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <p>Loading your services...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
     <div className="service-management">
       {/* Header */}
       <div className="services-header">
@@ -264,6 +256,26 @@ const ServiceManagement = () => {
       </div>
     </div>
   );
+  } catch (error) {
+    console.error('ServiceManagement rendering error:', error);
+    return (
+      <div className="service-management">
+        <div className="error-fallback">
+          <div className="error-content">
+            <div className="error-icon">⚠️</div>
+            <h3>Something went wrong</h3>
+            <p>We encountered an issue loading your services.</p>
+            <Button
+              variant="primary"
+              onClick={() => window.location.reload()}
+            >
+              Reload Page
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default ServiceManagement;
