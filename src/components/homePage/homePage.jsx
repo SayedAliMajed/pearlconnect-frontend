@@ -14,8 +14,8 @@ const HomePage = () => {
   const { categories: featuredCategories, loading: categoriesLoading, error: categoriesError } = useCategories();
   const { services: allServices, loading: servicesLoading } = useServices();
 
-  // Show first 6 services for homepage display
-  const services = allServices.slice(0, 6);
+  // Show first 6 services for homepage display, handle undefined/null
+  const services = Array.isArray(allServices) ? allServices.slice(0, 6) : [];
 
   const handleCategoryClick = (categoryName) => {
     // Navigate to services page filtered by category
