@@ -36,6 +36,7 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
   const [availabilityCollapsed, setAvailabilityCollapsed] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [availabilityError, setAvailabilityError] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [imagePreview, setImagePreview] = useState([]);
 
@@ -81,15 +82,7 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
     }
   };
 
-  // Convert file to base64 string
-  const fileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file); // This creates base64 string
-    });
-  };
+
 
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -182,52 +175,52 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
     setLoading(true);
 
     try {
-      // Process new images (convert to base64)
-      let processedImages = [];
+      // Use FormData for proper file uploads (no 413 payload limit issues)
+      const formDataToSend = new FormData();
 
-      if (selectedFiles.length > 0) {
-        console.log('Converting', selectedFiles.length, 'new images to base64...');
-        for (let i = 0; i < selectedFiles.length; i++) {
-          const base64String = await fileToBase64(selectedFiles[i]);
-          processedImages.push({
-            url: base64String, // Base64 string as URL
-            alt: selectedFiles[i].name
-          });
+      // Add basic form fields
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('price', formData.price.toString());
+      formDataToSend.append('currency', formData.currency);
+      if (formData.duration) formDataToSend.append('duration', formData.duration);
+      formDataToSend.append('active', formData.active.toString());
+      formDataToSend.append('provider', user._id || user.id);
+      formDataToSend.append('providerName', user.username || user.name);
+
+      // Add category if selected (backend expects ObjectId)
+      if (formData.category && typeof formData.category === 'string') {
+        // Find category object by name
+        const categoryObj = categories.find(cat => cat.name === formData.category);
+        if (categoryObj) {
+          formDataToSend.append('category', categoryObj._id || categoryObj.id);
         }
       }
 
-      // Include existing images from service being edited
+      // Add new image files (as actual files, not base64)
+      selectedFiles.forEach((file, index) => {
+        formDataToSend.append('images', file);
+      });
+
+      // Add existing image URLs (from editing)
       const existingImages = imagePreview
         .filter(img => img.existing)
-        .map(img => ({
-          url: img.url,
-          alt: img.alt
-        }));
+        .map(img => img.url);
 
-      // Combine new and existing images
-      processedImages = [...existingImages, ...processedImages];
-
-      const serviceData = {
-        ...formData,
-        price: parseFloat(formData.price), // Convert price to number
-        images: processedImages, // Use processed images with base64
-        // Omit category field for now since backend expects ObjectId
-        // category: formData.category, // Commented out - needs ObjectId
-        provider: user._id || user.id,
-        providerName: user.username || user.name
-      };
-
-      // Remove category from serviceData if it's empty or invalid
-      if (!serviceData.category || typeof serviceData.category === 'string') {
-        delete serviceData.category;
+      if (existingImages.length > 0) {
+        formDataToSend.append('existingImages', JSON.stringify(existingImages));
       }
 
-      console.log('Sending service data:', {
-        ...serviceData,
-        images: `${serviceData.images.length} images` // Avoid spamming console with base64
+      console.log('Sending service as FormData:', {
+        title: formData.title,
+        descriptionLength: formData.description.length,
+        price: formData.price,
+        category: formData.category,
+        newImagesCount: selectedFiles.length,
+        existingImagesCount: existingImages.length,
+        apiUrl: `${import.meta.env.VITE_API_URL}/services`,
+        authToken: !!localStorage.getItem('token')
       });
-      console.log('API URL:', `${import.meta.env.VITE_API_URL}/services`);
-      console.log('Auth token exists:', !!localStorage.getItem('token'));
 
       let response;
       let serviceResult;
@@ -247,12 +240,10 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
             role: user?.role,
             email: user?.email
           },
-          serviceDataToSend: {
-            title: serviceData.title,
-            provider: serviceData.provider,
-            images: `${serviceData.images.length} images`
-          },
-          token: localStorage.getItem('token') ? 'Token exists' : 'No token',
+          formDataFields: Array.from(formDataToSend.entries()).map(([key, value]) => ({
+            field: key,
+            value: value instanceof File ? `${value.name} (${value.size} bytes)` : value
+          })),
           apiUrl: `${import.meta.env.VITE_API_URL}/services/${service._id || service.id}`
         });
 
@@ -260,21 +251,21 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
         response = await fetch(`${import.meta.env.VITE_API_URL}/services/${service._id || service.id}`, {
           method: 'PUT',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            // No Content-Type header - FormData sets its own
           },
-          body: JSON.stringify(serviceData)
+          body: formDataToSend
         });
         serviceResult = await response.json();
       } else {
-        // Create new service
+        // Create new service with FormData
         response = await fetch(`${import.meta.env.VITE_API_URL}/services`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            // No Content-Type header - FormData sets its own multipart boundary
           },
-          body: JSON.stringify(serviceData)
+          body: formDataToSend
         });
         serviceResult = await response.json();
       }
@@ -298,7 +289,9 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
           url: response.url
         });
 
-        alert(`Failed to ${service ? 'update' : 'create'} service: ${errorMessage}`);
+        // User doesn't want popups - log error and display inline
+        console.error(`Service ${service ? 'update' : 'creation'} failed:`, errorMessage);
+        // Could add error display to component state here if needed
         return;
       }
 
@@ -362,7 +355,8 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
       }
     } catch (error) {
       console.error('Error saving service:', error);
-      alert(`Failed to ${service ? 'update' : 'create'} service. Please try again.`);
+      // User doesn't want popups - errors are handled via console for now
+      // Could add error state to component for inline display
     } finally {
       setLoading(false);
     }
@@ -375,12 +369,16 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
   }, []);
 
   const validateAvailability = () => {
+    setAvailabilityError('');
+
     // At least one day should be enabled
     const hasEnabledDay = Object.values(availabilityData.workingHours).some(day => day.enabled);
 
     if (!hasEnabledDay) {
-      alert('Please enable at least one day for your availability schedule.');
+      const errorMsg = 'Please enable at least one day for your availability schedule.';
+      setAvailabilityError(errorMsg);
       setAvailabilityCollapsed(false); // Expand availability section
+      console.error('Availability validation failed:', errorMsg);
       return false;
     }
 
@@ -388,14 +386,18 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
     for (const [day, config] of Object.entries(availabilityData.workingHours)) {
       if (config.enabled) {
         if (!config.startTime || !config.endTime) {
-          alert(`Please set both start and end times for ${day.charAt(0).toUpperCase() + day.slice(1)}.`);
+          const errorMsg = `Please set both start and end times for ${day.charAt(0).toUpperCase() + day.slice(1)}.`;
+          setAvailabilityError(errorMsg);
           setAvailabilityCollapsed(false);
+          console.error('Availability validation failed:', errorMsg);
           return false;
         }
 
         if (config.startTime >= config.endTime) {
-          alert(`End time must be after start time for ${day.charAt(0).toUpperCase() + day.slice(1)}.`);
+          const errorMsg = `End time must be after start time for ${day.charAt(0).toUpperCase() + day.slice(1)}.`;
+          setAvailabilityError(errorMsg);
           setAvailabilityCollapsed(false);
+          console.error('Availability validation failed:', errorMsg);
           return false;
         }
       }
@@ -621,6 +623,12 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
                     />
                   </div>
                 </div>
+
+                {availabilityError && (
+                  <div className="availability-error" style={{ color: '#d32f2f', marginBottom: '1rem', fontSize: '0.9rem' }}>
+                    {availabilityError}
+                  </div>
+                )}
 
                 <div className="weekly-schedule">
                   <h5>Weekly Schedule</h5>
