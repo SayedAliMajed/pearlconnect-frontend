@@ -1,59 +1,25 @@
 // src/components/homePage/homePage.jsx
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router';
+import React from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import Container from '../ui/Container';
 import Card from '../ui/Card';
 import { useCategories } from '../../hooks/useCategories';
+import { useServices } from '../../hooks/useServices';
 import { formatPrice } from '../../utils/dateUtils';
-import { fetchServices } from '../../services/bookings';
 import './homePage.css';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { categories: featuredCategories, loading: categoriesLoading, error: categoriesError } = useCategories();
+  const { services: allServices, loading: servicesLoading } = useServices();
 
-
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const loadServices = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem('token');
-
-        if (token) {
-          // Try to fetch real services if user is authenticated
-          const apiResponse = await fetchServices();
-          const apiServices = apiResponse?.services || (Array.isArray(apiResponse) ? apiResponse : []);
-
-          if (apiServices && Array.isArray(apiServices) && apiServices.length > 0) {
-            // Show real API services (limit to 6 for homepage display)
-            setServices(apiServices.slice(0, 6));
-            return;
-          }
-        }
-
-        // No fallback data - only live data available
-        setServices([]);
-
-      } catch (error) {
-        console.error('Error loading services:', error);
-        // No fallback data - only live data available
-        setServices([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadServices();
-  }, []);
+  // Show first 6 services for homepage display
+  const services = allServices.slice(0, 6);
 
   const handleCategoryClick = (categoryName) => {
-    // Navigate to categories page with the selected category as a query parameter
-    const encodedCategory = encodeURIComponent(categoryName);
-    navigate(`/categories?category=${encodedCategory}`);
+    // Navigate to services page filtered by category
+    navigate(`/services?category=${encodeURIComponent(categoryName)}`);
   };
 
   const handleServiceClick = (service) => {
@@ -120,7 +86,7 @@ const HomePage = () => {
           <h2 className="section-title">Popular Services</h2>
           <p className="section-subtitle">Highly rated services from trusted professionals</p>
 
-          {loading ? (
+          {servicesLoading ? (
             <div style={{ textAlign: 'center', padding: '2rem' }}>
               <p>Loading services...</p>
             </div>
@@ -138,8 +104,8 @@ const HomePage = () => {
                     src={
                       // For API services (have _id): check service.images array
                       service._id
-                        ? (service.images?.[0]?.url || service.images?.[0])
-                        // For test services (have id): use service.image
+                        ? (Array.isArray(service.images) && service.images[0] ?
+                           (service.images[0].url || service.images[0]) : '')
                         : service.image
                     }
                     alt={service.title}
@@ -147,8 +113,13 @@ const HomePage = () => {
                   />
                   <div className="ui-card__content">
                     <h3 className="ui-card__title">{service.title}</h3>
-                    <p className="ui-card__subtitle">{service.subtitle}</p>
-                    <div className="ui-card__price">{formatPrice(service.price, service.currency)}</div>
+                    <p className="ui-card__subtitle">
+                      {service.provider?.name || service.providerName ||
+                       service.category?.name || 'Professional Service'}
+                    </p>
+                    <div className="ui-card__price">
+                      {formatPrice(service.price, service.currency)}
+                    </div>
                     <button className="ui-card__button">View Details</button>
                   </div>
                 </Card>
@@ -156,7 +127,7 @@ const HomePage = () => {
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: '2rem' }}>
-              <p>Please sign in to view available services.</p>
+              <p>No services available yet. Services will appear here once providers add them.</p>
             </div>
           )}
         </Container>

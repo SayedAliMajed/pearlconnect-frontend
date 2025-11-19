@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
+import * as servicesApi from '../services/services';
 
-// Simple search bar component for searching services by title.
-// Props:
-// onResults(resultsArray) - called with array of services returned from API
-// onLoading(isLoading) - optional callback to indicate loading state
-// initialQuery - optional initial value
 const SearchBar = ({ onResults, onLoading, initialQuery = '' }) => {
 	const [query, setQuery] = useState(initialQuery);
 	const [error, setError] = useState(null);
@@ -14,12 +10,10 @@ const SearchBar = ({ onResults, onLoading, initialQuery = '' }) => {
 		setError(null);
 		if (onLoading) onLoading(true);
 
-		// basic fetch to backend services endpoint with search param
-		const url = query.trim() ? `/api/services?search=${encodeURIComponent(query.trim())}` : '/api/services';
-		fetch(url)
-			.then(res => res.json())
+		// Use proper services API with auth header
+		servicesApi.searchServices(query.trim())
 			.then(data => {
-				// backend returns { services, pagination } per controller code
+				// backend returns { services, pagination }
 				const results = Array.isArray(data?.services) ? data.services : [];
 				if (onResults) onResults(results);
 			})
