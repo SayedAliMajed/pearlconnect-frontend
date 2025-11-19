@@ -130,11 +130,6 @@ const ProfilePage = () => {
                   className="profile-avatar-image"
                 />
               </div>
-              {isEditing && (
-                <Button variant="secondary" size="small">
-                  Change Photo
-                </Button>
-              )}
             </div>
 
             {/* Profile Form */}
