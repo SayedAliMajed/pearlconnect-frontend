@@ -3,20 +3,20 @@
 const API_BASE = import.meta.env.VITE_API_URL;
 
 /**
- * Fetch all categories from the backend
+ * Fetch all categories from the backend (private route - requires auth)
  * @returns {Promise} Array of category objects
  */
 export const fetchCategories = async () => {
   try {
-    const headers = {
-      'Content-Type': 'application/json'
-    };
-
-    // Add auth token only if available (for authenticated requests)
     const token = localStorage.getItem('token');
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    if (!token) {
+      throw new Error('Authentication required to fetch categories');
     }
+
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
 
     const response = await fetch(`${API_BASE}/categories`, { headers });
 

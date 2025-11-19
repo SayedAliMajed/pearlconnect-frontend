@@ -1,27 +1,34 @@
-import { Link } from 'react-router';
+/**
+ * @fileoverview Landing page component for PearlConnect
+ *
+ * The public-facing landing page that introduces users to PearlConnect's services.
+ * Uses Tailwind CSS for responsive design and modern styling.
+ */
+
+import { Link } from 'react-router-dom';
 
 const LandingPage = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
+      <header className="bg-white" style={{ borderBottom: '1px solid #e5e7eb' }}>
+        <div className="container">
+          <div className="flex justify-between items-center" style={{ height: '64px' }}>
+            <div className="flex items-center gap-md">
               <img
                 alt="PearlConnect Logo"
-                className="h-8 w-auto"
+                style={{ height: '32px', width: 'auto' }}
                 src="/img/logo.png"
               />
-              <span className="text-xl font-bold text-gray-900">PearlConnect</span>
+              <span className="text-xl font-bold text-dark">PearlConnect</span>
             </div>
-            <nav className="hidden md:flex space-x-8">
-              <Link to="/sign-up" className="text-gray-700 hover:text-teal-600 transition">
+            <nav className="hidden md:flex gap-lg">
+              <Link to="/sign-up" className="text-gray hover:text-teal transition">
                 Become a Pro
               </Link>
             </nav>
             <Link to="/sign-in">
-              <button className="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-md text-gray-900 transition">
+              <button className="btn btn-secondary">
                 Login
               </button>
             </Link>

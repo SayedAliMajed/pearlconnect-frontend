@@ -9,9 +9,7 @@
   background: #f5f7fa;
 }
 
-.signin-background {
-  /* Removed background to fix layout issues */
-}
+
 
 .signin-overlay {
   width: 100%;
@@ -32,7 +30,7 @@
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  padding: var(--spacing-2xl);
+  padding: var(--spacing-xl);
   border: 1px solid #e8e8e8;
   position: relative;
   overflow: hidden;
@@ -50,7 +48,7 @@
 
 .signin-header {
   text-align: center;
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
 }
 
 .signin-title {
@@ -71,14 +69,14 @@
 .signin-form {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-md);
 }
 
 .signin-input {
   margin-bottom: var(--spacing-sm);
   border: 1px solid #d4d4d4;
   border-radius: 8px;
-  padding: 14px 16px;
+  padding: 12px 16px;
   font-size: var(--font-size-base);
   transition: all var(--transition-fast);
 }
@@ -102,7 +100,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
 }
 
 .checkbox-label {
@@ -141,8 +139,8 @@
 }
 
 .signin-button {
-  margin-bottom: var(--spacing-lg);
-  height: 48px;
+  margin-bottom: var(--spacing-md);
+  height: 44px;
   font-size: var(--font-size-base);
   font-weight: 600;
   border-radius: 8px;

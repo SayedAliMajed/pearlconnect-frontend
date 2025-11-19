@@ -1,34 +1,68 @@
-// src/components/auth/SignUpPage.jsx
+/**
+ * @fileoverview Multi-step Sign Up Page component for PearlConnect user registration
+ *
+ * Comprehensive user registration flow with progressive disclosure form, role selection,
+ * multi-step validation, and optional profile information collection. Provides a smooth
+ * onboarding experience for both customers and service providers.
+ */
 
 import React, { useState, useContext } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router-dom';
 import Container from '../ui/Container';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Card from '../ui/Card';
 import { AuthContext } from '../../contexts/AuthContext';
 import { signUp } from '../../services/auth';
-import '../../pages/auth/SignUpPage.css';
+import './SignUpPage.css';
 
+/**
+ * SignUpPage Component
+ *
+ * Multi-step user registration form with progressive disclosure. Divides the registration
+ * process into logical steps to improve UX and reduce cognitive load. Features role-based
+ * registration options, comprehensive validation, and optional profile enhancement.
+ *
+ * Features:
+ * - Two-step form process (Account → Profile)
+ * - Role selection (Customer/Provider) with visual indicators
+ * - Progressive form validation with step-specific rules
+ * - Optional profile information collection
+ * - Responsive design with step progress indicator
+ * - Automatic navigation to authenticated app after registration
+ * - Error handling for server-side validation failures
+ *
+ * Form Steps:
+ * 1. Account: Username, email, password, role selection
+ * 2. Profile: Optional personal information (name, phone, address)
+ *
+ * @returns {JSX.Element} Multi-step registration interface
+ */
 const SignUpPage = () => {
+  // Navigation hook for redirecting to authenticated app after successful registration
   const navigate = useNavigate();
+  // AuthContext setter for updating global authentication state
   const { setUser } = useContext(AuthContext);
+
+  // Comprehensive form state with all required and optional fields
   const [formData, setFormData] = useState({
-    // Required fields
+    // Required account information fields
     username: '',
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'customer',
-    // Optional profile fields
-    fullName: '',
+    role: 'customer', // Default to customer role
+    firstName: '',
+    lastName: '',
+    // Optional profile enhancement fields
     phone: '',
     address: ''
   });
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [authError, setAuthError] = useState('');
-  const [currentStep, setCurrentStep] = useState(1);
+
+  // UI state management for async operations and form progression
+  const [loading, setLoading] = useState(false);          // Registration submission state
+  const [errors, setErrors] = useState({});               // Field-level validation errors
+  const [authError, setAuthError] = useState('');         // API-level authentication errors
 
   const {
     username,
@@ -36,7 +70,8 @@ const SignUpPage = () => {
     password,
     confirmPassword,
     role,
-    fullName,
+    firstName,
+    lastName,
     phone,
     address
   } = formData;
@@ -57,53 +92,49 @@ const SignUpPage = () => {
     }
   };
 
-  const validateStep = (step) => {
+  const validate = () => {
     const newErrors = {};
-    
-    if (step === 1) {
-      if (!username.trim()) {
-        newErrors.username = 'Username is required';
-      } else if (username.length < 3) {
-        newErrors.username = 'Username must be at least 3 characters';
-      }
-      
-      if (!email) {
-        newErrors.email = 'Email is required';
-      } else if (!/\S+@\S+\.\S+/.test(email)) {
-        newErrors.email = 'Email is invalid';
-      }
-      
-      if (!password) {
-        newErrors.password = 'Password is required';
-      } else if (password.length < 6) {
-        newErrors.password = 'Password must be at least 6 characters';
-      }
-      
-      if (!confirmPassword) {
-        newErrors.confirmPassword = 'Please confirm your password';
-      } else if (password !== confirmPassword) {
-        newErrors.confirmPassword = 'Passwords do not match';
-      }
+
+    if (!firstName.trim()) {
+      newErrors.firstName = 'First name is required';
     }
-    
+
+    if (!lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
+    }
+
+    if (!username.trim()) {
+      newErrors.username = 'Username is required';
+    } else if (username.length < 3) {
+      newErrors.username = 'Username must be at least 3 characters';
+    }
+
+    if (!email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Email is invalid';
+    }
+
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 3) {
+      newErrors.password = 'Password must be at least 3 characters';
+    }
+
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const handleNext = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep(prev => prev + 1);
-    }
-  };
-
-  const handlePrevious = () => {
-    setCurrentStep(prev => prev - 1);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateStep(currentStep)) {
+    if (!validate()) {
       return;
     }
 
@@ -134,73 +165,116 @@ const SignUpPage = () => {
                 </p>
               </div>
 
-              {/* Progress Indicator */}
-              <div className="signup-progress">
-                <div className={`progress-step ${currentStep >= 1 ? 'active' : ''} ${currentStep > 1 ? 'completed' : ''}`}>
-                  <span className="step-number">1</span>
-                  <span className="step-label">Account</span>
-                </div>
-                <div className="progress-line"></div>
-                <div className={`progress-step ${currentStep >= 2 ? 'active' : ''}`}>
-                  <span className="step-number">2</span>
-                  <span className="step-label">Profile</span>
-                </div>
-              </div>
+              <form onSubmit={handleSubmit} className="signup-form" aria-busy={loading}>
+                <div className="form-step">
+                  {/* First and Last Name - Side by Side on larger screens */}
+                  <div className="form-names">
+                    <div className="signup-field">
+                      <label htmlFor="firstName" className="signup-label">First Name *</label>
+                      <Input
+                        type="text"
+                        name="firstName"
+                        placeholder=""
+                        value={firstName}
+                        onChange={handleChange}
+                        error={errors.firstName}
+                        fullWidth={false}
+                        className="signup-input name-input"
+                        maxLength="20"
+                        id="firstName"
+                        ariaInvalid={!!errors.firstName}
+                        ariaDescribedBy={errors.firstName ? "error-firstName" : undefined}
+                      />
+                    </div>
+                    <div className="signup-field">
+                      <label htmlFor="lastName" className="signup-label">Last Name *</label>
+                      <Input
+                        type="text"
+                        name="lastName"
+                        placeholder=""
+                        value={lastName}
+                        onChange={handleChange}
+                        error={errors.lastName}
+                        fullWidth={false}
+                        className="signup-input name-input"
+                        maxLength="20"
+                        id="lastName"
+                        ariaInvalid={!!errors.lastName}
+                        ariaDescribedBy={errors.lastName ? "error-lastName" : undefined}
+                      />
+                      {errors.lastName && (
+                        <div id="error-lastName" className="signup-error-message">
+                          {errors.lastName}
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-              <form onSubmit={handleSubmit} className="signup-form">
-                {/* Step 1: Account Information */}
-                {currentStep === 1 && (
-                  <div className="form-step">
-                    <h2 className="step-title">Account Information</h2>
-                    
+                  <div className="signup-field">
+                    <label htmlFor="username" className="signup-label">Username *</label>
                     <Input
                       type="text"
                       name="username"
-                      placeholder="Choose a username"
+                      placeholder=""
                       value={username}
                       onChange={handleChange}
                       error={errors.username}
                       fullWidth
                       className="signup-input"
+                      id="username"
                     />
+                  </div>
 
+                  <div className="signup-field">
+                    <label htmlFor="email" className="signup-label">Email Address *</label>
                     <Input
                       type="email"
                       name="email"
-                      placeholder="Enter your email"
+                      placeholder=""
                       value={email}
                       onChange={handleChange}
                       error={errors.email}
-                      fullWidth
-                      className="signup-input"
+                      fullWidth={false}
+                      className="signup-input email-input"
+                      id="email"
                     />
+                  </div>
 
-                    <div className="form-row">
+                  <div className="form-row">
+                    <div className="signup-field">
+                      <label htmlFor="password" className="signup-label">Password *</label>
                       <Input
                         type="password"
                         name="password"
-                        placeholder="Create a password"
+                        placeholder=""
                         value={password}
                         onChange={handleChange}
                         error={errors.password}
-                        fullWidth
+                        fullWidth={false}
                         className="signup-input"
-                      />
-
-                      <Input
-                        type="password"
-                        name="confirmPassword"
-                        placeholder="Confirm password"
-                        value={confirmPassword}
-                        onChange={handleChange}
-                        error={errors.confirmPassword}
-                        fullWidth
-                        className="signup-input"
+                        id="password"
                       />
                     </div>
 
-                    <div className="role-selection">
-                      <label className="role-label">I want to:</label>
+                    <div className="signup-field">
+                      <label htmlFor="confirmPassword" className="signup-label">Confirm Password *</label>
+                      <Input
+                        type="password"
+                        name="confirmPassword"
+                        placeholder=""
+                        value={confirmPassword}
+                        onChange={handleChange}
+                        error={errors.confirmPassword}
+                        fullWidth={false}
+                        className="signup-input"
+                        id="confirmPassword"
+                      />
+                    </div>
+                  </div>
+
+                  <fieldset className="signup-field">
+                    <legend id="account-type-legend" className="signup-label">Account Type *</legend>
+                    <div className="role-selection" role="radiogroup" aria-labelledby="account-type-legend">
                       <div className="role-options">
                         <label className="role-option">
                           <input
@@ -209,13 +283,14 @@ const SignUpPage = () => {
                             value="customer"
                             checked={role === 'customer'}
                             onChange={handleChange}
+                            aria-label="Select customer role to find and book local services"
                           />
                           <div className="role-content">
                             <span className="role-title">Find Services</span>
                             <span className="role-description">Book local services</span>
                           </div>
                         </label>
-                        
+
                         <label className="role-option">
                           <input
                             type="radio"
@@ -223,6 +298,7 @@ const SignUpPage = () => {
                             value="provider"
                             checked={role === 'provider'}
                             onChange={handleChange}
+                            aria-label="Select provider role to offer your services to customers"
                           />
                           <div className="role-content">
                             <span className="role-title">Provide Services</span>
@@ -231,84 +307,50 @@ const SignUpPage = () => {
                         </label>
                       </div>
                     </div>
+                  </fieldset>
 
-                    <div className="form-actions">
-                      <Button
-                        type="button"
-                        variant="primary"
-                        size="large"
-                        onClick={handleNext}
-                        className="next-button"
-                      >
-                        Next Step
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Step 2: Profile Information */}
-                {currentStep === 2 && (
-                  <div className="form-step">
-                    <h2 className="step-title">Profile Information (Optional)</h2>
-                    <p className="step-description">Tell us a bit more about yourself</p>
-                    
-                    <Input
-                      type="text"
-                      name="fullName"
-                      placeholder="Full name"
-                      value={fullName}
-                      onChange={handleChange}
-                      fullWidth
-                      className="signup-input"
-                    />
-
+                  <div className="signup-field">
+                    <label htmlFor="phone" className="signup-label">Phone Number</label>
                     <Input
                       type="tel"
                       name="phone"
-                      placeholder="Phone number"
+                      placeholder=""
                       value={phone}
                       onChange={handleChange}
                       fullWidth
                       className="signup-input"
+                      id="phone"
                     />
-
-                    <div className="textarea-group">
-                      <textarea
-                        name="address"
-                        placeholder="Address (optional)"
-                        value={address}
-                        onChange={handleChange}
-                        className="signup-textarea"
-                        rows="3"
-                      />
-                    </div>
-
-                    <div className="form-actions">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="large"
-                        onClick={handlePrevious}
-                        className="back-button"
-                      >
-                        Back
-                      </Button>
-                      
-                      <Button
-                        type="submit"
-                        variant="primary"
-                        size="large"
-                        disabled={loading}
-                        className="signup-button"
-                      >
-                        {loading ? 'Creating Account...' : 'Create Account'}
-                      </Button>
-                    </div>
                   </div>
-                )}
+
+                  <div className="signup-field">
+                    <label htmlFor="address" className="signup-label">Address</label>
+                    <textarea
+                      name="address"
+                      placeholder=""
+                      value={address}
+                      onChange={handleChange}
+                      className="signup-textarea"
+                      rows="3"
+                      id="address"
+                    />
+                  </div>
+
+                  <div className="form-actions">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="large"
+                      disabled={loading}
+                      className="signup-button"
+                    >
+                      {loading ? 'Creating Account...' : 'Create Account'}
+                    </Button>
+                  </div>
+                </div>
 
                 {authError && (
-                  <div className="signup-error-message">
+                  <div className="signup-error-message" aria-live="polite">
                     {authError}
                   </div>
                 )}
