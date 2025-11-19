@@ -72,7 +72,13 @@ const BookingForm = ({ onSuccess }) => {
       }
 
       if (!isDuringBreak) {
-        const timeString = currentTime.toTimeString().slice(0, 5); // HH:MM
+        // Format in HH:MM AM/PM format expected by backend
+        const hours = currentTime.getHours();
+        const minutes = currentTime.getMinutes().toString().padStart(2, '0');
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+        const timeString = `${displayHours}:${minutes} ${period}`; // "09:30 AM" format
+
         slots.push(timeString);
       }
 

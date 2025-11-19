@@ -48,7 +48,13 @@ const BookingCalendar = () => {
             // Only show future slots that aren't booked
             if (slot <= now) return false;
 
-            const slotTimeStr = slot.toTimeString().slice(0, 5); // HH:MM format
+            // Format slot time in HH:MM AM/PM format to match backend expectations
+            const hours = slot.getHours();
+            const minutes = slot.getMinutes().toString().padStart(2, '0');
+            const period = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+            const slotTimeStr = `${displayHours}:${minutes} ${period}`; // e.g., "09:30 AM"
+
             const slotKey = `${dateKey}_${slotTimeStr}`;
             return !bookedSlots.has(slotKey);
           });
