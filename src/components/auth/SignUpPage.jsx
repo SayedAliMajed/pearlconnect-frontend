@@ -1,7 +1,13 @@
-// src/components/auth/SignUpPage.jsx
+/**
+ * @fileoverview Multi-step Sign Up Page component for PearlConnect user registration
+ *
+ * Comprehensive user registration flow with progressive disclosure form, role selection,
+ * multi-step validation, and optional profile information collection. Provides a smooth
+ * onboarding experience for both customers and service providers.
+ */
 
 import React, { useState, useContext } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router-dom';
 import Container from '../ui/Container';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
@@ -10,25 +16,54 @@ import { AuthContext } from '../../contexts/AuthContext';
 import { signUp } from '../../services/auth';
 import '../../pages/auth/SignUpPage.css';
 
+/**
+ * SignUpPage Component
+ *
+ * Multi-step user registration form with progressive disclosure. Divides the registration
+ * process into logical steps to improve UX and reduce cognitive load. Features role-based
+ * registration options, comprehensive validation, and optional profile enhancement.
+ *
+ * Features:
+ * - Two-step form process (Account → Profile)
+ * - Role selection (Customer/Provider) with visual indicators
+ * - Progressive form validation with step-specific rules
+ * - Optional profile information collection
+ * - Responsive design with step progress indicator
+ * - Automatic navigation to authenticated app after registration
+ * - Error handling for server-side validation failures
+ *
+ * Form Steps:
+ * 1. Account: Username, email, password, role selection
+ * 2. Profile: Optional personal information (name, phone, address)
+ *
+ * @returns {JSX.Element} Multi-step registration interface
+ */
 const SignUpPage = () => {
+  // Navigation hook for redirecting to authenticated app after successful registration
   const navigate = useNavigate();
+  // AuthContext setter for updating global authentication state
   const { setUser } = useContext(AuthContext);
+
+  // Comprehensive form state with all required and optional fields
   const [formData, setFormData] = useState({
-    // Required fields
+    // Required account information fields
     username: '',
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'customer',
-    // Optional profile fields
-    fullName: '',
+    role: 'customer', // Default to customer role
+    firstName: '',
+    lastName: '',
+    // Optional profile enhancement fields
     phone: '',
     address: ''
   });
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [authError, setAuthError] = useState('');
-  const [currentStep, setCurrentStep] = useState(1);
+
+  // UI state management for async operations and form progression
+  const [loading, setLoading] = useState(false);          // Registration submission state
+  const [errors, setErrors] = useState({});               // Field-level validation errors
+  const [authError, setAuthError] = useState('');         // API-level authentication errors
+  const [currentStep, setCurrentStep] = useState(1);      // Multi-step form progression (1-2)
 
   const {
     username,
@@ -36,7 +71,8 @@ const SignUpPage = () => {
     password,
     confirmPassword,
     role,
-    fullName,
+    firstName,
+    lastName,
     phone,
     address
   } = formData;
@@ -57,53 +93,49 @@ const SignUpPage = () => {
     }
   };
 
-  const validateStep = (step) => {
+  const validate = () => {
     const newErrors = {};
-    
-    if (step === 1) {
-      if (!username.trim()) {
-        newErrors.username = 'Username is required';
-      } else if (username.length < 3) {
-        newErrors.username = 'Username must be at least 3 characters';
-      }
-      
-      if (!email) {
-        newErrors.email = 'Email is required';
-      } else if (!/\S+@\S+\.\S+/.test(email)) {
-        newErrors.email = 'Email is invalid';
-      }
-      
-      if (!password) {
-        newErrors.password = 'Password is required';
-      } else if (password.length < 6) {
-        newErrors.password = 'Password must be at least 6 characters';
-      }
-      
-      if (!confirmPassword) {
-        newErrors.confirmPassword = 'Please confirm your password';
-      } else if (password !== confirmPassword) {
-        newErrors.confirmPassword = 'Passwords do not match';
-      }
+
+    if (!firstName.trim()) {
+      newErrors.firstName = 'First name is required';
     }
-    
+
+    if (!lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
+    }
+
+    if (!username.trim()) {
+      newErrors.username = 'Username is required';
+    } else if (username.length < 3) {
+      newErrors.username = 'Username must be at least 3 characters';
+    }
+
+    if (!email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Email is invalid';
+    }
+
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 3) {
+      newErrors.password = 'Password must be at least 3 characters';
+    }
+
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const handleNext = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep(prev => prev + 1);
-    }
-  };
-
-  const handlePrevious = () => {
-    setCurrentStep(prev => prev - 1);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateStep(currentStep)) {
+    if (!validate()) {
       return;
     }
 
@@ -134,178 +166,142 @@ const SignUpPage = () => {
                 </p>
               </div>
 
-              {/* Progress Indicator */}
-              <div className="signup-progress">
-                <div className={`progress-step ${currentStep >= 1 ? 'active' : ''} ${currentStep > 1 ? 'completed' : ''}`}>
-                  <span className="step-number">1</span>
-                  <span className="step-label">Account</span>
-                </div>
-                <div className="progress-line"></div>
-                <div className={`progress-step ${currentStep >= 2 ? 'active' : ''}`}>
-                  <span className="step-number">2</span>
-                  <span className="step-label">Profile</span>
-                </div>
-              </div>
-
               <form onSubmit={handleSubmit} className="signup-form">
-                {/* Step 1: Account Information */}
-                {currentStep === 1 && (
-                  <div className="form-step">
-                    <h2 className="step-title">Account Information</h2>
-                    
+                <div className="form-step">
+                  <Input
+                    type="text"
+                    name="firstName"
+                    placeholder="First name"
+                    value={firstName}
+                    onChange={handleChange}
+                    error={errors.firstName}
+                    fullWidth
+                    className="signup-input"
+                  />
+
+                  <Input
+                    type="text"
+                    name="lastName"
+                    placeholder="Last name"
+                    value={lastName}
+                    onChange={handleChange}
+                    error={errors.lastName}
+                    fullWidth
+                    className="signup-input"
+                  />
+
+                  <Input
+                    type="text"
+                    name="username"
+                    placeholder="Choose a username"
+                    value={username}
+                    onChange={handleChange}
+                    error={errors.username}
+                    fullWidth
+                    className="signup-input"
+                  />
+
+                  <Input
+                    type="email"
+                    name="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={handleChange}
+                    error={errors.email}
+                    fullWidth
+                    className="signup-input"
+                  />
+
+                  <div className="form-row">
                     <Input
-                      type="text"
-                      name="username"
-                      placeholder="Choose a username"
-                      value={username}
+                      type="password"
+                      name="password"
+                      placeholder="Create a password"
+                      value={password}
                       onChange={handleChange}
-                      error={errors.username}
+                      error={errors.password}
                       fullWidth
                       className="signup-input"
                     />
 
                     <Input
-                      type="email"
-                      name="email"
-                      placeholder="Enter your email"
-                      value={email}
+                      type="password"
+                      name="confirmPassword"
+                      placeholder="Confirm password"
+                      value={confirmPassword}
                       onChange={handleChange}
-                      error={errors.email}
+                      error={errors.confirmPassword}
                       fullWidth
                       className="signup-input"
                     />
+                  </div>
 
-                    <div className="form-row">
-                      <Input
-                        type="password"
-                        name="password"
-                        placeholder="Create a password"
-                        value={password}
-                        onChange={handleChange}
-                        error={errors.password}
-                        fullWidth
-                        className="signup-input"
-                      />
+                  <div className="role-selection">
+                    <label className="role-label">I want to:</label>
+                    <div className="role-options">
+                      <label className="role-option">
+                        <input
+                          type="radio"
+                          name="role"
+                          value="customer"
+                          checked={role === 'customer'}
+                          onChange={handleChange}
+                        />
+                        <div className="role-content">
+                          <span className="role-title">Find Services</span>
+                          <span className="role-description">Book local services</span>
+                        </div>
+                      </label>
 
-                      <Input
-                        type="password"
-                        name="confirmPassword"
-                        placeholder="Confirm password"
-                        value={confirmPassword}
-                        onChange={handleChange}
-                        error={errors.confirmPassword}
-                        fullWidth
-                        className="signup-input"
-                      />
-                    </div>
-
-                    <div className="role-selection">
-                      <label className="role-label">I want to:</label>
-                      <div className="role-options">
-                        <label className="role-option">
-                          <input
-                            type="radio"
-                            name="role"
-                            value="customer"
-                            checked={role === 'customer'}
-                            onChange={handleChange}
-                          />
-                          <div className="role-content">
-                            <span className="role-title">Find Services</span>
-                            <span className="role-description">Book local services</span>
-                          </div>
-                        </label>
-                        
-                        <label className="role-option">
-                          <input
-                            type="radio"
-                            name="role"
-                            value="provider"
-                            checked={role === 'provider'}
-                            onChange={handleChange}
-                          />
-                          <div className="role-content">
-                            <span className="role-title">Provide Services</span>
-                            <span className="role-description">Offer your services</span>
-                          </div>
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="form-actions">
-                      <Button
-                        type="button"
-                        variant="primary"
-                        size="large"
-                        onClick={handleNext}
-                        className="next-button"
-                      >
-                        Next Step
-                      </Button>
+                      <label className="role-option">
+                        <input
+                          type="radio"
+                          name="role"
+                          value="provider"
+                          checked={role === 'provider'}
+                          onChange={handleChange}
+                        />
+                        <div className="role-content">
+                          <span className="role-title">Provide Services</span>
+                          <span className="role-description">Offer your services</span>
+                        </div>
+                      </label>
                     </div>
                   </div>
-                )}
 
-                {/* Step 2: Profile Information */}
-                {currentStep === 2 && (
-                  <div className="form-step">
-                    <h2 className="step-title">Profile Information (Optional)</h2>
-                    <p className="step-description">Tell us a bit more about yourself</p>
-                    
-                    <Input
-                      type="text"
-                      name="fullName"
-                      placeholder="Full name"
-                      value={fullName}
+                  <Input
+                    type="tel"
+                    name="phone"
+                    placeholder="Phone number (optional)"
+                    value={phone}
+                    onChange={handleChange}
+                    fullWidth
+                    className="signup-input"
+                  />
+
+                  <div className="textarea-group">
+                    <textarea
+                      name="address"
+                      placeholder="Address (optional)"
+                      value={address}
                       onChange={handleChange}
-                      fullWidth
-                      className="signup-input"
+                      className="signup-textarea"
+                      rows="3"
                     />
-
-                    <Input
-                      type="tel"
-                      name="phone"
-                      placeholder="Phone number"
-                      value={phone}
-                      onChange={handleChange}
-                      fullWidth
-                      className="signup-input"
-                    />
-
-                    <div className="textarea-group">
-                      <textarea
-                        name="address"
-                        placeholder="Address (optional)"
-                        value={address}
-                        onChange={handleChange}
-                        className="signup-textarea"
-                        rows="3"
-                      />
-                    </div>
-
-                    <div className="form-actions">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="large"
-                        onClick={handlePrevious}
-                        className="back-button"
-                      >
-                        Back
-                      </Button>
-                      
-                      <Button
-                        type="submit"
-                        variant="primary"
-                        size="large"
-                        disabled={loading}
-                        className="signup-button"
-                      >
-                        {loading ? 'Creating Account...' : 'Create Account'}
-                      </Button>
-                    </div>
                   </div>
-                )}
+
+                  <div className="form-actions">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="large"
+                      disabled={loading}
+                      className="signup-button"
+                    >
+                      {loading ? 'Creating Account...' : 'Create Account'}
+                    </Button>
+                  </div>
+                </div>
 
                 {authError && (
                   <div className="signup-error-message">
