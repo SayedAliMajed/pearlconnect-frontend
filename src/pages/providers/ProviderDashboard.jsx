@@ -17,10 +17,12 @@ const ProviderDashboard = () => {
     totalReviews: 0,
     averageRating: 0
   });
+  const [providerProfile, setProviderProfile] = useState(null);
 
   useEffect(() => {
     if (user) {
       loadDashboardStats();
+      loadProviderProfile();
     }
   }, [user]);
 
@@ -86,6 +88,29 @@ const ProviderDashboard = () => {
       });
     } catch (error) {
       console.error('Failed to load dashboard stats:', error);
+    }
+  };
+
+  const loadProviderProfile = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/providers/me/profile`,
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
+
+      if (res.ok) {
+        const profileData = await res.json();
+        setProviderProfile(profileData);
+      } else {
+        console.log('Provider profile endpoint not available yet');
+        setProviderProfile(null);
+      }
+    } catch (error) {
+      console.error('Failed to load provider profile:', error);
+      setProviderProfile(null);
     }
   };
 
@@ -168,6 +193,33 @@ const ProviderDashboard = () => {
                   <div className="stat-icon">📈</div>
                 </Card>
               </div>
+
+              {/* Provider Profile Display */}
+              {providerProfile && (
+                <div className="provider-profile-section">
+                  <h3>Business Profile</h3>
+                  <Card>
+                    <div className="profile-info-grid">
+                      <div className="profile-info">
+                        <label>Business Name</label>
+                        <p>{providerProfile.businessName || `${providerProfile.firstName || ''} ${providerProfile.lastName || ''}`.trim() || user.username}</p>
+                      </div>
+                      <div className="profile-info">
+                        <label>Email</label>
+                        <p>{providerProfile.email || 'Not provided'}</p>
+                      </div>
+                      <div className="profile-info">
+                        <label>Phone</label>
+                        <p>{providerProfile.phone || 'Not provided'}</p>
+                      </div>
+                      <div className="profile-info">
+                        <label>Address</label>
+                        <p>{providerProfile.address || 'Not provided'}</p>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+              )}
 
               {/* Quick Actions */}
               <div className="quick-actions">
