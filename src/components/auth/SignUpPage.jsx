@@ -14,7 +14,7 @@ import Input from '../ui/Input';
 import Card from '../ui/Card';
 import { AuthContext } from '../../contexts/AuthContext';
 import { signUp } from '../../services/auth';
-import '../../pages/auth/SignUpPage.css';
+import './SignUpPage.css';
 
 /**
  * SignUpPage Component
@@ -63,7 +63,6 @@ const SignUpPage = () => {
   const [loading, setLoading] = useState(false);          // Registration submission state
   const [errors, setErrors] = useState({});               // Field-level validation errors
   const [authError, setAuthError] = useState('');         // API-level authentication errors
-  const [currentStep, setCurrentStep] = useState(1);      // Multi-step form progression (1-2)
 
   const {
     username,
@@ -166,127 +165,174 @@ const SignUpPage = () => {
                 </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="signup-form">
+              <form onSubmit={handleSubmit} className="signup-form" aria-busy={loading}>
                 <div className="form-step">
-                  <Input
-                    type="text"
-                    name="firstName"
-                    placeholder="First name"
-                    value={firstName}
-                    onChange={handleChange}
-                    error={errors.firstName}
-                    fullWidth
-                    className="signup-input"
-                  />
-
-                  <Input
-                    type="text"
-                    name="lastName"
-                    placeholder="Last name"
-                    value={lastName}
-                    onChange={handleChange}
-                    error={errors.lastName}
-                    fullWidth
-                    className="signup-input"
-                  />
-
-                  <Input
-                    type="text"
-                    name="username"
-                    placeholder="Choose a username"
-                    value={username}
-                    onChange={handleChange}
-                    error={errors.username}
-                    fullWidth
-                    className="signup-input"
-                  />
-
-                  <Input
-                    type="email"
-                    name="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={handleChange}
-                    error={errors.email}
-                    fullWidth
-                    className="signup-input"
-                  />
-
-                  <div className="form-row">
-                    <Input
-                      type="password"
-                      name="password"
-                      placeholder="Create a password"
-                      value={password}
-                      onChange={handleChange}
-                      error={errors.password}
-                      fullWidth
-                      className="signup-input"
-                    />
-
-                    <Input
-                      type="password"
-                      name="confirmPassword"
-                      placeholder="Confirm password"
-                      value={confirmPassword}
-                      onChange={handleChange}
-                      error={errors.confirmPassword}
-                      fullWidth
-                      className="signup-input"
-                    />
-                  </div>
-
-                  <div className="role-selection">
-                    <label className="role-label">I want to:</label>
-                    <div className="role-options">
-                      <label className="role-option">
-                        <input
-                          type="radio"
-                          name="role"
-                          value="customer"
-                          checked={role === 'customer'}
-                          onChange={handleChange}
-                        />
-                        <div className="role-content">
-                          <span className="role-title">Find Services</span>
-                          <span className="role-description">Book local services</span>
+                  {/* First and Last Name - Side by Side on larger screens */}
+                  <div className="form-names">
+                    <div className="signup-field">
+                      <label htmlFor="firstName" className="signup-label">First Name *</label>
+                      <Input
+                        type="text"
+                        name="firstName"
+                        placeholder=""
+                        value={firstName}
+                        onChange={handleChange}
+                        error={errors.firstName}
+                        fullWidth={false}
+                        className="signup-input name-input"
+                        maxLength="20"
+                        id="firstName"
+                        ariaInvalid={!!errors.firstName}
+                        ariaDescribedBy={errors.firstName ? "error-firstName" : undefined}
+                      />
+                    </div>
+                    <div className="signup-field">
+                      <label htmlFor="lastName" className="signup-label">Last Name *</label>
+                      <Input
+                        type="text"
+                        name="lastName"
+                        placeholder=""
+                        value={lastName}
+                        onChange={handleChange}
+                        error={errors.lastName}
+                        fullWidth={false}
+                        className="signup-input name-input"
+                        maxLength="20"
+                        id="lastName"
+                        ariaInvalid={!!errors.lastName}
+                        ariaDescribedBy={errors.lastName ? "error-lastName" : undefined}
+                      />
+                      {errors.lastName && (
+                        <div id="error-lastName" className="signup-error-message">
+                          {errors.lastName}
                         </div>
-                      </label>
-
-                      <label className="role-option">
-                        <input
-                          type="radio"
-                          name="role"
-                          value="provider"
-                          checked={role === 'provider'}
-                          onChange={handleChange}
-                        />
-                        <div className="role-content">
-                          <span className="role-title">Provide Services</span>
-                          <span className="role-description">Offer your services</span>
-                        </div>
-                      </label>
+                      )}
                     </div>
                   </div>
 
-                  <Input
-                    type="tel"
-                    name="phone"
-                    placeholder="Phone number (optional)"
-                    value={phone}
-                    onChange={handleChange}
-                    fullWidth
-                    className="signup-input"
-                  />
+                  <div className="signup-field">
+                    <label htmlFor="username" className="signup-label">Username *</label>
+                    <Input
+                      type="text"
+                      name="username"
+                      placeholder=""
+                      value={username}
+                      onChange={handleChange}
+                      error={errors.username}
+                      fullWidth
+                      className="signup-input"
+                      id="username"
+                    />
+                  </div>
 
-                  <div className="textarea-group">
+                  <div className="signup-field">
+                    <label htmlFor="email" className="signup-label">Email Address *</label>
+                    <Input
+                      type="email"
+                      name="email"
+                      placeholder=""
+                      value={email}
+                      onChange={handleChange}
+                      error={errors.email}
+                      fullWidth={false}
+                      className="signup-input email-input"
+                      id="email"
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <div className="signup-field">
+                      <label htmlFor="password" className="signup-label">Password *</label>
+                      <Input
+                        type="password"
+                        name="password"
+                        placeholder=""
+                        value={password}
+                        onChange={handleChange}
+                        error={errors.password}
+                        fullWidth={false}
+                        className="signup-input"
+                        id="password"
+                      />
+                    </div>
+
+                    <div className="signup-field">
+                      <label htmlFor="confirmPassword" className="signup-label">Confirm Password *</label>
+                      <Input
+                        type="password"
+                        name="confirmPassword"
+                        placeholder=""
+                        value={confirmPassword}
+                        onChange={handleChange}
+                        error={errors.confirmPassword}
+                        fullWidth={false}
+                        className="signup-input"
+                        id="confirmPassword"
+                      />
+                    </div>
+                  </div>
+
+                  <fieldset className="signup-field">
+                    <legend id="account-type-legend" className="signup-label">Account Type *</legend>
+                    <div className="role-selection" role="radiogroup" aria-labelledby="account-type-legend">
+                      <div className="role-options">
+                        <label className="role-option">
+                          <input
+                            type="radio"
+                            name="role"
+                            value="customer"
+                            checked={role === 'customer'}
+                            onChange={handleChange}
+                            aria-label="Select customer role to find and book local services"
+                          />
+                          <div className="role-content">
+                            <span className="role-title">Find Services</span>
+                            <span className="role-description">Book local services</span>
+                          </div>
+                        </label>
+
+                        <label className="role-option">
+                          <input
+                            type="radio"
+                            name="role"
+                            value="provider"
+                            checked={role === 'provider'}
+                            onChange={handleChange}
+                            aria-label="Select provider role to offer your services to customers"
+                          />
+                          <div className="role-content">
+                            <span className="role-title">Provide Services</span>
+                            <span className="role-description">Offer your services</span>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  </fieldset>
+
+                  <div className="signup-field">
+                    <label htmlFor="phone" className="signup-label">Phone Number</label>
+                    <Input
+                      type="tel"
+                      name="phone"
+                      placeholder=""
+                      value={phone}
+                      onChange={handleChange}
+                      fullWidth
+                      className="signup-input"
+                      id="phone"
+                    />
+                  </div>
+
+                  <div className="signup-field">
+                    <label htmlFor="address" className="signup-label">Address</label>
                     <textarea
                       name="address"
-                      placeholder="Address (optional)"
+                      placeholder=""
                       value={address}
                       onChange={handleChange}
                       className="signup-textarea"
                       rows="3"
+                      id="address"
                     />
                   </div>
 
@@ -304,7 +350,7 @@ const SignUpPage = () => {
                 </div>
 
                 {authError && (
-                  <div className="signup-error-message">
+                  <div className="signup-error-message" aria-live="polite">
                     {authError}
                   </div>
                 )}

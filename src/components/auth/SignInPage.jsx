@@ -1,25 +1,55 @@
-// src/components/auth/SignInPage.jsx
+/**
+ * @fileoverview Sign In Page component for PearlConnect authentication
+ *
+ * User authentication entry point that handles login credentials, validation,
+ * API authentication calls, and navigation to the authenticated application state.
+ * Features form validation, error handling, persistent sessions, and responsive design.
+ */
 
 import React, { useState, useContext } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router-dom';
 import Container from '../ui/Container';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Card from '../ui/Card';
 import { AuthContext } from '../../contexts/AuthContext';
 import { signIn } from '../../services/auth';
-import '../../pages/auth/SignInPage.css';
+import './SignInPage.css';
 
+/**
+ * SignInPage Component
+ *
+ * Complete authentication page for user login with comprehensive form handling,
+ * validation, error states, and seamless navigation to authenticated application.
+ *
+ * Features:
+ * - Email/username and password authentication
+ * - Form validation with real-time error feedback
+ * - Loading states during authentication
+ * - "Remember me" functionality for session persistence
+ * - Forgot password link for account recovery
+ * - Responsive design with background overlay
+ * - Automatic navigation to home page after successful login
+ *
+ * @returns {JSX.Element} Full-page authentication interface
+ */
 const SignInPage = () => {
+  // Navigation hook for programmatic routing after successful authentication
   const navigate = useNavigate();
+  // AuthContext hook to access user state setter for login
   const { setUser } = useContext(AuthContext);
+
+  // Form state management - controlled inputs for email, password, and remember me
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     rememberMe: false
   });
+  // Loading state to disable form during authentication
   const [loading, setLoading] = useState(false);
+  // Field-level validation errors for instant feedback
   const [errors, setErrors] = useState({});
+  // API-level authentication errors (network, credentials, etc.)
   const [authError, setAuthError] = useState('');
 
   const { email, password, rememberMe } = formData;

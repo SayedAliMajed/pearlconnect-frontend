@@ -34,15 +34,15 @@ export const createBooking = async (payload) => {
 
 export const fetchServices = async (limit = 6) => {
   try {
-    const servicesHeaders = {
-      'Content-Type': 'application/json'
-    };
-
-    // Add auth token only if available (for authenticated requests)
     const token = localStorage.getItem('token');
-    if (token) {
-      servicesHeaders['Authorization'] = `Bearer ${token}`;
+    if (!token) {
+      throw new Error('Authentication required to fetch services');
     }
+
+    const servicesHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
 
     const url = limit ? `${BASE_URL}/services?limit=${limit}` : `${BASE_URL}/services`;
     const res = await fetch(url, { headers: servicesHeaders });

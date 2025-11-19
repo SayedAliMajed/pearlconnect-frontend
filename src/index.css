@@ -1,6 +1,12 @@
 /* Import fonts for PearlConnect landing page */
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
+
+/* Import Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Import Tailwind CSS via CDN - simulated configuration */
 /* Tailwind Utilities for Landing Page */
@@ -22,9 +28,6 @@ tailwind.config = {
   },
 };
 */
-
-/* Import Lato font from Google Fonts (fallback) */
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
 
 /* CSS Custom Properties for Design System */
 :root {

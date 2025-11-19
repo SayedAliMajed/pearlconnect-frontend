@@ -10,9 +10,7 @@
   padding: var(--spacing-lg) 0;
 }
 
-.signup-background {
-  /* Removed background to fix layout issues */
-}
+
 
 .signup-overlay {
   width: 100%;
@@ -143,9 +141,48 @@
 }
 
 /* Form Styles */
-.signup-form {
+.signup-form,
+.signin-form {
   display: flex;
   flex-direction: column;
+}
+
+.signup-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+}
+
+.signup-field:last-child {
+  margin-bottom: 0;
+}
+
+.signup-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+  display: block;
+}
+
+.form-names {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.form-names .signup-field {
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.name-input {
+  flex: 1;
+}
+
+.email-input {
+  width: 75%;
 }
 
 .form-step {
@@ -187,7 +224,7 @@
   transition: all var(--transition-fast);
 }
 
-.signup-input:focus {
+.signup-input:focus-visible {
   border-color: #00AD96;
   box-shadow: 0 0 0 3px rgba(0, 173, 150, 0.1);
   outline: none;
@@ -197,7 +234,7 @@
   border-color: #dc3545;
 }
 
-.signup-input.ui-input--error:focus {
+.signup-input.ui-input--error:focus-visible {
   border-color: #dc3545;
   box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.1);
 }
