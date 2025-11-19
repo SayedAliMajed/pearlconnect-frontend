@@ -17,14 +17,20 @@ const ProviderDashboard = () => {
     totalReviews: 0,
     averageRating: 0
   });
+  const [providerProfile, setProviderProfile] = useState(null);
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [statsError, setStatsError] = useState(null);
 
   useEffect(() => {
     if (user) {
       loadDashboardStats();
+      loadProviderProfile();
     }
   }, [user]);
 
   const loadDashboardStats = async () => {
+    setLoadingStats(true);
+    setStatsError(null);
     try {
       const token = localStorage.getItem('token');
       const providerId = user._id || user.id;
@@ -85,7 +91,33 @@ const ProviderDashboard = () => {
         averageRating
       });
     } catch (error) {
+      setStatsError('Failed to load dashboard statistics');
       console.error('Failed to load dashboard stats:', error);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  const loadProviderProfile = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/providers/me/profile`,
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
+
+      if (res.ok) {
+        const profileData = await res.json();
+        setProviderProfile(profileData);
+      } else {
+        console.log('Provider profile endpoint not available yet');
+        setProviderProfile(null);
+      }
+    } catch (error) {
+      console.error('Failed to load provider profile:', error);
+      setProviderProfile(null);
     }
   };
 
@@ -117,14 +149,22 @@ const ProviderDashboard = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="dashboard-tabs">
+        <div
+          className="dashboard-tabs"
+          role="tablist"
+          aria-label="Dashboard sections"
+        >
           {tabs.map(tab => (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              aria-controls={`${tab.id}-panel`}
+              id={`${tab.id}-tab`}
               className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
               onClick={() => setActiveTab(tab.id)}
             >
-              <span className="tab-icon">{tab.icon}</span>
+              <span className="tab-icon" aria-hidden="true">{tab.icon}</span>
               <span className="tab-label">{tab.label}</span>
             </button>
           ))}
@@ -134,6 +174,41 @@ const ProviderDashboard = () => {
         <div className="dashboard-content">
           {activeTab === 'overview' && (
             <div className="overview-tab">
+              {/* Loading/Error States for Stats */}
+              {loadingStats && (
+                <div className="stats-loading">
+                  <p>Loading dashboard statistics...</p>
+                </div>
+              )}
+
+              {statsError && (
+                <div className="stats-error">
+                  <p>{statsError}</p>
+                  <Button
+                    variant="secondary"
+                    size="small"
+                    onClick={loadDashboardStats}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              )}
+
+              {/* Empty State for New Providers */}
+              {!loadingStats && !statsError && stats.totalServices === 0 && stats.activeBookings === 0 && (
+                <div className="empty-state-card">
+                  <span className="empty-icon">🎯</span>
+                  <h4>Welcome to PearlConnect!</h4>
+                  <p>Get started by adding your first service to begin receiving bookings.</p>
+                  <Button
+                    variant="primary"
+                    onClick={() => setActiveTab('services')}
+                  >
+                    Add Your First Service
+                  </Button>
+                </div>
+              )}
+
               {/* Stats Cards */}
               <div className="stats-grid">
                 <Card className="stat-card">
@@ -168,6 +243,33 @@ const ProviderDashboard = () => {
                   <div className="stat-icon">📈</div>
                 </Card>
               </div>
+
+              {/* Provider Profile Display */}
+              {providerProfile && (
+                <div className="provider-profile-section">
+                  <h3>Business Profile</h3>
+                  <Card>
+                    <div className="profile-info-grid">
+                      <div className="profile-info">
+                        <label>Business Name</label>
+                        <p>{providerProfile.businessName || `${providerProfile.firstName || ''} ${providerProfile.lastName || ''}`.trim() || user.username}</p>
+                      </div>
+                      <div className="profile-info">
+                        <label>Email</label>
+                        <p>{providerProfile.email || 'Not provided'}</p>
+                      </div>
+                      <div className="profile-info">
+                        <label>Phone</label>
+                        <p>{providerProfile.phone || 'Not provided'}</p>
+                      </div>
+                      <div className="profile-info">
+                        <label>Address</label>
+                        <p>{providerProfile.address || 'Not provided'}</p>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+              )}
 
               {/* Quick Actions */}
               <div className="quick-actions">
