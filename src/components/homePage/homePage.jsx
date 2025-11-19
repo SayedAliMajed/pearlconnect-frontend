@@ -92,38 +92,49 @@ const HomePage = () => {
             </div>
           ) : services.length > 0 ? (
             <div className="services-grid">
-              {services.map(service => (
-                <Card
-                  key={service._id || service.id}
-                  variant="service"
-                  layout="wireframe"
-                  className="service-card"
-                  onClick={() => handleServiceClick(service)}
-                >
-                  <img
-                    src={
-                      // For API services (have _id): check service.images array
-                      service._id
-                        ? (Array.isArray(service.images) && service.images[0] ?
-                           (service.images[0].url || service.images[0]) : '')
-                        : service.image
-                    }
-                    alt={service.title}
-                    className="ui-card__image"
-                  />
-                  <div className="ui-card__content">
-                    <h3 className="ui-card__title">{service.title}</h3>
-                    <p className="ui-card__subtitle">
-                      {service.provider?.name || service.providerName ||
-                       service.category?.name || 'Professional Service'}
-                    </p>
-                    <div className="ui-card__price">
-                      {formatPrice(service.price, service.currency)}
+              {services.map(service => {
+                // Get image URL with fallback to placeholder
+                const imageUrl = service._id
+                  ? (Array.isArray(service.images) && service.images[0] ?
+                     (service.images[0].url || service.images[0]) : null)
+                  : service.image;
+
+                return (
+                  <Card
+                    key={service._id || service.id}
+                    variant="service"
+                    layout="wireframe"
+                    className="service-card"
+                    onClick={() => handleServiceClick(service)}
+                  >
+                    {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={service.title}
+                        className="ui-card__image"
+                      />
+                    ) : (
+                      <div className="ui-card__image-placeholder">
+                        <div className="image-placeholder-content">
+                          <span>📸</span>
+                          <p>No Image</p>
+                        </div>
+                      </div>
+                    )}
+                    <div className="ui-card__content">
+                      <h3 className="ui-card__title">{service.title}</h3>
+                      <p className="ui-card__subtitle">
+                        {service.provider?.name || service.providerName ||
+                         service.category?.name || 'Professional Service'}
+                      </p>
+                      <div className="ui-card__price">
+                        {formatPrice(service.price, service.currency)}
+                      </div>
+                      <button className="ui-card__button">View Details</button>
                     </div>
-                    <button className="ui-card__button">View Details</button>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: '2rem' }}>
