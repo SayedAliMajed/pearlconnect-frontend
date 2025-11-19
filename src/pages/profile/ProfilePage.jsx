@@ -4,6 +4,7 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import { AuthContext } from '../../contexts/AuthContext';
+import { updateUser, getCurrentUser } from '../../services/userService';
 
 const ProfilePage = () => {
   const { user, setUser } = useContext(AuthContext);
@@ -24,10 +25,10 @@ const ProfilePage = () => {
       setFormData({
         username: user.username || '',
         email: user.email || '',
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
-        phone: user.phone || '',
-        address: user.address || ''
+        firstName: user.profile?.firstName || '',
+        lastName: user.profile?.lastName || '',
+        phone: user.profile?.phone || '',
+        address: user.profile?.address || ''
       });
     }
   }, [user]);
@@ -45,16 +46,32 @@ const ProfilePage = () => {
       setLoading(true);
       setMessage('');
 
-      // Here you would make an API call to update the user profile
-      // For now, we'll just update the local state
-      const updatedUser = { ...user, ...formData };
+      // Prepare the update data with profile structure
+      const updateData = {
+        username: formData.username,
+        email: formData.email,
+        profile: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone,
+          address: formData.address
+        }
+      };
+
+      // Make API call to update user
+      const result = await updateUser(user._id, updateData);
+
+      // Fetch the updated user data
+      const updatedUser = await getCurrentUser();
+
+      // Update the auth context
       setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
 
       setIsEditing(false);
       setMessage('Profile updated successfully!');
     } catch (error) {
-      setMessage('Failed to update profile. Please try again.');
+      console.error('Profile update error:', error);
+      setMessage(error.message || 'Failed to update profile. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -65,10 +82,10 @@ const ProfilePage = () => {
     setFormData({
       username: user.username || '',
       email: user.email || '',
-      firstName: user.firstName || '',
-      lastName: user.lastName || '',
-      phone: user.phone || '',
-      address: user.address || ''
+      firstName: user.profile?.firstName || '',
+      lastName: user.profile?.lastName || '',
+      phone: user.profile?.phone || '',
+      address: user.profile?.address || ''
     });
     setIsEditing(false);
     setMessage('');
@@ -166,7 +183,7 @@ const ProfilePage = () => {
                       fullWidth
                     />
                   ) : (
-                    <p className="form-value">{user.firstName || 'Not provided'}</p>
+                    <p className="form-value">{user.profile?.firstName || 'Not provided'}</p>
                   )}
                 </div>
 
@@ -181,7 +198,7 @@ const ProfilePage = () => {
                       fullWidth
                     />
                   ) : (
-                    <p className="form-value">{user.lastName || 'Not provided'}</p>
+                    <p className="form-value">{user.profile?.lastName || 'Not provided'}</p>
                   )}
                 </div>
               </div>
@@ -198,7 +215,7 @@ const ProfilePage = () => {
                       fullWidth
                     />
                   ) : (
-                    <p className="form-value">{user.phone || 'Not provided'}</p>
+                    <p className="form-value">{user.profile?.phone || 'Not provided'}</p>
                   )}
                 </div>
 
@@ -221,7 +238,7 @@ const ProfilePage = () => {
                     fullWidth
                   />
                 ) : (
-                  <p className="form-value">{user.address || 'Not provided'}</p>
+                  <p className="form-value">{user.profile?.address || 'Not provided'}</p>
                 )}
               </div>
             </div>
