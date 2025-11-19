@@ -144,12 +144,12 @@ const BookingForm = ({ onSuccess }) => {
     if (!validate()) return;
     setLoading(true);
     try {
-      const combinedDateTime = new Date(form.date + 'T' + form.time).toISOString();
       const payload = {
         serviceId: form.serviceId,
         providerId: form.providerId,
-        customerId: user?.id || user?._id || null,
-        date: combinedDateTime,
+        customerId: user._id,
+        date: form.date, // Send date as string (YYYY-MM-DD)
+        timeSlot: form.time, // Send time as HH:MM format
       };
 
       const res = await createBooking(payload);
