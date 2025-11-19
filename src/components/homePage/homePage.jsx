@@ -5,7 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import Container from '../ui/Container';
 import Card from '../ui/Card';
 import { useCategories } from '../../hooks/useCategories';
-import { useServices } from '../../hooks/useServices';
+import useServices from '../../hooks/useServices';
 import { formatPrice } from '../../utils/dateUtils';
 import './homePage.css';
 

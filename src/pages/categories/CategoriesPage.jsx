@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCategories } from '../../hooks/useCategories';
-import { useServices } from '../../hooks/useServices';
+import useServices from '../../hooks/useServices';
 import Container from '../../components/ui/Container';
 import Card from '../../components/ui/Card';
 
