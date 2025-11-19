@@ -168,7 +168,7 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateForm() || !validateAvailability()) {
+    if (!validateForm()) {
       return;
     }
 
@@ -295,64 +295,17 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
         return;
       }
 
-      // Service created/updated successfully
+      // Service created/updated successfully - availability now managed globally per provider (not per service)
       const serviceId = service?.id || service?._id || serviceResult.service?._id || serviceResult._id;
 
-      // Now submit availability data for the service
-      console.log('📅 Submitting availability for service:', serviceId);
-      console.log('📊 Availability data structure:', JSON.stringify(availabilityData, null, 2));
-      console.log('🔗 Availability API URL:', `${import.meta.env.VITE_API_URL}/availability/service/${serviceId}`);
-      console.log('🔐 Auth token exists:', !!localStorage.getItem('token'));
-
-      const availabilityResponse = await fetch(`${import.meta.env.VITE_API_URL}/availability/service/${serviceId}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(availabilityData)
+      console.log('✅ Service saved successfully:', {
+        serviceId,
+        title: serviceResult.title,
+        message: 'Service created - availability managed separately via provider global calendar'
       });
 
-      console.log('📡 Availability API Response:', {
-        status: availabilityResponse.status,
-        statusText: availabilityResponse.statusText,
-        ok: availabilityResponse.ok,
-        headers: Object.fromEntries(availabilityResponse.headers.entries()),
-        url: availabilityResponse.url
-      });
-
-      let responseBody = null;
-      try {
-        responseBody = await availabilityResponse.text();
-        if (responseBody) {
-          responseBody = JSON.parse(responseBody);
-          console.log('📄 Response body:', responseBody);
-        } else {
-          console.log('📄 Response body: empty');
-        }
-      } catch (e) {
-        console.log('📄 Response body (raw):', responseBody);
-      }
-
-      if (availabilityResponse.ok) {
-        console.log('✅ Service availability saved successfully');
-        const result = service ? serviceResult : serviceResult;
-        onSuccess && onSuccess(result);
-      } else {
-        console.log('❌ Availability API failed');
-        console.log('🔍 Frontend sent data:', JSON.stringify(availabilityData, null, 2));
-        console.log('🔍 Backend responded:', responseBody);
-
-        // For debugging - temporarily remove error alert until API is fixed
-        // alert('Service created successfully, but availability settings could not be saved. Please try editing the service again.');
-
-        // Still call onSuccess since the service was created successfully
-        const result = service ? serviceResult : serviceResult;
-        onSuccess && onSuccess(result);
-
-        console.log('⚠️ Temporarily hiding availability error alert until API is fixed');
-        console.log('💡 Providers should be able to edit the service again to set availability');
-      }
+      const result = service ? serviceResult : serviceResult;
+      onSuccess && onSuccess(result);
     } catch (error) {
       console.error('Error saving service:', error);
       // User doesn't want popups - errors are handled via console for now
@@ -368,43 +321,7 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
     // This effect ensures categories are fresh when editing
   }, []);
 
-  const validateAvailability = () => {
-    setAvailabilityError('');
 
-    // At least one day should be enabled
-    const hasEnabledDay = Object.values(availabilityData.workingHours).some(day => day.enabled);
-
-    if (!hasEnabledDay) {
-      const errorMsg = 'Please enable at least one day for your availability schedule.';
-      setAvailabilityError(errorMsg);
-      setAvailabilityCollapsed(false); // Expand availability section
-      console.error('Availability validation failed:', errorMsg);
-      return false;
-    }
-
-    // Check if enabled days have valid time ranges
-    for (const [day, config] of Object.entries(availabilityData.workingHours)) {
-      if (config.enabled) {
-        if (!config.startTime || !config.endTime) {
-          const errorMsg = `Please set both start and end times for ${day.charAt(0).toUpperCase() + day.slice(1)}.`;
-          setAvailabilityError(errorMsg);
-          setAvailabilityCollapsed(false);
-          console.error('Availability validation failed:', errorMsg);
-          return false;
-        }
-
-        if (config.startTime >= config.endTime) {
-          const errorMsg = `End time must be after start time for ${day.charAt(0).toUpperCase() + day.slice(1)}.`;
-          setAvailabilityError(errorMsg);
-          setAvailabilityCollapsed(false);
-          console.error('Availability validation failed:', errorMsg);
-          return false;
-        }
-      }
-    }
-
-    return true;
-  };
 
   return (
     <Card className="service-form">
