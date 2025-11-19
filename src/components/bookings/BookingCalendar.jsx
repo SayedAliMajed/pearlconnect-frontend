@@ -24,9 +24,17 @@ const BookingCalendar = () => {
       setLoading(true);
       try {
         const bookings = await fetchBookings();
-        const bookedTimes = bookings.map(b => new Date(b.date).getTime());
 
-      
+        // Create a map of date + timeSlot combinations that are already booked
+        const bookedSlots = new Set();
+        bookings.forEach(booking => {
+          if (booking.date && booking.timeSlot) {
+            const bookingDate = new Date(booking.date).toDateString();
+            const key = `${bookingDate}_${booking.timeSlot}`;
+            bookedSlots.add(key);
+          }
+        });
+
         const now = new Date();
         const daysAhead = 7;
         const allAvailable = [];
@@ -35,13 +43,18 @@ const BookingCalendar = () => {
           const date = new Date();
           date.setDate(now.getDate() + i);
 
-          const slots = generateDailySlots(date).filter(slot =>
-            slot.getTime() > now.getTime() &&
-            !bookedTimes.includes(slot.getTime())
-          );
+          const dateKey = date.toDateString();
+          const slots = generateDailySlots(date).filter(slot => {
+            // Only show future slots that aren't booked
+            if (slot <= now) return false;
+
+            const slotTimeStr = slot.toTimeString().slice(0, 5); // HH:MM format
+            const slotKey = `${dateKey}_${slotTimeStr}`;
+            return !bookedSlots.has(slotKey);
+          });
 
           if (slots.length > 0) {
-            allAvailable.push({ date: date.toDateString(), slots });
+            allAvailable.push({ date: dateKey, slots });
           }
         }
 
