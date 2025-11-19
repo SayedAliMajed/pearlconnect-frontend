@@ -150,7 +150,8 @@ export const useCategories = () => {
     findCategoryById,
     getCategoriesForSelect,
     getCategoryCount,
-    getCategoriesByServiceCount,
+    getCategoriesByServiceCount: getCategoriesWithStats, // Backward compatibility alias
+    getCategoriesWithStats,
     refreshCategories
   };
 };
