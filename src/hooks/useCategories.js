@@ -112,11 +112,21 @@ export const useCategories = () => {
   };
 
   /**
-   * Get categories by service count (most popular first)
-   * @returns {Array} Sorted categories by service count
+   * Get categories with service counts (requires services data)
+   * @param {Array} services - Services array to calculate counts
+   * @returns {Array} Categories with serviceCount and avgPrice
    */
-  const getCategoriesByServiceCount = () => {
-    return [...categories].sort((a, b) => (b.serviceCount || 0) - (a.serviceCount || 0));
+  const getCategoriesWithStats = (services = []) => {
+    return categories.map(category => {
+      const servicesInCategory = services.filter(service => service.category?.name === category.name);
+      return {
+        ...category,
+        serviceCount: servicesInCategory.length,
+        avgPrice: servicesInCategory.length > 0 ?
+          servicesInCategory.reduce((sum, service) => sum + service.price, 0) / servicesInCategory.length :
+          0
+      };
+    });
   };
 
   /**
