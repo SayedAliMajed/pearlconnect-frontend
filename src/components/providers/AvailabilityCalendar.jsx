@@ -16,7 +16,7 @@ const AvailabilityCalendar = () => {
     breakStartTime: '',
     breakEndTime: '',
     isRepeating: false,
-    duration: 60 // Default 60 minutes
+    duration: 60
   });
 
   useEffect(() => {
@@ -52,7 +52,6 @@ const AvailabilityCalendar = () => {
 
   const handleDateClick = (date) => {
     setSelectedDate(date);
-    // Check if there's existing availability for this date
     const existingSlot = availability.find(slot => {
       const slotDate = new Date(slot.date);
       return slotDate.toDateString() === date.toDateString();
@@ -92,9 +91,31 @@ const AvailabilityCalendar = () => {
 
   const handleSaveTimeSlot = async () => {
     try {
+      // Basic validation
+      if (!timeForm.openingTime || !timeForm.closingTime) {
+        alert('Please fill in both opening and closing times.');
+        return;
+      }
+
+      if (timeForm.openingTime >= timeForm.closingTime) {
+        alert('Closing time must be after opening time.');
+        return;
+      }
+
+      if (timeForm.breakStartTime && timeForm.breakEndTime) {
+        if (timeForm.breakStartTime >= timeForm.breakEndTime) {
+          alert('Break end time must be after break start time.');
+          return;
+        }
+        if (timeForm.breakStartTime <= timeForm.openingTime || timeForm.breakEndTime >= timeForm.closingTime) {
+          alert('Break times must be within business hours.');
+          return;
+        }
+      }
+
       const slotData = {
         provider: user.id || user._id,
-        date: selectedDate.toISOString().split('T')[0], // YYYY-MM-DD format
+        date: selectedDate.toISOString().split('T')[0],
         openingTime: timeForm.openingTime,
         closingTime: timeForm.closingTime,
         breakStartTime: timeForm.breakStartTime,
@@ -103,13 +124,8 @@ const AvailabilityCalendar = () => {
         duration: timeForm.duration
       };
 
-      console.log('Sending availability data:', slotData);
-      console.log('API URL:', `${import.meta.env.VITE_API_URL}/providers/availability`);
-      console.log('Auth token exists:', !!localStorage.getItem('token'));
-
       let response;
       if (editingSlot) {
-        // Update existing slot
         response = await fetch(`${import.meta.env.VITE_API_URL}/providers/availability/${editingSlot._id}`, {
           method: 'PUT',
           headers: {
@@ -119,7 +135,6 @@ const AvailabilityCalendar = () => {
           body: JSON.stringify(slotData)
         });
       } else {
-        // Create new slot
         response = await fetch(`${import.meta.env.VITE_API_URL}/providers/availability`, {
           method: 'POST',
           headers: {
@@ -132,7 +147,7 @@ const AvailabilityCalendar = () => {
 
       if (response.ok) {
         const result = await response.json();
-        loadAvailability(); // Refresh the list
+        loadAvailability();
         setShowTimeForm(false);
         setEditingSlot(null);
       } else {
@@ -160,7 +175,7 @@ const AvailabilityCalendar = () => {
       });
 
       if (response.ok) {
-        loadAvailability(); // Refresh the list
+        loadAvailability();
       } else {
         alert('Failed to delete availability slot. Please try again.');
       }
@@ -178,12 +193,12 @@ const AvailabilityCalendar = () => {
     const firstDay = new Date(currentYear, currentMonth, 1);
     const lastDay = new Date(currentYear, currentMonth + 1, 0);
     const startDate = new Date(firstDay);
-    startDate.setDate(startDate.getDate() - firstDay.getDay()); // Start from Sunday
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
 
     const calendarDays = [];
     let currentDate = new Date(startDate);
 
-    for (let i = 0; i < 42; i++) { // 6 weeks * 7 days
+    for (let i = 0; i < 42; i++) {
       const dayAvailability = availability.find(slot => {
         const slotDate = new Date(slot.date);
         return slotDate.toDateString() === currentDate.toDateString();
@@ -231,66 +246,37 @@ const AvailabilityCalendar = () => {
 
   return (
     <div className="availability-calendar">
-      {/* Header */}
       <div className="calendar-header">
         <div className="header-content">
           <h3>Set Your Availability</h3>
           <p>Manage your working hours and time slots for customer bookings</p>
         </div>
-        <Button
-          variant="primary"
-          onClick={() => setShowTimeForm(true)}
-        >
+        <Button variant="primary" onClick={() => setShowTimeForm(true)}>
           ➕ Add Time Slot
         </Button>
       </div>
 
-      {/* Calendar Grid */}
       <div className="calendar-container">
-        {/* Month Navigation */}
         <div className="calendar-nav">
-          <Button
-            variant="secondary"
-            size="small"
-            onClick={() => {
-              const newDate = new Date(selectedDate);
-              newDate.setMonth(newDate.getMonth() - 1);
-              setSelectedDate(newDate);
-            }}
-          >
-            ‹ Previous
-          </Button>
-          <h4>
-            {selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-          </h4>
-          <Button
-            variant="secondary"
-            size="small"
-            onClick={() => {
-              const newDate = new Date(selectedDate);
-              newDate.setMonth(newDate.getMonth() + 1);
-              setSelectedDate(newDate);
-            }}
-          >
-            Next ›
-          </Button>
+          <Button variant="secondary" size="small" onClick={() => {
+            const newDate = new Date(selectedDate);
+            newDate.setMonth(newDate.getMonth() - 1);
+            setSelectedDate(newDate);
+          }}>‹ Previous</Button>
+          <h4>{selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h4>
+          <Button variant="secondary" size="small" onClick={() => {
+            const newDate = new Date(selectedDate);
+            newDate.setMonth(newDate.getMonth() + 1);
+            setSelectedDate(newDate);
+          }}>Next ›</Button>
         </div>
 
-        {/* Day Headers */}
         <div className="calendar-grid">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="calendar-header-cell">
-              {day}
-            </div>
+            <div key={day} className="calendar-header-cell">{day}</div>
           ))}
-
-          {/* Calendar Days */}
           {renderCalendar().map((day, index) => (
-            <div
-              key={index}
-              className={`calendar-day ${!day.isCurrentMonth ? 'other-month' : ''} ${day.isToday ? 'today' : ''} ${day.availability ? 'has-availability' : ''}`}
-              onClick={() => day.isCurrentMonth && handleDateClick(day.date)}
-            >
+            <div key={index} className={`calendar-day ${!day.isCurrentMonth ? 'other-month' : ''} ${day.isToday ? 'today' : ''} ${day.availability ? 'has-availability' : ''}`} onClick={() => day.isCurrentMonth && handleDateClick(day.date)}>
               <div className="day-number">{day.date.getDate()}</div>
               {day.availability && (
                 <div className="day-availability">
@@ -302,9 +288,7 @@ const AvailabilityCalendar = () => {
                       Break: {formatTime(day.availability.breakStartTime)} - {formatTime(day.availability.breakEndTime)}
                     </div>
                   )}
-                  {day.availability.isRepeating && (
-                    <div className="recurring-badge">🔄</div>
-                  )}
+                  {day.availability.isRepeating && <div className="recurring-badge">🔄</div>}
                 </div>
               )}
             </div>
@@ -312,176 +296,84 @@ const AvailabilityCalendar = () => {
         </div>
       </div>
 
-      {/* Time Slot Form Modal */}
       {showTimeForm && (
         <div className="time-form-overlay">
           <Card className="time-form-modal">
             <div className="form-header">
-              <h4>
-                {editingSlot ? 'Edit' : 'Add'} Availability for {selectedDate.toLocaleDateString()}
-              </h4>
+              <h4>{editingSlot ? 'Edit' : 'Add'} Availability for {selectedDate.toLocaleDateString()}</h4>
             </div>
-
             <div className="form-content">
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="openingTime">Opening Time *</label>
-                  <input
-                    id="openingTime"
-                    name="openingTime"
-                    type="time"
-                    value={timeForm.openingTime}
-                    onChange={handleTimeFormChange}
-                    className="form-input"
-                  />
+                  <input id="openingTime" name="openingTime" type="time" value={timeForm.openingTime} onChange={handleTimeFormChange} className="form-input" />
                 </div>
-
                 <div className="form-group">
                   <label htmlFor="closingTime">Closing Time *</label>
-                  <input
-                    id="closingTime"
-                    name="closingTime"
-                    type="time"
-                    value={timeForm.closingTime}
-                    onChange={handleTimeFormChange}
-                    className="form-input"
-                  />
+                  <input id="closingTime" name="closingTime" type="time" value={timeForm.closingTime} onChange={handleTimeFormChange} className="form-input" />
                 </div>
               </div>
-
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="breakStartTime">Break Start (optional)</label>
-                  <input
-                    id="breakStartTime"
-                    name="breakStartTime"
-                    type="time"
-                    value={timeForm.breakStartTime}
-                    onChange={handleTimeFormChange}
-                    className="form-input"
-                  />
+                  <input id="breakStartTime" name="breakStartTime" type="time" value={timeForm.breakStartTime} onChange={handleTimeFormChange} className="form-input" />
                 </div>
-
                 <div className="form-group">
                   <label htmlFor="breakEndTime">Break End (optional)</label>
-                  <input
-                    id="breakEndTime"
-                    name="breakEndTime"
-                    type="time"
-                    value={timeForm.breakEndTime}
-                    onChange={handleTimeFormChange}
-                    className="form-input"
-                  />
+                  <input id="breakEndTime" name="breakEndTime" type="time" value={timeForm.breakEndTime} onChange={handleTimeFormChange} className="form-input" />
                 </div>
               </div>
-
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="duration">Duration (minutes)</label>
-                  <input
-                    id="duration"
-                    name="duration"
-                    type="number"
-                    value={timeForm.duration}
-                    onChange={handleTimeFormChange}
-                    className="form-input"
-                    min="15"
-                    max="480"
-                    placeholder="60"
-                  />
+                  <input id="duration" name="duration" type="number" value={timeForm.duration} onChange={handleTimeFormChange} className="form-input" min="15" max="480" placeholder="60" />
                 </div>
               </div>
-
               <div className="form-group checkbox-group">
                 <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="isRepeating"
-                    checked={timeForm.isRepeating}
-                    onChange={handleTimeFormChange}
-                  />
+                  <input type="checkbox" name="isRepeating" checked={timeForm.isRepeating} onChange={handleTimeFormChange} />
                   <span className="checkmark"></span>
                   Make this a recurring weekly schedule
                 </label>
               </div>
             </div>
-
             <div className="form-actions">
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setShowTimeForm(false);
-                  setEditingSlot(null);
-                }}
-              >
-                Cancel
-              </Button>
-              {editingSlot && (
-                <Button
-                  variant="danger"
-                  onClick={() => handleDeleteSlot(editingSlot._id)}
-                >
-                  Delete
-                </Button>
-              )}
-              <Button
-                variant="primary"
-                onClick={handleSaveTimeSlot}
-              >
-                {editingSlot ? 'Update' : 'Save'} Availability
-              </Button>
+              <Button variant="secondary" onClick={() => { setShowTimeForm(false); setEditingSlot(null); }}>Cancel</Button>
+              {editingSlot && <Button variant="danger" onClick={() => handleDeleteSlot(editingSlot._id)}>Delete</Button>}
+              <Button variant="primary" onClick={handleSaveTimeSlot}>{editingSlot ? 'Update' : 'Save'} Availability</Button>
             </div>
           </Card>
         </div>
       )}
 
-      {/* Existing Availability List */}
       <div className="availability-list">
         <h4>Your Current Availability</h4>
         {availability.length > 0 ? (
           availability.map(slot => (
             <Card key={slot._id} className="availability-item">
               <div className="availability-info">
-                <div className="availability-date">
-                  📅 {new Date(slot.date).toLocaleDateString()}
-                </div>
+                <div className="availability-date">📅 {new Date(slot.date).toLocaleDateString()}</div>
                 <div className="availability-times">
                   🕐 {formatTime(slot.openingTime || slot.startTime)} - {formatTime(slot.closingTime || slot.endTime)}
-                  {slot.breakStartTime && (
-                    <span className="break-info">
-                      (Break: {formatTime(slot.breakStartTime)} - {formatTime(slot.breakEndTime)})
-                    </span>
-                  )}
+                  {slot.breakStartTime && <span className="break-info">(Break: {formatTime(slot.breakStartTime)} - {formatTime(slot.breakEndTime)})</span>}
                   {slot.isRepeating && <span className="recurring-info">🔄 Weekly</span>}
                 </div>
               </div>
               <div className="availability-actions">
-                <Button
-                  variant="secondary"
-                  size="small"
-                  onClick={() => {
-                    setSelectedDate(new Date(slot.date));
-                    setEditingSlot(slot);
-                    setTimeForm({
-                      openingTime: slot.openingTime || slot.startTime || '',
-                      closingTime: slot.closingTime || slot.endTime || '',
-                      breakStartTime: slot.breakStartTime || slot.breakStart || '',
-                      breakEndTime: slot.breakEndTime || slot.breakEnd || '',
-                      isRepeating: slot.isRepeating || slot.isRecurring || false,
-                      duration: slot.duration || 60
-                    });
-                    setShowTimeForm(true);
-                  }}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="danger"
-                  size="small"
-                  onClick={() => handleDeleteSlot(slot._id)}
-                >
-                  Delete
-                </Button>
+                <Button variant="secondary" size="small" onClick={() => {
+                  setSelectedDate(new Date(slot.date));
+                  setEditingSlot(slot);
+                  setTimeForm({
+                    openingTime: slot.openingTime || slot.startTime || '',
+                    closingTime: slot.closingTime || slot.endTime || '',
+                    breakStartTime: slot.breakStartTime || slot.breakStart || '',
+                    breakEndTime: slot.breakEndTime || slot.breakEnd || '',
+                    isRepeating: slot.isRepeating || slot.isRecurring || false,
+                    duration: slot.duration || 60
+                  });
+                  setShowTimeForm(true);
+                }}>Edit</Button>
+                <Button variant="danger" size="small" onClick={() => handleDeleteSlot(slot._id)}>Delete</Button>
               </div>
             </Card>
           ))

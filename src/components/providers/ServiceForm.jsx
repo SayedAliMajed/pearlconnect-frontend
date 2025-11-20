@@ -101,9 +101,10 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
         provider: user._id || user.id,
         providerName: user.username || user.name,
         active: formData.active,
-        images: []
+        images: formData.images // Include existing images
       };
 
+      // Handle category lookup
       if (formData.category && typeof formData.category === 'string') {
         const categoryObj = categories.find(cat => cat.name === formData.category);
         if (categoryObj) {
@@ -111,34 +112,66 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
         }
       }
 
-      console.log('Sending service data:', {
+      // Create FormData for file uploads if we have files
+      const hasNewFiles = selectedFiles.length > 0;
+      let formDataObj;
+      let headers = {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      };
+
+      if (hasNewFiles) {
+        // Use FormData for file uploads
+        formDataObj = new FormData();
+
+        // Add basic service data
+        formDataObj.append('title', serviceData.title);
+        formDataObj.append('description', serviceData.description);
+        formDataObj.append('price', serviceData.price.toString());
+        formDataObj.append('provider', serviceData.provider);
+        formDataObj.append('providerName', serviceData.providerName);
+        formDataObj.append('active', serviceData.active.toString());
+        formDataObj.append('category', serviceData.category || '');
+        formDataObj.append('currency', formData.currency);
+
+        // Add existing images (URLs as JSON string)
+        if (serviceData.images.length > 0) {
+          formDataObj.append('existingImages', JSON.stringify(serviceData.images));
+        }
+
+        // Add new image files
+        selectedFiles.forEach((file, index) => {
+          formDataObj.append(`images`, file);
+        });
+      } else {
+        // Use JSON for non-file updates
+        formDataObj = JSON.stringify(serviceData);
+        headers['Content-Type'] = 'application/json';
+      }
+
+      console.log('Sending service data:', hasNewFiles ? 'FormData (with files)' : 'JSON', {
         title: serviceData.title,
         descriptionLength: serviceData.description.length,
         price: serviceData.price,
         category: formData.category,
         provider: serviceData.provider,
+        filesCount: selectedFiles.length,
+        existingImages: serviceData.images.length,
         apiUrl: `${import.meta.env.VITE_API_URL}/services`,
-        authToken: !!localStorage.getItem('token')
+        authTokenExists: !!localStorage.getItem('token')
       });
 
       let response;
       if (service) {
         response = await fetch(`${import.meta.env.VITE_API_URL}/services/${service._id || service.id}`, {
           method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(serviceData)
+          headers,
+          body: formDataObj
         });
       } else {
         response = await fetch(`${import.meta.env.VITE_API_URL}/services`, {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(serviceData)
+          headers,
+          body: formDataObj
         });
       }
 

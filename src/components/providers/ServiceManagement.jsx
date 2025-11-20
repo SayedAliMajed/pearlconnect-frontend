@@ -78,29 +78,13 @@ const ServiceManagement = () => {
     try {
       setDeletingId(serviceId);
 
-      // Find the service being deleted for debugging
+      // Basic ownership validation
       const serviceToDelete = services.find(s => s._id === serviceId || s.id === serviceId);
-      console.log('🔍 DELETE REQUEST DEBUG:', {
-        serviceId,
-        serviceToDelete: {
-          _id: serviceToDelete?._id,
-          title: serviceToDelete?.title,
-          provider: serviceToDelete?.provider,
-          providerId: serviceToDelete?.providerId,
-          fullProviderObj: serviceToDelete?.provider
-        },
-        currentUser: {
-          _id: user?._id,
-          id: user?.id,
-          username: user?.username,
-          role: user?.role,
-          email: user?.email
-        },
-        ownershipCheck: `service.provider === user._id → ${serviceToDelete?.provider} === ${user?._id} = ${serviceToDelete?.provider === user?._id}`,
-        ownershipCheckByEmail: `service.provider.email === user.email → ${serviceToDelete?.provider?.email} === ${user?.email} = ${serviceToDelete?.provider?.email === user?.email}`,
-        token: localStorage.getItem('token') ? 'Token exists (length: ' + localStorage.getItem('token').length + ')' : 'No token',
-        apiUrl: `${import.meta.env.VITE_API_URL}/services/${serviceId}`
-      });
+      if (!serviceToDelete) {
+        console.error('Service not found for deletion:', serviceId);
+        alert('Service not found. Please refresh the page.');
+        return;
+      }
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/services/${serviceId}`, {
         method: 'DELETE',
@@ -180,10 +164,8 @@ const ServiceManagement = () => {
 
       {/* Services List */}
       <div className="services-list">
-        {console.log('ServiceManagement - services count:', services.length)}
         {services.length > 0 ? (
           services.map(service => {
-            console.log('Rendering service:', service.title, service._id);
             return (
               <Card key={service._id || service.id} className="service-item" style={{ height: 'auto', overflow: 'visible' }}>
               <div className="service-content">
@@ -204,17 +186,17 @@ const ServiceManagement = () => {
                 </div>
 
                 <div className="service-image">
-                  <img
-                    src={
-                      // API services have images[] array with uploaded images
-                      (service.images?.[0]?.url || service.images?.[0]) ||
-                      // If no images, show placeholder
-                      'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=100&h=60&fit=crop'
-                    }
-                    alt={service.title}
-                    className="service-thumbnail"
-                    style={service.images?.length > 0 ? {} : { opacity: 0.5 }}
-                  />
+                  {service.images?.length > 0 ? (
+                    <img
+                      src={service.images[0].url || service.images[0]}
+                      alt={service.title}
+                      className="service-thumbnail"
+                    />
+                  ) : (
+                    <div className="service-thumbnail-placeholder">
+                      <span>No image</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
