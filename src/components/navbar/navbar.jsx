@@ -59,26 +59,9 @@ const NavBar = () => {
     }
   };
 
-  // Handle real-time search (navigate immediately when typing starts)
+  // Handle search input change (no immediate navigation)
   const handleSearchChange = (e) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-
-    // If user has typed at least 2 characters, navigate immediately
-    if (value.trim().length >= 2) {
-      const searchParams = new URLSearchParams();
-      searchParams.set('q', value.trim());
-
-      // Include current category selection
-      const categorySelect = e.target.closest('form').querySelector('.pc-search-category');
-      const selectedCategory = categorySelect?.value;
-      if (selectedCategory && selectedCategory !== 'all') {
-        searchParams.set('category', selectedCategory);
-      }
-
-      const queryString = searchParams.toString();
-      navigate(`/services${queryString ? `?${queryString}` : ''}`);
-    }
+    setSearchQuery(e.target.value);
   };
 
   // Handle real-time category change (navigate immediately when category is selected)
@@ -113,14 +96,14 @@ const NavBar = () => {
           <div className="pc-header-logo">
             <Link to="/" className="pc-logo-link">
               <img src="/img/logo.png" alt="PearlConnect" className="pc-logo-image" />
-              <span className="pc-logo-text"></span>
+              <span className="pc-logo-text">PearlConnect</span>
             </Link>
           </div>
 
           {/* Search Bar */}
           <div className="pc-header-search">
             <form onSubmit={handleSearch} className="pc-search-form">
-              <select className="pc-search-category" onChange={handleCategoryChange}>
+              <select className="pc-search-category" onChange={handleCategoryChange} aria-label="Filter by category">
                 <option value="all">All Categories</option>
                 {navCategories.map(category => (
                   <option key={category._id || category.id} value={category.name}>
@@ -134,9 +117,10 @@ const NavBar = () => {
                 onChange={handleSearchChange}
                 className="pc-search-input"
                 placeholder="Search services..."
+                aria-label="Search Services"
               />
-              <button type="submit" className="pc-search-button">
-                Search
+              <button type="submit" className="pc-search-button" aria-label="Search Services">
+                🔍
               </button>
             </form>
           </div>
