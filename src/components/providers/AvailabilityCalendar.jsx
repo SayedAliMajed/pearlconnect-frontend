@@ -70,7 +70,7 @@ const AvailabilityCalendar = () => {
     } else {
       setEditingSlot(null);
       setTimeForm({
-        openingTime: '09:00',
+        openingTime: '08:00',
         closingTime: '17:00',
         breakStartTime: '12:00',
         breakEndTime: '13:00',
