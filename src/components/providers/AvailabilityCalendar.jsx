@@ -7,7 +7,7 @@ const AvailabilityCalendar = () => {
   const { user } = useContext(AuthContext);
   const [availability, setAvailability] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showDayForm, setShowDayForm] = useState(false);
+  const [expandedDay, setExpandedDay] = useState(null);
   const [editingDaySchedule, setEditingDaySchedule] = useState(null);
 
   // Form for editing daily schedule - matches backend 12-hour format
@@ -42,7 +42,7 @@ const AvailabilityCalendar = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setAvailability(data); // Backend returns single availability object
+        setAvailability(data);
       } else if (response.status === 404) {
         // No availability set yet - create default structure
         setAvailability({
@@ -65,6 +65,12 @@ const AvailabilityCalendar = () => {
   };
 
   const handleDaySelect = (dayOfWeek) => {
+    // Close any currently expanded day
+    if (expandedDay === dayOfWeek) {
+      setExpandedDay(null);
+      return;
+    }
+
     setFormError('');
 
     // Find existing schedule for this day
@@ -93,7 +99,7 @@ const AvailabilityCalendar = () => {
         breakTimes: []
       });
     }
-    setShowDayForm(true);
+    setExpandedDay(dayOfWeek);
   };
 
   const handleDayFormChange = (e) => {
@@ -124,7 +130,6 @@ const AvailabilityCalendar = () => {
       if (dayForm.isEnabled) {
         updatedSchedules.push({
           dayOfWeek: dayForm.dayOfWeek,
-          isEnabled: dayForm.isEnabled,
           startTime: dayForm.startTime,
           endTime: dayForm.endTime,
           slotDuration: parseInt(dayForm.slotDuration),
@@ -152,7 +157,7 @@ const AvailabilityCalendar = () => {
       if (response.ok) {
         const result = await response.json();
         loadAvailability();
-        setShowDayForm(false);
+        setExpandedDay(null);
         setEditingDaySchedule(null);
       } else {
         const error = await response.json();
@@ -163,8 +168,6 @@ const AvailabilityCalendar = () => {
       setFormError('Failed to save schedule. Please try again.');
     }
   };
-
-
 
   if (!user) {
     return (
@@ -201,9 +204,10 @@ const AvailabilityCalendar = () => {
         {dayNames.map((dayName, dayOfWeek) => {
           const schedule = availability?.schedules?.find(sch => sch.dayOfWeek === dayOfWeek);
           const isEnabled = schedule && schedule.isEnabled !== false;
+          const isExpanded = expandedDay === dayOfWeek;
 
           return (
-            <Card key={dayOfWeek} className={`day-schedule-card ${!isEnabled ? 'disabled' : ''}`} onClick={() => handleDaySelect(dayOfWeek)}>
+            <Card key={dayOfWeek} className={`day-schedule-card ${!isEnabled ? 'disabled' : ''} ${isExpanded ? 'expanded' : ''}`} onClick={() => handleDaySelect(dayOfWeek)}>
               <div className="day-header">
                 <h4>{dayName}</h4>
                 {!isEnabled && <span className="day-disabled">Unscheduled</span>}
@@ -228,83 +232,118 @@ const AvailabilityCalendar = () => {
                   <div>Click to set availability</div>
                 </div>
               )}
+
+              {/* Inline Form - Only ONE per expanded day */}
+              {isExpanded && (
+                <div className="inline-day-form">
+                  {formError && (
+                    <div className="inline-error-message">
+                      <span className="error-icon">⚠️</span> {formError}
+                    </div>
+                  )}
+
+                  <div className="inline-form-group checkbox-group">
+                    <label className="inline-checkbox-label">
+                      <input
+                        type="checkbox"
+                        name="isEnabled"
+                        checked={dayForm.isEnabled}
+                        onChange={handleDayFormChange}
+                      />
+                      <span className="checkmark"></span>
+                      This day is available for bookings
+                    </label>
+                  </div>
+
+                  {dayForm.isEnabled && (
+                    <div className="inline-form-content">
+                      <div className="inline-form-row">
+                        <div className="inline-form-group">
+                          <label htmlFor="startTime">Opening Time *</label>
+                          <select
+                            id="startTime"
+                            name="startTime"
+                            value={dayForm.startTime}
+                            onChange={handleDayFormChange}
+                            className="inline-form-input"
+                          >
+                            {['08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM'].map(time => (
+                              <option key={time} value={time}>{time}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="inline-form-group">
+                          <label htmlFor="endTime">Closing Time *</label>
+                          <select
+                            id="endTime"
+                            name="endTime"
+                            value={dayForm.endTime}
+                            onChange={handleDayFormChange}
+                            className="inline-form-input"
+                          >
+                            {['08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM', '08:00 PM', '08:30 PM', '09:00 PM', '09:30 PM', '10:00 PM', '10:30 PM', '11:00 PM', '11:30 PM'].map(time => (
+                              <option key={time} value={time}>{time}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                      <div className="inline-form-row">
+                        <div className="inline-form-group">
+                          <label htmlFor="slotDuration">Service Duration (minutes)</label>
+                          <select
+                            id="slotDuration"
+                            name="slotDuration"
+                            value={dayForm.slotDuration}
+                            onChange={handleDayFormChange}
+                            className="inline-form-input"
+                          >
+                            <option value="30">30 min</option>
+                            <option value="45">45 min</option>
+                            <option value="60">60 min</option>
+                            <option value="90">90 min</option>
+                            <option value="120">120 min</option>
+                          </select>
+                        </div>
+                        <div className="inline-form-group">
+                          <label htmlFor="bufferTime">Buffer Time (minutes)</label>
+                          <select
+                            id="bufferTime"
+                            name="bufferTime"
+                            value={dayForm.bufferTime}
+                            onChange={handleDayFormChange}
+                            className="inline-form-input"
+                          >
+                            <option value="0">0 min</option>
+                            <option value="15">15 min</option>
+                            <option value="30">30 min</option>
+                            <option value="60">60 min</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="inline-form-actions">
+                        <Button
+                          variant="secondary"
+                          size="small"
+                          onClick={() => { setExpandedDay(null); setEditingDaySchedule(null); setFormError(''); }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="primary"
+                          size="small"
+                          onClick={handleSaveDaySchedule}
+                        >
+                          {editingDaySchedule ? 'Update' : 'Save'} Schedule
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </Card>
           );
         })}
       </div>
-
-      {/* Day Edit Modal */}
-      {showDayForm && (
-        <div className="time-form-overlay">
-          <Card className="time-form-modal">
-            <div className="form-header">
-              <h4>{editingDaySchedule ? 'Edit' : 'Set'} {dayNames[dayForm.dayOfWeek]} Schedule</h4>
-            </div>
-            {formError && (
-              <div className="form-error-message">
-                <span className="error-icon">⚠️</span> {formError}
-              </div>
-            )}
-            <div className="form-content">
-              <div className="form-group checkbox-group">
-                <label className="checkbox-label">
-                  <input type="checkbox" name="isEnabled" checked={dayForm.isEnabled} onChange={handleDayFormChange} />
-                  <span className="checkmark"></span>
-                  This day is available for bookings
-                </label>
-              </div>
-
-              {dayForm.isEnabled && (
-                <>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label htmlFor="startTime">Opening Time *</label>
-                      <select id="startTime" name="startTime" value={dayForm.startTime} onChange={handleDayFormChange} className="form-input">
-                        {['08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM'].map(time => (
-                          <option key={time} value={time}>{time}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="endTime">Closing Time *</label>
-                      <select id="endTime" name="endTime" value={dayForm.endTime} onChange={handleDayFormChange} className="form-input">
-                        {['08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM', '08:00 PM', '08:30 PM', '09:00 PM', '09:30 PM', '10:00 PM', '10:30 PM', '11:00 PM', '11:30 PM'].map(time => (
-                          <option key={time} value={time}>{time}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label htmlFor="slotDuration">Service Duration (minutes)</label>
-                      <select id="slotDuration" name="slotDuration" value={dayForm.slotDuration} onChange={handleDayFormChange} className="form-input">
-                        <option value="30">30 min</option>
-                        <option value="45">45 min</option>
-                        <option value="60">60 min</option>
-                        <option value="90">90 min</option>
-                        <option value="120">120 min</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="bufferTime">Buffer Time (minutes)</label>
-                      <select id="bufferTime" name="bufferTime" value={dayForm.bufferTime} onChange={handleDayFormChange} className="form-input">
-                        <option value="0">0 min</option>
-                        <option value="15">15 min</option>
-                        <option value="30">30 min</option>
-                        <option value="60">60 min</option>
-                      </select>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-            <div className="form-actions">
-              <Button variant="secondary" onClick={() => { setShowDayForm(false); setEditingDaySchedule(null); setFormError(''); }}>Cancel</Button>
-              <Button variant="primary" onClick={handleSaveDaySchedule}>{editingDaySchedule ? 'Update' : 'Save'} Schedule</Button>
-            </div>
-          </Card>
-        </div>
-      )}
 
       {/* Settings Summary */}
       {availability && (
