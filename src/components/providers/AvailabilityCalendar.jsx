@@ -5,19 +5,23 @@ import { AuthContext } from '../../contexts/AuthContext';
 
 const AvailabilityCalendar = () => {
   const { user } = useContext(AuthContext);
-  const [availability, setAvailability] = useState([]);
+  const [availability, setAvailability] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [showTimeForm, setShowTimeForm] = useState(false);
-  const [editingSlot, setEditingSlot] = useState(null);
-  const [timeForm, setTimeForm] = useState({
-    openingTime: '',
-    closingTime: '',
-    breakStartTime: '',
-    breakEndTime: '',
-    isRepeating: false,
-    duration: 60
+  const [showDayForm, setShowDayForm] = useState(false);
+  const [editingDaySchedule, setEditingDaySchedule] = useState(null);
+
+  // Form for editing daily schedule - matches backend 12-hour format
+  const [dayForm, setDayForm] = useState({
+    dayOfWeek: 1,
+    isEnabled: true,
+    startTime: '09:00 AM',
+    endTime: '05:00 PM',
+    slotDuration: 60,
+    bufferTime: 0,
+    breakTimes: []
   });
+
+  const [formError, setFormError] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -28,7 +32,8 @@ const AvailabilityCalendar = () => {
   const loadAvailability = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/providers/availability`, {
+      const providerId = user._id || user.id;
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/availability/provider/${providerId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -37,151 +42,125 @@ const AvailabilityCalendar = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setAvailability(data.availabilities || []);
+        setAvailability(data); // Backend returns single availability object
+      } else if (response.status === 404) {
+        // No availability set yet - create default structure
+        setAvailability({
+          providerId,
+          schedules: [],
+          exceptions: [],
+          timezone: 'Asia/Bahrain',
+          advanceBookingDays: 30
+        });
       } else {
         console.error('Failed to load availability');
-        setAvailability([]);
+        setAvailability(null);
       }
     } catch (error) {
       console.error('Error loading availability:', error);
-      setAvailability([]);
+      setAvailability(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDateClick = (date) => {
-    setSelectedDate(date);
-    const existingSlot = availability.find(slot => {
-      const slotDate = new Date(slot.date);
-      return slotDate.toDateString() === date.toDateString();
-    });
+  const handleDaySelect = (dayOfWeek) => {
+    setFormError('');
 
-    if (existingSlot) {
-      setEditingSlot(existingSlot);
-      setTimeForm({
-        openingTime: existingSlot.openingTime || existingSlot.startTime || '',
-        closingTime: existingSlot.closingTime || existingSlot.endTime || '',
-        breakStartTime: existingSlot.breakStartTime || existingSlot.breakStart || '',
-        breakEndTime: existingSlot.breakEndTime || existingSlot.breakEnd || '',
-        isRepeating: existingSlot.isRepeating || existingSlot.isRecurring || false,
-        duration: existingSlot.duration || 60
+    // Find existing schedule for this day
+    const existingSchedule = availability?.schedules?.find(sch => sch.dayOfWeek === dayOfWeek);
+
+    if (existingSchedule) {
+      setEditingDaySchedule(existingSchedule);
+      setDayForm({
+        dayOfWeek,
+        isEnabled: existingSchedule.isEnabled !== false,
+        startTime: existingSchedule.startTime || '09:00 AM',
+        endTime: existingSchedule.endTime || '05:00 PM',
+        slotDuration: existingSchedule.slotDuration || 60,
+        bufferTime: existingSchedule.bufferTime || 0,
+        breakTimes: existingSchedule.breakTimes || []
       });
     } else {
-      setEditingSlot(null);
-      setTimeForm({
-        openingTime: '08:00',
-        closingTime: '17:00',
-        breakStartTime: '12:00',
-        breakEndTime: '13:00',
-        isRepeating: false,
-        duration: 60
+      setEditingDaySchedule(null);
+      setDayForm({
+        dayOfWeek,
+        isEnabled: true,
+        startTime: '09:00 AM',
+        endTime: '05:00 PM',
+        slotDuration: 60,
+        bufferTime: 0,
+        breakTimes: []
       });
     }
-    setShowTimeForm(true);
+    setShowDayForm(true);
   };
 
-  const handleTimeFormChange = (e) => {
+  const handleDayFormChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setTimeForm(prev => ({
+    setDayForm(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
   };
 
-  const handleSaveTimeSlot = async () => {
+  const handleSaveDaySchedule = async () => {
     try {
+      setFormError('');
+
       // Basic validation
-      if (!timeForm.openingTime || !timeForm.closingTime) {
-        alert('Please fill in both opening and closing times.');
+      if (!dayForm.startTime || !dayForm.endTime) {
+        setFormError('Please fill in both opening and closing times.');
         return;
       }
 
-      if (timeForm.openingTime >= timeForm.closingTime) {
-        alert('Closing time must be after opening time.');
-        return;
+      // Backend expects the entire availability object to be sent
+      const providerId = user._id || user.id;
+      const currentSchedules = availability?.schedules || [];
+
+      // Create updated schedule with the new day
+      const updatedSchedules = [...currentSchedules.filter(sch => sch.dayOfWeek !== dayForm.dayOfWeek)];
+
+      if (dayForm.isEnabled) {
+        updatedSchedules.push({
+          dayOfWeek: dayForm.dayOfWeek,
+          isEnabled: dayForm.isEnabled,
+          startTime: dayForm.startTime,
+          endTime: dayForm.endTime,
+          slotDuration: parseInt(dayForm.slotDuration),
+          bufferTime: parseInt(dayForm.bufferTime),
+          breakTimes: dayForm.breakTimes || []
+        });
       }
 
-      if (timeForm.breakStartTime && timeForm.breakEndTime) {
-        if (timeForm.breakStartTime >= timeForm.breakEndTime) {
-          alert('Break end time must be after break start time.');
-          return;
-        }
-        if (timeForm.breakStartTime <= timeForm.openingTime || timeForm.breakEndTime >= timeForm.closingTime) {
-          alert('Break times must be within business hours.');
-          return;
-        }
-      }
-
-      const slotData = {
-        provider: user.id || user._id,
-        date: selectedDate.toISOString().split('T')[0],
-        openingTime: timeForm.openingTime,
-        closingTime: timeForm.closingTime,
-        breakStartTime: timeForm.breakStartTime,
-        breakEndTime: timeForm.breakEndTime,
-        isRepeating: timeForm.isRepeating,
-        duration: timeForm.duration
+      const availabilityData = {
+        schedules: updatedSchedules,
+        exceptions: availability?.exceptions || [],
+        timezone: availability?.timezone || 'Asia/Bahrain',
+        advanceBookingDays: availability?.advanceBookingDays || 30
       };
 
-      let response;
-      if (editingSlot) {
-        response = await fetch(`${import.meta.env.VITE_API_URL}/providers/availability/${editingSlot._id}`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(slotData)
-        });
-      } else {
-        response = await fetch(`${import.meta.env.VITE_API_URL}/providers/availability`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(slotData)
-        });
-      }
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/availability/provider/${providerId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(availabilityData)
+      });
 
       if (response.ok) {
         const result = await response.json();
         loadAvailability();
-        setShowTimeForm(false);
-        setEditingSlot(null);
+        setShowDayForm(false);
+        setEditingDaySchedule(null);
       } else {
         const error = await response.json();
-        alert(`Failed to ${editingSlot ? 'update' : 'create'} availability: ${error.message || 'Unknown error'}`);
+        setFormError(`Failed to save schedule: ${error.err || error.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error saving availability:', error);
-      alert(`Failed to ${editingSlot ? 'update' : 'create'} availability. Please try again.`);
-    }
-  };
-
-  const handleDeleteSlot = async (slotId) => {
-    if (!window.confirm('Are you sure you want to delete this availability slot?')) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/providers/availability/${slotId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        loadAvailability();
-      } else {
-        alert('Failed to delete availability slot. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error deleting availability:', error);
-      alert('Failed to delete availability slot. Please try again.');
+      setFormError('Failed to save schedule. Please try again.');
     }
   };
 
@@ -244,143 +223,150 @@ const AvailabilityCalendar = () => {
     );
   }
 
+  // Day names for display
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
   return (
     <div className="availability-calendar">
       <div className="calendar-header">
         <div className="header-content">
-          <h3>Set Your Availability</h3>
-          <p>Manage your working hours and time slots for customer bookings</p>
+          <h3>Set Your Weekly Availability</h3>
+          <p>Configure your working hours for each day that apply to all your services</p>
         </div>
-        <Button variant="primary" onClick={() => setShowTimeForm(true)}>
-          ➕ Add Time Slot
-        </Button>
       </div>
 
-      <div className="calendar-container">
-        <div className="calendar-nav">
-          <Button variant="secondary" size="small" onClick={() => {
-            const newDate = new Date(selectedDate);
-            newDate.setMonth(newDate.getMonth() - 1);
-            setSelectedDate(newDate);
-          }}>‹ Previous</Button>
-          <h4>{selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h4>
-          <Button variant="secondary" size="small" onClick={() => {
-            const newDate = new Date(selectedDate);
-            newDate.setMonth(newDate.getMonth() + 1);
-            setSelectedDate(newDate);
-          }}>Next ›</Button>
-        </div>
+      {/* Weekly Schedule */}
+      <div className="weekly-schedule">
+        {dayNames.map((dayName, dayOfWeek) => {
+          const schedule = availability?.schedules?.find(sch => sch.dayOfWeek === dayOfWeek);
+          const isEnabled = schedule?.isEnabled !== false;
 
-        <div className="calendar-grid">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="calendar-header-cell">{day}</div>
-          ))}
-          {renderCalendar().map((day, index) => (
-            <div key={index} className={`calendar-day ${!day.isCurrentMonth ? 'other-month' : ''} ${day.isToday ? 'today' : ''} ${day.availability ? 'has-availability' : ''}`} onClick={() => day.isCurrentMonth && handleDateClick(day.date)}>
-              <div className="day-number">{day.date.getDate()}</div>
-              {day.availability && (
-                <div className="day-availability">
-                  <div className="time-slot">
-                    {formatTime(day.availability.openingTime || day.availability.startTime)} - {formatTime(day.availability.closingTime || day.availability.endTime)}
+          return (
+            <Card key={dayOfWeek} className={`day-schedule-card ${!isEnabled ? 'disabled' : ''}`} onClick={() => handleDaySelect(dayOfWeek)}>
+              <div className="day-header">
+                <h4>{dayName}</h4>
+                {!isEnabled && <span className="day-disabled">Unscheduled</span>}
+              </div>
+
+              {isEnabled ? (
+                <div className="day-times">
+                  <div className="time-range">
+                    {schedule.startTime} - {schedule.endTime}
                   </div>
-                  {day.availability.breakStartTime && (
-                    <div className="break-time">
-                      Break: {formatTime(day.availability.breakStartTime)} - {formatTime(day.availability.breakEndTime)}
+                  {schedule.breakTimes && schedule.breakTimes.length > 0 && (
+                    <div className="break-info">
+                      Break: {schedule.breakTimes[0].startTime} - {schedule.breakTimes[0].endTime}
                     </div>
                   )}
-                  {day.availability.isRepeating && <div className="recurring-badge">🔄</div>}
+                  <div className="slot-info">
+                    {schedule.slotDuration}min slots • {schedule.bufferTime}min buffer
+                  </div>
+                </div>
+              ) : (
+                <div className="day-times disabled">
+                  <div>Click to set availability</div>
                 </div>
               )}
-            </div>
-          ))}
-        </div>
+            </Card>
+          );
+        })}
       </div>
 
-      {showTimeForm && (
+      {/* Day Edit Modal */}
+      {showDayForm && (
         <div className="time-form-overlay">
           <Card className="time-form-modal">
             <div className="form-header">
-              <h4>{editingSlot ? 'Edit' : 'Add'} Availability for {selectedDate.toLocaleDateString()}</h4>
+              <h4>{editingDaySchedule ? 'Edit' : 'Set'} {dayNames[dayForm.dayOfWeek]} Schedule</h4>
             </div>
+            {formError && (
+              <div className="form-error-message">
+                <span className="error-icon">⚠️</span> {formError}
+              </div>
+            )}
             <div className="form-content">
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="openingTime">Opening Time *</label>
-                  <input id="openingTime" name="openingTime" type="time" value={timeForm.openingTime} onChange={handleTimeFormChange} className="form-input" />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="closingTime">Closing Time *</label>
-                  <input id="closingTime" name="closingTime" type="time" value={timeForm.closingTime} onChange={handleTimeFormChange} className="form-input" />
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="breakStartTime">Break Start (optional)</label>
-                  <input id="breakStartTime" name="breakStartTime" type="time" value={timeForm.breakStartTime} onChange={handleTimeFormChange} className="form-input" />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="breakEndTime">Break End (optional)</label>
-                  <input id="breakEndTime" name="breakEndTime" type="time" value={timeForm.breakEndTime} onChange={handleTimeFormChange} className="form-input" />
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="duration">Duration (minutes)</label>
-                  <input id="duration" name="duration" type="number" value={timeForm.duration} onChange={handleTimeFormChange} className="form-input" min="15" max="480" placeholder="60" />
-                </div>
-              </div>
               <div className="form-group checkbox-group">
                 <label className="checkbox-label">
-                  <input type="checkbox" name="isRepeating" checked={timeForm.isRepeating} onChange={handleTimeFormChange} />
+                  <input type="checkbox" name="isEnabled" checked={dayForm.isEnabled} onChange={handleDayFormChange} />
                   <span className="checkmark"></span>
-                  Make this a recurring weekly schedule
+                  This day is available for bookings
                 </label>
               </div>
+
+              {dayForm.isEnabled && (
+                <>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="startTime">Opening Time *</label>
+                      <select id="startTime" name="startTime" value={dayForm.startTime} onChange={handleDayFormChange} className="form-input">
+                        {['08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM'].map(time => (
+                          <option key={time} value={time}>{time}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="endTime">Closing Time *</label>
+                      <select id="endTime" name="endTime" value={dayForm.endTime} onChange={handleDayFormChange} className="form-input">
+                        {['08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM', '08:00 PM', '08:30 PM', '09:00 PM', '09:30 PM', '10:00 PM', '10:30 PM', '11:00 PM', '11:30 PM'].map(time => (
+                          <option key={time} value={time}>{time}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="slotDuration">Service Duration (minutes)</label>
+                      <select id="slotDuration" name="slotDuration" value={dayForm.slotDuration} onChange={handleDayFormChange} className="form-input">
+                        <option value="30">30 min</option>
+                        <option value="45">45 min</option>
+                        <option value="60">60 min</option>
+                        <option value="90">90 min</option>
+                        <option value="120">120 min</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="bufferTime">Buffer Time (minutes)</label>
+                      <select id="bufferTime" name="bufferTime" value={dayForm.bufferTime} onChange={handleDayFormChange} className="form-input">
+                        <option value="0">0 min</option>
+                        <option value="15">15 min</option>
+                        <option value="30">30 min</option>
+                        <option value="60">60 min</option>
+                      </select>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
             <div className="form-actions">
-              <Button variant="secondary" onClick={() => { setShowTimeForm(false); setEditingSlot(null); }}>Cancel</Button>
-              {editingSlot && <Button variant="danger" onClick={() => handleDeleteSlot(editingSlot._id)}>Delete</Button>}
-              <Button variant="primary" onClick={handleSaveTimeSlot}>{editingSlot ? 'Update' : 'Save'} Availability</Button>
+              <Button variant="secondary" onClick={() => { setShowDayForm(false); setEditingDaySchedule(null); setFormError(''); }}>Cancel</Button>
+              <Button variant="primary" onClick={handleSaveDaySchedule}>{editingDaySchedule ? 'Update' : 'Save'} Schedule</Button>
             </div>
           </Card>
         </div>
       )}
 
-      <div className="availability-list">
-        <h4>Your Current Availability</h4>
-        {availability.length > 0 ? (
-          availability.map(slot => (
-            <Card key={slot._id} className="availability-item">
-              <div className="availability-info">
-                <div className="availability-date">📅 {new Date(slot.date).toLocaleDateString()}</div>
-                <div className="availability-times">
-                  🕐 {formatTime(slot.openingTime || slot.startTime)} - {formatTime(slot.closingTime || slot.endTime)}
-                  {slot.breakStartTime && <span className="break-info">(Break: {formatTime(slot.breakStartTime)} - {formatTime(slot.breakEndTime)})</span>}
-                  {slot.isRepeating && <span className="recurring-info">🔄 Weekly</span>}
-                </div>
+      {/* Settings Summary */}
+      {availability && (
+        <div className="availability-settings">
+          <Card className="settings-card">
+            <h4>Current Settings</h4>
+            <div className="settings-grid">
+              <div className="setting-item">
+                <label>Timezone:</label>
+                <span>{availability.timezone || 'Asia/Bahrain'}</span>
               </div>
-              <div className="availability-actions">
-                <Button variant="secondary" size="small" onClick={() => {
-                  setSelectedDate(new Date(slot.date));
-                  setEditingSlot(slot);
-                  setTimeForm({
-                    openingTime: slot.openingTime || slot.startTime || '',
-                    closingTime: slot.closingTime || slot.endTime || '',
-                    breakStartTime: slot.breakStartTime || slot.breakStart || '',
-                    breakEndTime: slot.breakEndTime || slot.breakEnd || '',
-                    isRepeating: slot.isRepeating || slot.isRecurring || false,
-                    duration: slot.duration || 60
-                  });
-                  setShowTimeForm(true);
-                }}>Edit</Button>
-                <Button variant="danger" size="small" onClick={() => handleDeleteSlot(slot._id)}>Delete</Button>
+              <div className="setting-item">
+                <label>Advance Booking:</label>
+                <span>{availability.advanceBookingDays || 30} days</span>
               </div>
-            </Card>
-          ))
-        ) : (
-          <p className="no-availability">No availability set yet. Click "Add Time Slot" to get started.</p>
-        )}
-      </div>
+              <div className="setting-item">
+                <label>Active Days:</label>
+                <span>{availability.schedules?.filter(sch => sch.isEnabled !== false).length || 0} of 7</span>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
