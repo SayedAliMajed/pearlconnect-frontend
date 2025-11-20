@@ -4,6 +4,7 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { AuthContext } from '../../contexts/AuthContext';
 import ServiceManagement from '../../components/providers/ServiceManagement';
+import AvailabilityCalendar from '../../components/providers/AvailabilityCalendar';
 import BookingList from '../../components/bookings/BookingList';
 import ReviewsList from '../../components/reviews/ReviewsList';
 
@@ -124,6 +125,7 @@ const ProviderDashboard = () => {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: '📊' },
     { id: 'services', label: 'My Services', icon: '🛠️' },
+    { id: 'availability', label: 'Availability', icon: '📅' },
     { id: 'bookings', label: 'Bookings', icon: '📅' },
     { id: 'reviews', label: 'Reviews', icon: '⭐' }
   ];
@@ -294,6 +296,12 @@ const ProviderDashboard = () => {
 
           {activeTab === 'services' && (
             <ServiceManagement />
+          )}
+
+          {activeTab === 'availability' && (
+            <div className="availability-tab">
+              <AvailabilityCalendar />
+            </div>
           )}
 
           {activeTab === 'bookings' && (
