@@ -164,46 +164,7 @@ const AvailabilityCalendar = () => {
     }
   };
 
-  const renderCalendar = () => {
-    const today = new Date();
-    const currentMonth = selectedDate.getMonth();
-    const currentYear = selectedDate.getFullYear();
 
-    const firstDay = new Date(currentYear, currentMonth, 1);
-    const lastDay = new Date(currentYear, currentMonth + 1, 0);
-    const startDate = new Date(firstDay);
-    startDate.setDate(startDate.getDate() - firstDay.getDay());
-
-    const calendarDays = [];
-    let currentDate = new Date(startDate);
-
-    for (let i = 0; i < 42; i++) {
-      const dayAvailability = availability.find(slot => {
-        const slotDate = new Date(slot.date);
-        return slotDate.toDateString() === currentDate.toDateString();
-      });
-
-      calendarDays.push({
-        date: new Date(currentDate),
-        availability: dayAvailability,
-        isCurrentMonth: currentDate.getMonth() === currentMonth,
-        isToday: currentDate.toDateString() === today.toDateString()
-      });
-
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    return calendarDays;
-  };
-
-  const formatTime = (timeString) => {
-    if (!timeString) return '';
-    const [hours, minutes] = timeString.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
-  };
 
   if (!user) {
     return (
@@ -239,7 +200,7 @@ const AvailabilityCalendar = () => {
       <div className="weekly-schedule">
         {dayNames.map((dayName, dayOfWeek) => {
           const schedule = availability?.schedules?.find(sch => sch.dayOfWeek === dayOfWeek);
-          const isEnabled = schedule?.isEnabled !== false;
+          const isEnabled = schedule && schedule.isEnabled !== false;
 
           return (
             <Card key={dayOfWeek} className={`day-schedule-card ${!isEnabled ? 'disabled' : ''}`} onClick={() => handleDaySelect(dayOfWeek)}>
@@ -248,7 +209,7 @@ const AvailabilityCalendar = () => {
                 {!isEnabled && <span className="day-disabled">Unscheduled</span>}
               </div>
 
-              {isEnabled ? (
+              {isEnabled && schedule ? (
                 <div className="day-times">
                   <div className="time-range">
                     {schedule.startTime} - {schedule.endTime}
