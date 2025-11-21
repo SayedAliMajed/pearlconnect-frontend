@@ -112,27 +112,56 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
         }
       }
 
-      // Use JSON format - backend expects destructuring of req.body
-      const formDataObj = JSON.stringify({
-        title: serviceData.title,
-        description: serviceData.description,
-        price: serviceData.price,
-        provider: serviceData.provider,
-        providerName: serviceData.providerName,
-        active: serviceData.active,
-        category: serviceData.category || '',
-        currency: formData.currency,
-        duration: formData.duration,
-        // Include existing images as URLs
-        images: serviceData.images || [],
-        // Note: File uploads temporarily disabled until backend supports multipart
-        // When re-enabling file uploads, backend needs to handle FormData properly
-      });
-
+      // Conditional: Use FormData if files are selected, JSON otherwise
+      const hasFiles = selectedFiles.length > 0;
+      let formDataObj;
       const headers = {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       };
+
+      if (hasFiles) {
+        // Use FormData for file uploads (backend needs multipart support)
+        formDataObj = new FormData();
+        formDataObj.append('title', serviceData.title);
+        formDataObj.append('description', serviceData.description);
+        formDataObj.append('price', serviceData.price.toString());
+        formDataObj.append('provider', serviceData.provider);
+        formDataObj.append('providerName', serviceData.providerName || '');
+        formDataObj.append('active', serviceData.active.toString());
+        formDataObj.append('category', serviceData.category || formData.category || '');
+        formDataObj.append('currency', formData.currency);
+        if (formData.duration) formDataObj.append('duration', formData.duration);
+
+        // Existing images as JSON string
+        if (serviceData.images && serviceData.images.length > 0) {
+          formDataObj.append('existingImages', JSON.stringify(serviceData.images));
+        }
+
+        // New files for upload
+        selectedFiles.forEach((file) => {
+          formDataObj.append('images', file);
+        });
+
+        // Don't set Content-Type for FormData - let browser set it
+        console.log('📡 Sending FormData with files:', { title: serviceData.title, files: selectedFiles.length });
+      } else {
+        // Use JSON for no-file updates
+        formDataObj = JSON.stringify({
+          title: serviceData.title,
+          description: serviceData.description,
+          price: serviceData.price,
+          provider: serviceData.provider,
+          providerName: serviceData.providerName || '',
+          active: serviceData.active,
+          category: serviceData.category || '',
+          currency: formData.currency,
+          duration: formData.duration,
+          images: serviceData.images || []
+        });
+        headers['Content-Type'] = 'application/json';
+
+        console.log('📡 Sending JSON without files:', { title: serviceData.title, existingImages: serviceData.images.length });
+      }
 
       // Warn about file uploads being skipped temporarily
       if (selectedFiles.length > 0) {
