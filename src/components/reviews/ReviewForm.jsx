@@ -4,16 +4,15 @@ import Input from '../ui/Input';
 import Button from '../ui/Button';
 import { AuthContext } from '../../contexts/AuthContext';
 
-const ReviewForm = ({ onSuccess }) => {
+const ReviewForm = ({ serviceId, providerId, onSuccess }) => {
   const { user } = useContext(AuthContext);
   const [formData, setFormData] = useState({
-    serviceId: '',
-    providerId: '',
     rating: 5,
     comment: ''
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [errors, setErrors] = useState({});
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -26,29 +25,72 @@ const ReviewForm = ({ onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
+    setErrors({});
     setLoading(true);
 
+    // Validation
+    const validationErrors = {};
+    if (!formData.comment.trim()) {
+      validationErrors.comment = 'Review comment is required';
+    }
+    if (!formData.rating || formData.rating < 1 || formData.rating > 5) {
+      validationErrors.rating = 'Please select a rating between 1 and 5 stars';
+    }
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      setLoading(false);
+      return;
+    }
+
     try {
-      // Here you would make an API call to submit the review
-      // For now, we'll just simulate success
-      console.log('Submitting review:', formData);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setMessage('Please sign in to submit a review');
+        return;
+      }
 
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const reviewData = {
+        serviceId: serviceId,
+        providerId: providerId,
+        customerId: user._id || user.id,
+        rating: formData.rating,
+        comment: formData.comment.trim()
+      };
 
-      setMessage('Review submitted successfully!');
-      setFormData({
-        serviceId: '',
-        providerId: '',
-        rating: 5,
-        comment: ''
+      console.log('Submitting review:', reviewData);
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(reviewData)
       });
 
-      if (onSuccess) {
-        onSuccess();
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Review submitted successfully:', result);
+
+        setMessage('Review submitted successfully!');
+        setFormData({
+          rating: 5,
+          comment: ''
+        });
+
+        if (onSuccess) {
+          onSuccess();
+        }
+      } else {
+        const errorData = await response.json();
+        const errorMessage = errorData.err || errorData.message || 'Failed to submit review';
+        console.error('Review submission error:', errorData);
+        setMessage(errorMessage);
       }
     } catch (error) {
-      setMessage('Failed to submit review. Please try again.');
+      console.error('Error submitting review:', error);
+      setMessage('Network error. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -85,10 +127,15 @@ const ReviewForm = ({ onSuccess }) => {
           <div className="rating-stars">
             {renderStars()}
           </div>
+          {errors.rating && (
+            <div className="field-error" style={{ color: '#dc2626', fontSize: '14px', marginTop: '4px' }}>
+              {errors.rating}
+            </div>
+          )}
         </div>
 
         <div className="form-group">
-          <label htmlFor="comment">Comment</label>
+          <label htmlFor="comment">Comment *</label>
           <textarea
             id="comment"
             name="comment"
@@ -100,12 +147,17 @@ const ReviewForm = ({ onSuccess }) => {
             style={{
               width: '100%',
               padding: '0.5rem',
-              border: '1px solid #ddd',
+              border: errors.comment ? '1px solid #dc2626' : '1px solid #ddd',
               borderRadius: '4px',
               fontFamily: 'inherit',
               resize: 'vertical'
             }}
           />
+          {errors.comment && (
+            <div className="field-error" style={{ color: '#dc2626', fontSize: '14px', marginTop: '4px' }}>
+              {errors.comment}
+            </div>
+          )}
         </div>
 
         {message && (

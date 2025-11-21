@@ -7,6 +7,8 @@ import { AuthContext } from '../../contexts/AuthContext';
 import { formatPrice } from '../../utils/dateUtils';
 import { fetchProviderAvailability } from '../../services/bookings';
 import { parseBahrainDate, generateTimeSlots, getTodayDateString, formatTimeTo12Hour, isSameDay } from '../../utils/dateUtils';
+import ReviewForm from '../../components/reviews/ReviewForm';
+import ReviewsList from '../../components/reviews/ReviewsList';
 import './ServiceDetailPage.css';
 
 const ServiceDetailPage = () => {
@@ -15,7 +17,6 @@ const ServiceDetailPage = () => {
   const { user } = useContext(AuthContext);
 
   const [service, setService] = useState(null);
-  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
@@ -23,17 +24,15 @@ const ServiceDetailPage = () => {
   const [availableTimes, setAvailableTimes] = useState([]);
   const [providerAvailability, setProviderAvailability] = useState([]);
   const [showReviewForm, setShowReviewForm] = useState(false);
-  const [reviewData, setReviewData] = useState({ rating: 5, comment: '' });
 
   // Load service details
   useEffect(() => {
     fetchServiceDetails();
   }, [serviceId]);
 
-  // Load reviews and availability when service is loaded
+  // Load availability when service is loaded
   useEffect(() => {
     if (service) {
-      fetchReviews();
       fetchServiceAvailabilityData();
     }
   }, [service]);
@@ -78,40 +77,15 @@ const ServiceDetailPage = () => {
     }
   };
 
-  const fetchReviews = async () => {
-    if (!service) return;
 
-    try {
-      console.log('Fetching reviews for service:', service._id);
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/reviews?serviceId=${service._id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const reviewsData = await response.json();
-        console.log('Reviews received:', reviewsData);
-        setReviews(Array.isArray(reviewsData) ? reviewsData : []);
-      } else {
-        console.log('Failed to fetch reviews:', response.status);
-      }
-    } catch (err) {
-      console.error('Error fetching reviews:', err);
-    }
-  };
 
   const fetchServiceAvailabilityData = async () => {
     if (!service) return;
 
     try {
-      console.log('Fetching provider availability for service:', service._id);
-      const providerId = service.providerId || service.provider._id;
-
-      // Fetch provider's weekly availability schedule
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/availability/provider/${providerId}`, {
+      console.log('Fetching service availability for service:', service._id);
+      const serviceId = service._id;
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/availability/service/${serviceId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -120,17 +94,14 @@ const ServiceDetailPage = () => {
 
       if (response.ok) {
         const availabilityData = await response.json();
-        console.log('Provider availability received:', availabilityData);
-        setProviderAvailability([availabilityData]); // Store as array for consistency
-      } else if (response.status === 404) {
-        console.log('No provider availability set yet');
-        setProviderAvailability([]);
+        console.log('Service availability received:', availabilityData);
+        setProviderAvailability(Array.isArray(availabilityData) ? availabilityData : [availabilityData]);
       } else {
-        console.log('Failed to fetch provider availability:', response.status);
+        console.log('No availability set for this service yet');
         setProviderAvailability([]);
       }
     } catch (err) {
-      console.error('Error fetching provider availability:', err);
+      console.error('Error fetching service availability:', err);
       setProviderAvailability([]);
     }
   };
@@ -145,7 +116,8 @@ const ServiceDetailPage = () => {
       return;
     }
 
-    // For provider availability, we need to find the schedule for the day of the week
+    // Try to match the selected date with availability slots
+    // Handle both DD/MM/YYYY and YYYY-MM-DD formats
     const selectedDateObj = parseBahrainDate(selectedDate);
     console.log('📅 Parsed selected date:', selectedDateObj);
 
@@ -155,52 +127,46 @@ const ServiceDetailPage = () => {
       return;
     }
 
-    // Get the day of week (0 = Sunday, 1 = Monday, etc.)
-    const dayOfWeek = selectedDateObj.getDay();
-    console.log('📅 Day of week for date:', dayOfWeek, ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayOfWeek]);
+    // Find matching availability slot for this date
+    let dayAvailability = null;
+    let foundSlotInfo = null;
 
-    // Find the provider's weekly schedule
-    const providerSchedule = providerAvailability[0]; // We stored it as array for consistency
-    console.log('🏢 Provider schedule:', providerSchedule);
+    for (const slot of providerAvailability) {
+      const slotDate = parseBahrainDate(slot.date);
+      if (slotDate && isSameDay(slotDate, selectedDateObj)) {
+        dayAvailability = slot;
+        foundSlotInfo = slot;
+        break;
+      }
+    }
 
-    if (!providerSchedule || !providerSchedule.schedules) {
-      console.log('❌ No schedules found in provider availability');
+    console.log('🔎 Found availability slot for date:', foundSlotInfo);
+
+    if (!dayAvailability) {
+      console.log('❌ No availability found for selected date:', selectedDate);
       setAvailableTimes([]);
       return;
     }
 
-    // Find the schedule for this day of the week
-    const daySchedule = providerSchedule.schedules.find(schedule =>
-      schedule.dayOfWeek === dayOfWeek && schedule.isEnabled !== false
-    );
+    console.log('✅ Found availability for date:', selectedDate, dayAvailability);
 
-    console.log('🔎 Found schedule for day:', dayOfWeek, daySchedule);
+    // Generate time slots from availability
+    const openingTime = dayAvailability.openingTime || dayAvailability.startTime;
+    const closingTime = dayAvailability.closingTime || dayAvailability.endTime;
 
-    if (!daySchedule) {
-      console.log('❌ No schedule found for day of week:', dayOfWeek);
+    console.log('⏰ Opening time:', openingTime, 'Closing time:', closingTime);
+
+    if (!openingTime || !closingTime) {
+      console.log('❌ Missing opening or closing time in availability data');
       setAvailableTimes([]);
       return;
     }
 
-    console.log('✅ Found schedule for date:', selectedDate, daySchedule);
+    const duration = dayAvailability.duration || 60; // minutes
+    console.log('⏱️ Duration:', duration, 'minutes');
 
-    // Generate time slots from the weekly schedule
-    const startTime = daySchedule.startTime;
-    const endTime = daySchedule.endTime;
-
-    console.log('⏰ Start time:', startTime, 'End time:', endTime);
-
-    if (!startTime || !endTime) {
-      console.log('❌ Missing start or end time in schedule');
-      setAvailableTimes([]);
-      return;
-    }
-
-    const slotDuration = daySchedule.slotDuration || service?.duration || 60; // Use service duration or default to 60
-    console.log('⏱️ Slot duration:', slotDuration, 'minutes');
-
-    // Use the generateTimeSlots utility with HH:MM format
-    const slots = generateTimeSlots(startTime, endTime, slotDuration);
+    // Use the new generateTimeSlots utility
+    const slots = generateTimeSlots(openingTime, closingTime, duration);
     console.log('🕐 Generated time slots:', slots);
 
     setAvailableTimes(slots);
@@ -265,51 +231,7 @@ const ServiceDetailPage = () => {
     }
   };
 
-  const handleReviewSubmit = async () => {
-    if (!reviewData.comment.trim()) {
-      alert('Please write a review comment');
-      return;
-    }
 
-    try {
-      console.log('Submitting review...');
-      const payload = {
-        serviceId: service._id,
-        rating: reviewData.rating,
-        comment: reviewData.comment,
-        reviewerId: user._id || user.id,
-        providerId: service.providerId || service.provider
-      };
-
-      console.log('Review payload:', payload);
-
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/reviews`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
-
-      console.log('Review response status:', response.status);
-
-      if (response.ok) {
-        alert('Review submitted successfully!');
-        setShowReviewForm(false);
-        setReviewData({ rating: 5, comment: '' });
-        fetchReviews(); // Refresh reviews
-      } else {
-        const errorData = await response.json();
-        console.error('Review error:', errorData);
-        alert(errorData.err || 'Failed to submit review');
-      }
-    } catch (err) {
-      console.error('Error submitting review:', err);
-      alert('Failed to submit review. Please try again.');
-    }
-  };
 
   if (loading) {
     return (
@@ -483,72 +405,24 @@ const ServiceDetailPage = () => {
           {/* Review Form */}
           {showReviewForm && (
             <Card className="review-form-section">
-              <h3>Write a Review</h3>
-              <div className="review-form">
-                <div className="form-group">
-                  <label>Rating</label>
-                  <select
-                    value={reviewData.rating}
-                    onChange={(e) => setReviewData({ ...reviewData, rating: parseInt(e.target.value) })}
-                  >
-                    {[5, 4, 3, 2, 1].map(num => (
-                      <option key={num} value={num}>{num} Stars</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Comment</label>
-                  <textarea
-                    value={reviewData.comment}
-                    onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
-                    placeholder="Share your experience..."
-                    rows={4}
-                    required
-                  />
-                </div>
-
-                <div className="review-actions">
-                  <Button variant="primary" onClick={handleReviewSubmit}>
-                    Submit Review
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => setShowReviewForm(false)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
+              <ReviewForm
+                serviceId={service._id}
+                providerId={service.providerId || service.provider._id}
+                onSuccess={() => {
+                  setShowReviewForm(false);
+                  fetchReviews(); // Refresh reviews after successful submission
+                }}
+              />
             </Card>
           )}
 
           {/* Reviews Section */}
           <div className="reviews-section">
-            <h3>Reviews ({reviews.length})</h3>
-
-            {reviews.length === 0 ? (
-              <Card className="no-reviews">
-                <p>No reviews yet. Be the first to review this service!</p>
-              </Card>
-            ) : (
-              <div className="reviews-list">
-                {reviews.map(review => (
-                  <Card key={review._id} className="review-card">
-                    <div className="review-header">
-                      <span className="review-rating">⭐ {review.rating}/5</span>
-                      <span className="review-author">
-                        By {review.reviewerId?.name || review.reviewerId?.username || 'Anonymous'}
-                      </span>
-                    </div>
-                    <p className="review-comment">{review.comment}</p>
-                    <span className="review-date">
-                      {new Date(review.createdAt).toLocaleDateString()}
-                    </span>
-                  </Card>
-                ))}
-              </div>
-            )}
+            <h3>Customer Reviews</h3>
+            <ReviewsList
+              serviceId={service._id}
+              maxItems={5}
+            />
           </div>
         </div>
       </Container>
