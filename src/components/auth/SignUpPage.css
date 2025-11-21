@@ -294,7 +294,7 @@
   color: #666;
 }
 
-.role-option input[type="radio"]:checked ~ {
+.role-option:has(input[type="radio"]:checked) {
   border-color: #00AD96;
   background: rgba(0, 173, 150, 0.05);
 }

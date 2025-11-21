@@ -10,9 +10,8 @@ const AvailabilityCalendar = () => {
   const [expandedDay, setExpandedDay] = useState(null);
   const [editingDaySchedule, setEditingDaySchedule] = useState(null);
 
-  // Form for editing daily schedule - matches backend 12-hour format
   const [dayForm, setDayForm] = useState({
-    dayOfWeek: 1,
+    dayOfWeek: 0,
     isEnabled: true,
     startTime: '09:00 AM',
     endTime: '05:00 PM',
@@ -22,6 +21,30 @@ const AvailabilityCalendar = () => {
   });
 
   const [formError, setFormError] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  // Bahrain weekend constants
+  const WORK_DAYS = [0, 1, 2, 3, 4]; // Sunday to Thursday
+  const WEEKEND_DAYS = [5, 6]; // Friday to Saturday
+
+  // Convert time string to minutes for comparison
+  const timeToMinutes = (timeStr) => {
+    const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (!match) return 0;
+
+    let [, hours, minutes, ampm] = match;
+    hours = parseInt(hours);
+    minutes = parseInt(minutes);
+
+    if (ampm.toUpperCase() === 'PM' && hours !== 12) hours += 12;
+    if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
+
+    return hours * 60 + minutes;
+  };
+
+
+
+
 
   useEffect(() => {
     if (user) {
@@ -44,7 +67,6 @@ const AvailabilityCalendar = () => {
         const data = await response.json();
         setAvailability(data);
       } else if (response.status === 404) {
-        // No availability set yet - create default structure
         setAvailability({
           providerId,
           schedules: [],
@@ -65,7 +87,6 @@ const AvailabilityCalendar = () => {
   };
 
   const handleDaySelect = (dayOfWeek) => {
-    // Close any currently expanded day
     if (expandedDay === dayOfWeek) {
       setExpandedDay(null);
       return;
@@ -73,7 +94,6 @@ const AvailabilityCalendar = () => {
 
     setFormError('');
 
-    // Find existing schedule for this day
     const existingSchedule = availability?.schedules?.find(sch => sch.dayOfWeek === dayOfWeek);
 
     if (existingSchedule) {
@@ -110,22 +130,45 @@ const AvailabilityCalendar = () => {
     }));
   };
 
+  const validateTimes = () => {
+    if (!dayForm.startTime || !dayForm.endTime) {
+      return 'Please fill in both opening and closing times.';
+    }
+
+    const startMin = timeToMinutes(dayForm.startTime);
+    const endMin = timeToMinutes(dayForm.endTime);
+
+    if (startMin >= endMin) {
+      return 'Closing time must be after opening time.';
+    }
+
+    if (endMin - startMin < 30) {
+      return 'Please schedule at least 30 minutes for your availability.';
+    }
+
+    return null;
+  };
+
   const handleSaveDaySchedule = async () => {
+    if (saving) return; // Prevent double clicks
+
     try {
+      setSaving(true);
       setFormError('');
 
-      // Basic validation
-      if (!dayForm.startTime || !dayForm.endTime) {
-        setFormError('Please fill in both opening and closing times.');
+      // Enhanced validation
+      const timeError = validateTimes();
+      if (timeError) {
+        setFormError(timeError);
         return;
       }
 
-      // Backend expects the entire availability object to be sent
       const providerId = user._id || user.id;
       const currentSchedules = availability?.schedules || [];
 
-      // Create updated schedule with the new day
-      const updatedSchedules = [...currentSchedules.filter(sch => sch.dayOfWeek !== dayForm.dayOfWeek)];
+      // Filter out the one we're updating
+      const filteredSchedules = currentSchedules.filter(sch => sch.dayOfWeek !== dayForm.dayOfWeek);
+      const updatedSchedules = [...filteredSchedules];
 
       if (dayForm.isEnabled) {
         updatedSchedules.push({
@@ -145,6 +188,13 @@ const AvailabilityCalendar = () => {
         advanceBookingDays: availability?.advanceBookingDays || 30
       };
 
+      // Debug logging for troubleshooting
+      console.log('Sending availability data:', {
+        schedulesCount: updatedSchedules.length,
+        currentDayOfWeek: dayForm.dayOfWeek,
+        schedules: updatedSchedules
+      });
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/availability/provider/${providerId}`, {
         method: 'POST',
         headers: {
@@ -156,16 +206,33 @@ const AvailabilityCalendar = () => {
 
       if (response.ok) {
         const result = await response.json();
-        loadAvailability();
+        await loadAvailability();
         setExpandedDay(null);
         setEditingDaySchedule(null);
       } else {
-        const error = await response.json();
-        setFormError(`Failed to save schedule: ${error.err || error.message || 'Unknown error'}`);
+        const errorData = await response.json();
+        const errorMessage = errorData.err || errorData.message || 'Unknown error';
+
+        console.warn('Backend schedule restriction:', {
+          dayOfWeek: dayForm.dayOfWeek,
+          dayName: dayNames[dayForm.dayOfWeek],
+          attempt: 'schedule_update',
+          error: errorMessage
+        });
+
+        if (errorMessage.toLowerCase().includes('time') && errorMessage.toLowerCase().includes('change')) {
+          setFormError('NOTE: Time changes are currently restricted by backend settings. Contact support if you need to modify times.');
+        } else if (errorMessage.toLowerCase().includes('sunday') || errorMessage.toLowerCase().includes('monday')) {
+          setFormError(`NOTE: Updates for ${dayNames[dayForm.dayOfWeek]} are currently restricted. Contact support for assistance.`);
+        } else {
+          setFormError(`Failed to save schedule: ${errorMessage}`);
+        }
       }
     } catch (error) {
       console.error('Error saving availability:', error);
       setFormError('Failed to save schedule. Please try again.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -187,7 +254,6 @@ const AvailabilityCalendar = () => {
     );
   }
 
-  // Day names for display
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   return (
@@ -199,7 +265,6 @@ const AvailabilityCalendar = () => {
         </div>
       </div>
 
-      {/* Weekly Schedule */}
       <div className="weekly-schedule">
         {dayNames.map((dayName, dayOfWeek) => {
           const schedule = availability?.schedules?.find(sch => sch.dayOfWeek === dayOfWeek);
@@ -233,9 +298,8 @@ const AvailabilityCalendar = () => {
                 </div>
               )}
 
-              {/* Inline Form - Only ONE per expanded day */}
               {isExpanded && (
-                <div className="inline-day-form">
+                <div className="inline-day-form" onClick={(e) => e.stopPropagation()}>
                   {formError && (
                     <div className="inline-error-message">
                       <span className="error-icon">⚠️</span> {formError}
@@ -249,6 +313,7 @@ const AvailabilityCalendar = () => {
                         name="isEnabled"
                         checked={dayForm.isEnabled}
                         onChange={handleDayFormChange}
+                        onClick={(e) => e.stopPropagation()}
                       />
                       <span className="checkmark"></span>
                       This day is available for bookings
@@ -265,7 +330,9 @@ const AvailabilityCalendar = () => {
                             name="startTime"
                             value={dayForm.startTime}
                             onChange={handleDayFormChange}
+                            onClick={(e) => e.stopPropagation()}
                             className="inline-form-input"
+                            disabled={saving}
                           >
                             {['08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM'].map(time => (
                               <option key={time} value={time}>{time}</option>
@@ -279,7 +346,9 @@ const AvailabilityCalendar = () => {
                             name="endTime"
                             value={dayForm.endTime}
                             onChange={handleDayFormChange}
+                            onClick={(e) => e.stopPropagation()}
                             className="inline-form-input"
+                            disabled={saving}
                           >
                             {['08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM', '08:00 PM', '08:30 PM', '09:00 PM', '09:30 PM', '10:00 PM', '10:30 PM', '11:00 PM', '11:30 PM'].map(time => (
                               <option key={time} value={time}>{time}</option>
@@ -295,7 +364,9 @@ const AvailabilityCalendar = () => {
                             name="slotDuration"
                             value={dayForm.slotDuration}
                             onChange={handleDayFormChange}
+                            onClick={(e) => e.stopPropagation()}
                             className="inline-form-input"
+                            disabled={saving}
                           >
                             <option value="30">30 min</option>
                             <option value="45">45 min</option>
@@ -311,7 +382,9 @@ const AvailabilityCalendar = () => {
                             name="bufferTime"
                             value={dayForm.bufferTime}
                             onChange={handleDayFormChange}
+                            onClick={(e) => e.stopPropagation()}
                             className="inline-form-input"
+                            disabled={saving}
                           >
                             <option value="0">0 min</option>
                             <option value="15">15 min</option>
@@ -324,16 +397,26 @@ const AvailabilityCalendar = () => {
                         <Button
                           variant="secondary"
                           size="small"
-                          onClick={() => { setExpandedDay(null); setEditingDaySchedule(null); setFormError(''); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedDay(null);
+                            setEditingDaySchedule(null);
+                            setFormError('');
+                          }}
+                          disabled={saving}
                         >
                           Cancel
                         </Button>
                         <Button
                           variant="primary"
                           size="small"
-                          onClick={handleSaveDaySchedule}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSaveDaySchedule();
+                          }}
+                          disabled={saving}
                         >
-                          {editingDaySchedule ? 'Update' : 'Save'} Schedule
+                          {saving ? 'Saving...' : editingDaySchedule ? 'Update' : 'Save'} Schedule
                         </Button>
                       </div>
                     </div>
@@ -345,7 +428,6 @@ const AvailabilityCalendar = () => {
         })}
       </div>
 
-      {/* Settings Summary */}
       {availability && (
         <div className="availability-settings">
           <Card className="settings-card">
@@ -364,6 +446,7 @@ const AvailabilityCalendar = () => {
                 <span>{availability.schedules?.filter(sch => sch.isEnabled !== false).length || 0} of 7</span>
               </div>
             </div>
+
           </Card>
         </div>
       )}
