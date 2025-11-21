@@ -8,19 +8,16 @@
 
 ![PearlConnect Screenshot](https://via.placeholder.com/1200x600/4f46e5/ffffff?text=PearlConnect+-+Service+Marketplace+Dashboard)
 
-PearlConnect is a comprehensive MERN stack service marketplace platform that seamlessly connects customers with professional service providers in Bahrain. Built with modern technologies to provide a scalable, real-time booking and service management experience.
 
 ## 🎯 Project Overview
 
 PearlConnect was developed to solve the growing need for a centralized platform where customers can easily discover, book, and review professional services, while service providers can efficiently manage their business operations.
 
 ### 🚀 Key Features
-- **Real-time Service Discovery**: Browse services by category with instant availability checking
 - **Seamless Booking System**: 12-hour format time slot booking with provider-based availability
 - **Comprehensive Review System**: 5-star ratings and feedback for service quality tracking
 - **Provider Management Dashboard**: Complete service CRUD, availability scheduling, and analytics
 - **Secure Authentication**: JWT-based multi-role authentication (Customer, Provider, Admin)
-- **Real-time Communication**: Socket.IO powered live updates and notifications
 - **Responsive Design**: Mobile-first approach with professional UI/UX standards
 
 ## 🌟 Features
@@ -39,14 +36,10 @@ PearlConnect was developed to solve the growing need for a centralized platform 
 
 ### 🛍️ **Customer Experience**
 - **Service Discovery**: Browse services by category with advanced filtering
-- **Real-time Booking**: Instant time slot availability and reservation system
 - **Review System**: Comprehensive rating and feedback mechanism
 - **Booking History**: Complete transaction and booking management
 
-### 💬 **Real-time Communication**
-- **Socket.IO Integration**: Real-time updates and notifications
 - **Live Availability Updates**: Instant booking confirmation
-- **Real-time Reviews**: Live feed of service feedback
 
 ### 📊 **Advanced Analytics**
 - **Service Performance Metrics**: Provider dashboard with booking stats
@@ -143,10 +136,9 @@ Use these accounts for testing the application:
 
 ### Tech Stack
 - **Frontend**: React 18.2.0, Vite, React Router, Axios
-- **Backend**: Node.js 20.19.3, Express.js, Socket.IO
+- **Backend**: Node.js 20.19.3, Express.js
 - **Database**: MongoDB Atlas (with Mongoose ODM)
 - **Authentication**: JWT tokens with bcrypt hashing
-- **Real-time**: Socket.IO for live features
 
 ### Project Structure
 ```
@@ -166,7 +158,6 @@ pearlconnect/
 │   ├── middleware/      # Auth & validation middleware
 │   ├── models/         # Mongoose schemas
 │   ├── routes/         # API route definitions
-│   ├── socket/         # WebSocket handlers
 │   └── package.json
 └── README.md
 ```
@@ -291,7 +282,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Express.js**: For the robust backend framework
 - **MongoDB**: For the flexible NoSQL database
 - **Vite**: For the lightning-fast build tool
-- **Socket.IO**: For real-time communication
 
 ## 📞 Support
 
@@ -307,7 +297,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Review and rating system
 - Provider dashboard
 - Customer management
-- Real-time features
 
 ### Future Roadmap
 - [ ] Mobile app development
