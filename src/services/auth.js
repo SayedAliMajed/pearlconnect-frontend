@@ -7,10 +7,27 @@ const BASE_URL = `${import.meta.env.VITE_API_URL}/auth`;
 
 const signUp = async (formData) => {
   try {
+    // Backend expects profile.firstName and profile.lastName
+    const payload = {
+      username: formData.username,
+      email: formData.email,
+      password: formData.password,
+      confirmPassword: formData.confirmPassword,
+      role: formData.role,
+      phone: formData.phone,
+      address: formData.address,
+      profile: {
+        firstName: formData.firstName,
+        lastName: formData.lastName
+      }
+    };
+
+    console.log('Signup payload structure:', payload); // Debug log
+
     const res = await fetch(`${BASE_URL}/sign-up`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(payload),
     });
 
     // Check if response is JSON
@@ -27,7 +44,7 @@ const signUp = async (formData) => {
 
     if (data.token) {
       localStorage.setItem('token', data.token);
-      console.log(data.token)
+      console.log(data.token);
       // Return the user object from the response
       return data.user;
     }
