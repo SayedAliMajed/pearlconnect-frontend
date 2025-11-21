@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Container from '../../components/ui/Container';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -44,16 +45,27 @@ function useReview(jwt) {
 
 const ReviewsPage = () => {
   const { user } = useContext(AuthContext);
-  const [showReviewForm, setShowReviewForm] = useState(false);
+  const { action } = useParams(); // Get action from URL params
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const { reviews, error, loading, getReviews } = useReview(localStorage.getItem('token'));
+
+  // Show form based on URL action
+  const showReviewForm = action === 'new';
 
   useEffect(() => {
     getReviews();
   }, []);
 
   const handleReviewSuccess = () => {
-    setShowReviewForm(false);
+    navigate('/reviews');
     getReviews(); // Refresh reviews
+  };
+
+  // Handle navigation between list and form
+  const handleShowReviewForm = () => {
+    navigate('/reviews/new');
   };
 
   const renderStars = (rating) => {
@@ -78,7 +90,7 @@ const ReviewsPage = () => {
           {user && (
             <Button
               variant="primary"
-              onClick={() => setShowReviewForm(!showReviewForm)}
+              onClick={handleShowReviewForm}
             >
               {showReviewForm ? 'Cancel' : 'Write a Review'}
             </Button>

@@ -80,8 +80,8 @@ export const isSameDay = (date1, date2) => {
 
 /**
  * Generate time slots between start and end time
- * @param {string} startTime - Start time in HH:MM format
- * @param {string} endTime - End time in HH:MM format
+ * @param {string} startTime - Start time in 12-hour format (e.g., "09:00 AM")
+ * @param {string} endTime - End time in 12-hour format (e.g., "05:00 PM")
  * @param {number} duration - Duration in minutes
  * @returns {string[]} Array of time slots
  */
@@ -89,22 +89,54 @@ export const generateTimeSlots = (startTime, endTime, duration = 60) => {
   if (!startTime || !endTime) return [];
 
   const slots = [];
-  const [startHour, startMinute] = startTime.split(':').map(Number);
-  const [endHour, endMinute] = endTime.split(':').map(Number);
+  
+  // Parse 12-hour format with AM/PM
+  const startMinutes = parseTimeToMinutes(startTime);
+  const endMinutes = parseTimeToMinutes(endTime);
+  
+  if (startMinutes === null || endMinutes === null) return [];
 
-  const startTotalMinutes = startHour * 60 + startMinute;
-  const endTotalMinutes = endHour * 60 + endMinute;
-
-  for (let minutes = startTotalMinutes; minutes < endTotalMinutes; minutes += duration) {
-    const hour = Math.floor(minutes / 60);
-    const minute = minutes % 60;
-    const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-    const slotTimeString = formatTimeTo12Hour(timeString);
-    slots.push(slotTimeString);
+  for (let minutes = startMinutes; minutes < endMinutes; minutes += duration) {
+    const timeString = minutesToTimeString(minutes);
+    slots.push(timeString);
   }
 
   return slots;
 };
+
+/**
+ * Parse 12-hour time string to minutes
+ * @param {string} timeString - Time in format "HH:MM AM/PM"
+ * @returns {number} Minutes since midnight
+ */
+function parseTimeToMinutes(timeString) {
+  if (!timeString) return null;
+  
+  const match = timeString.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
+  if (!match) return null;
+  
+  let hours = parseInt(match[1]);
+  const minutes = parseInt(match[2]);
+  const period = match[3].toUpperCase();
+  
+  if (period === 'PM' && hours !== 12) hours += 12;
+  if (period === 'AM' && hours === 12) hours = 0;
+  
+  return hours * 60 + minutes;
+}
+
+/**
+ * Convert minutes to 12-hour time string
+ * @param {number} minutes - Minutes since midnight
+ * @returns {string} Time in format "HH:MM AM/PM"
+ */
+function minutesToTimeString(minutes) {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const hour12 = hours % 12 || 12;
+  return `${hour12}:${mins.toString().padStart(2, '0')} ${period}`;
+}
 
 /**
  * Format time to readable 12-hour format string

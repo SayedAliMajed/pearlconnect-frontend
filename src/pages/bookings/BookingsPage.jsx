@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Container from '../../components/ui/Container';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -8,10 +9,15 @@ import { fetchBookings, cancelBooking } from '../../services/bookings';
 
 const BookingsPage = () => {
   const { user } = useContext(AuthContext);
+  const { action } = useParams(); // Get action from URL params
+  const navigate = useNavigate();
+  const location = useLocation();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showBookingForm, setShowBookingForm] = useState(false);
   const [cancellingId, setCancellingId] = useState(null);
+
+  // Show form based on URL action
+  const showBookingForm = action === 'new';
 
   useEffect(() => {
     if (user) {
@@ -53,9 +59,14 @@ const BookingsPage = () => {
   };
 
   const handleBookingSuccess = (newBooking) => {
-    setShowBookingForm(false);
+    navigate('/bookings');
     // Add the new booking to the list
     setBookings([newBooking, ...bookings]);
+  };
+
+  // Handle navigation between list and form
+  const handleShowBookingForm = () => {
+    navigate('/bookings/new');
   };
 
   const formatDate = (dateString) => {
@@ -113,7 +124,7 @@ const BookingsPage = () => {
           <p>Manage your service bookings and appointments</p>
           <Button
             variant="primary"
-            onClick={() => setShowBookingForm(!showBookingForm)}
+            onClick={handleShowBookingForm}
           >
             {showBookingForm ? 'Cancel' : 'New Booking'}
           </Button>

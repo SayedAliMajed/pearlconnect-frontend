@@ -63,14 +63,17 @@ const App = () => {
         <Route path='/services' element={user ? <ServicesPage /> : <Navigate to="/sign-in" replace />} />
         <Route path='/categories' element={user ? <CategoriesPage /> : <Navigate to="/sign-in" replace />} />
 
-        {/* User account routes - require authentication */}
+        {/* User account routes - require authentication with sub-routes */}
         <Route path='/bookings' element={user ? <BookingsPage /> : <Navigate to="/sign-in" replace />} />
+        <Route path='/bookings/new' element={user ? <BookingsPage /> : <Navigate to="/sign-in" replace />} />
         <Route path='/reviews' element={user ? <ReviewsPage /> : <Navigate to="/sign-in" replace />} />
+        <Route path='/reviews/new' element={user ? <ReviewsPage /> : <Navigate to="/sign-in" replace />} />
         <Route path='/dashboard' element={user ? <Dashboard /> : <Navigate to="/sign-in" replace />} />
         <Route path='/profile' element={user ? <ProfilePage /> : <Navigate to="/sign-in" replace />} />
 
-        {/* Provider-specific routes - require authentication */}
+        {/* Provider-specific routes - require authentication with nested tabs */}
         <Route path='/provider/dashboard' element={user ? <ProviderDashboard /> : <Navigate to="/sign-in" replace />} />
+        <Route path='/provider/dashboard/:tab' element={user ? <ProviderDashboard /> : <Navigate to="/sign-in" replace />} />
 
         {/* Placeholder routes for future features */}
         <Route path='/products' element={user ? <h1>Products</h1> : <Navigate to="/sign-in" replace />} />

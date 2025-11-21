@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Container from '../../components/ui/Container';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -10,7 +11,9 @@ import ReviewsList from '../../components/reviews/ReviewsList';
 
 const ProviderDashboard = () => {
   const { user } = useContext(AuthContext);
-  const [activeTab, setActiveTab] = useState('overview');
+  const { tab } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [bookingsStatusFilter, setBookingsStatusFilter] = useState('all');
   const [stats, setStats] = useState({
     totalServices: 0,
@@ -22,12 +25,24 @@ const ProviderDashboard = () => {
   const [loadingStats, setLoadingStats] = useState(true);
   const [statsError, setStatsError] = useState(null);
 
+  // Get active tab from URL params or default to 'overview'
+  const activeTab = tab || 'overview';
+
   useEffect(() => {
     if (user) {
       loadDashboardStats();
       loadProviderProfile();
     }
   }, [user]);
+
+  // Handle tab changes and update URL
+  const handleTabChange = (newTab) => {
+    if (newTab === 'overview') {
+      navigate('/provider/dashboard');
+    } else {
+      navigate(`/provider/dashboard/${newTab}`);
+    }
+  };
 
   const loadDashboardStats = async () => {
     setLoadingStats(true);
@@ -164,7 +179,7 @@ const ProviderDashboard = () => {
               aria-controls={`${tab.id}-panel`}
               id={`${tab.id}-tab`}
               className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
             >
               <span className="tab-icon" aria-hidden="true">{tab.icon}</span>
               <span className="tab-label">{tab.label}</span>
@@ -204,7 +219,7 @@ const ProviderDashboard = () => {
                   <p>Get started by adding your first service to begin receiving bookings.</p>
                   <Button
                     variant="primary"
-                    onClick={() => setActiveTab('services')}
+                    onClick={() => handleTabChange('services')}
                   >
                     Add Your First Service
                   </Button>
@@ -279,13 +294,13 @@ const ProviderDashboard = () => {
                 <div className="actions-grid">
                   <Button
                     variant="primary"
-                    onClick={() => setActiveTab('services')}
+                    onClick={() => handleTabChange('services')}
                   >
                     ➕ Add New Service
                   </Button>
                   <Button
                     variant="secondary"
-                    onClick={() => setActiveTab('bookings')}
+                    onClick={() => handleTabChange('bookings')}
                   >
                     📅 View Bookings
                   </Button>
@@ -339,7 +354,7 @@ const ProviderDashboard = () => {
           {activeTab === 'reviews' && (
             <div className="reviews-tab">
               <h3>My Reviews</h3>
-              <ReviewsList />
+              <ReviewsList providerId={user._id || user.id} />
             </div>
           )}
         </div>

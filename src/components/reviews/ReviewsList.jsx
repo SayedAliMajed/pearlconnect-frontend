@@ -116,10 +116,18 @@ const ReviewsList = ({ serviceId, providerId, maxItems = 5 }) => {
   };
 
   const getReviewerName = (review) => {
-    if (review.reviewerId?.name) return review.reviewerId.name;
-    if (review.reviewerId?.username) return review.reviewerId.username;
-    if (review.reviewerId?.email) {
-      const emailParts = review.reviewerId.email.split('@');
+    // Try profile firstName + lastName (new backend structure)
+    if (review.customerId?.profile?.firstName || review.customerId?.profile?.lastName) {
+      const firstName = review.customerId.profile.firstName || '';
+      const lastName = review.customerId.profile.lastName || '';
+      return `${firstName} ${lastName}`.trim();
+    }
+
+    // Fallback to old structure or other fields
+    if (review.customerId?.name) return review.customerId.name;
+    if (review.customerId?.username) return review.customerId.username;
+    if (review.customerId?.email) {
+      const emailParts = review.customerId.email.split('@');
       return emailParts[0] + '...';
     }
     return 'Anonymous Customer';

@@ -24,6 +24,7 @@ const ServiceDetailPage = () => {
   const [availableTimes, setAvailableTimes] = useState([]);
   const [providerAvailability, setProviderAvailability] = useState([]);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [bookingError, setBookingError] = useState(null);
 
   // Load service details
   useEffect(() => {
@@ -42,13 +43,7 @@ const ServiceDetailPage = () => {
       setLoading(true);
       setError(null);
 
-      // Only serve live data from backend API - no static test services
-
-      // Handle real API service
       const token = localStorage.getItem('token');
-      console.log('Fetching real service details for ID:', serviceId);
-      console.log('API URL:', `${import.meta.env.VITE_API_URL}/services/${serviceId}`);
-      console.log('Auth token exists:', !!token);
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/services/${serviceId}`, {
         headers: {
@@ -57,53 +52,32 @@ const ServiceDetailPage = () => {
         }
       });
 
-      console.log('Service detail response status:', response.status);
-
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Service detail error:', response.status, errorText);
         throw new Error(`Failed to fetch service: ${response.status}`);
       }
 
       const serviceData = await response.json();
-      console.log('Real service data received:', serviceData);
       setService({ ...serviceData, isDemoService: false });
 
     } catch (err) {
-      console.error('Error fetching service:', err);
       setError('Failed to load service details. Service may not exist or authentication may be required.');
     } finally {
       setLoading(false);
     }
   };
 
-
-
   const fetchServiceAvailabilityData = async () => {
     if (!service) {
-      console.log('❌ fetchServiceAvailabilityData called but no service available');
       return;
     }
 
     try {
-      console.log('🔍 SERVICE AVAILABILITY DEBUGGING:');
-      console.log('  - Service ID:', service._id);
-      console.log('  - Full Service Object:', service);
-
       const providerId = service.providerId || service.provider._id;
 
-      console.log('  - Direct providerId:', service.providerId);
-      console.log('  - provider._id:', service.provider?._id);
-      console.log('  - Final providerId used:', providerId);
-
       if (!providerId) {
-        console.error('❌ CRITICAL: No provider ID found in service! Customer cannot see availability slots.');
-        console.log('💡 SOLUTION: Service must have providerId field linking to provider account');
         setProviderAvailability([]);
         return;
       }
-
-      console.log('📡 CALLING API: GET /availability/provider/' + providerId);
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/availability/provider/${providerId}`, {
         headers: {
@@ -112,141 +86,86 @@ const ServiceDetailPage = () => {
         }
       });
 
-      console.log('📡 API RESPONSE STATUS:', response.status);
-      console.log('📡 Response OK?', response.ok);
-
       if (response.ok) {
         const availabilityData = await response.json();
-        console.log('✅ AVAILABILITY DATA RECEIVED:');
-        console.log('  - Full response:', availabilityData);
-        console.log('  - Has schedules property?', availabilityData.hasOwnProperty('schedules'));
-        console.log('  - Schedules type:', typeof availabilityData.schedules);
-        console.log('  - Schedules isArray?', Array.isArray(availabilityData.schedules));
-        console.log('  - Schedules length:', availabilityData.schedules?.length || 0);
-        console.log('  - Direct data as array?', Array.isArray(availabilityData));
-
         let schedules = [];
+
         if (Array.isArray(availabilityData)) {
-          console.log('📊 BACKEND RETURNS DIRECT ARRAY - Using as schedules');
           schedules = availabilityData;
         } else if (availabilityData.schedules && Array.isArray(availabilityData.schedules)) {
-          console.log('📊 BACKEND RETURNS OBJECT WITH schedules PROPERTY');
           schedules = availabilityData.schedules;
-        } else {
-          console.log('⚠️ BACKEND RETURNS UNKNOWN STRUCTURE');
-          schedules = [];
-        }
-
-        console.log('📋 FINAL SCHEDULES ARRAY:', schedules);
-
-        if (schedules.length === 0) {
-          console.log('⚠️ PROVIDER HAS NO AVAILABILITY SET - Customer will see no booking options');
-          console.log('💡 SOLUTION: Provider must set weekly schedules first');
-        } else {
-          console.log('✅ PROVIDER HAS ACTIVE SCHEDULES:', schedules.length, 'entries');
-          schedules.forEach((schedule, index) => {
-            console.log(`   Schedule ${index}:`, schedule);
-          });
         }
 
         setProviderAvailability(schedules);
       } else {
-        console.log('❌ API RESPONSE ERROR:', response.status, 'for provider', providerId);
-        console.log('⚠️ PROVIDER AVAILABILITY NOT SET - Customer cannot book this service');
         setProviderAvailability([]);
       }
     } catch (err) {
-      console.error('❌ NETWORK ERROR fetching provider availability:', err);
       setProviderAvailability([]);
     }
   };
 
   const generateAvailableTimes = (selectedDate) => {
-    console.log('🔍 generateAvailableTimes called with date:', selectedDate);
-    console.log('📊 Current providerAvailability:', providerAvailability);
-
     if (!providerAvailability.length) {
-      console.log('❌ No provider availability data available');
       setAvailableTimes([]);
       return;
     }
 
-    // Parse the selected date - HTML input gives YYYY-MM-DD format
     const selectedDateObj = parseBahrainDate(selectedDate);
-    console.log('📅 Parsed selected date:', selectedDateObj);
 
     if (!selectedDateObj) {
-      console.log('❌ Could not parse selected date');
       setAvailableTimes([]);
       return;
     }
 
-    // Get the day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
     const selectedDayOfWeek = selectedDateObj.getDay();
-    console.log('📆 Selected day of week:', selectedDayOfWeek);
-
-    // Find matching availability schedule for this day of the week
     const daySchedule = providerAvailability.find(schedule => schedule.dayOfWeek === selectedDayOfWeek);
-    console.log('🔎 Found schedule for day:', daySchedule);
 
     if (!daySchedule || daySchedule.isEnabled === false) {
-      console.log('❌ No availability schedule found for this day of week:', selectedDayOfWeek);
       setAvailableTimes([]);
       return;
     }
 
-    console.log('✅ Found schedule for date:', selectedDate, daySchedule);
-
-    // Generate time slots from the weekly schedule
     const openingTime = daySchedule.startTime;
     const closingTime = daySchedule.endTime;
-    const duration = daySchedule.slotDuration || 60; // minutes
-
-    console.log('⏰ Opening time:', openingTime, 'Closing time:', closingTime, 'Duration:', duration);
+    const duration = daySchedule.slotDuration || 60;
 
     if (!openingTime || !closingTime) {
-      console.log('❌ Missing opening or closing time in schedule');
       setAvailableTimes([]);
       return;
     }
 
-    // Use the generateTimeSlots utility
     const slots = generateTimeSlots(openingTime, closingTime, duration);
-    console.log('🕐 Generated time slots:', slots);
-
     setAvailableTimes(slots);
   };
 
   const handleDateChange = (e) => {
     const newDate = e.target.value;
-    setBookingData({ ...bookingData, date: newDate, time: '' }); // Reset time when date changes
+    setBookingData({ ...bookingData, date: newDate, time: '' });
+    setBookingError(null);
     generateAvailableTimes(newDate);
   };
 
   const handleBookingSubmit = async () => {
     if (!user) {
-      alert('Please sign in to book a service');
       navigate('/sign-in');
       return;
     }
 
     if (!bookingData.date || !bookingData.time) {
-      alert('Please select both date and time');
+      setBookingError('Please select both date and time');
       return;
     }
 
     try {
-      console.log('Submitting booking...');
       const payload = {
         serviceId: service._id,
         providerId: service.providerId || service.provider._id,
         customerId: user._id || user.id,
         date: bookingData.date,
-        time: bookingData.time,
+        timeSlot: bookingData.time,
         notes: bookingData.notes || ''
       };
-
-      console.log('Booking payload:', payload);
 
       const token = localStorage.getItem('token');
       const response = await fetch(`${import.meta.env.VITE_API_URL}/bookings`, {
@@ -258,25 +177,19 @@ const ServiceDetailPage = () => {
         body: JSON.stringify(payload)
       });
 
-      console.log('Booking response status:', response.status);
-
       if (response.ok) {
-        alert('Booking created successfully!');
         setShowBookingForm(false);
         setBookingData({ date: '', time: '' });
+        setBookingError(null);
         navigate('/bookings');
       } else {
         const errorData = await response.json();
-        console.error('Booking error:', errorData);
-        alert(errorData.err || 'Failed to create booking');
+        setBookingError(errorData.err || 'Failed to create booking');
       }
     } catch (err) {
-      console.error('Error creating booking:', err);
-      alert('Failed to create booking. Please try again.');
+      setBookingError('Failed to create booking. Please try again.');
     }
   };
-
-
 
   if (loading) {
     return (
@@ -313,9 +226,6 @@ const ServiceDetailPage = () => {
       </Container>
     );
   }
-
-  // Debug information in development
-  console.log('Rendering service:', service);
 
   return (
     <div className="service-detail-page">
@@ -385,8 +295,6 @@ const ServiceDetailPage = () => {
             </div>
           </div>
 
-
-
           {/* Booking Form */}
           {showBookingForm && (
             <Card className="booking-form-section">
@@ -432,13 +340,22 @@ const ServiceDetailPage = () => {
                   />
                 </div>
 
+                {bookingError && (
+                  <div style={{ color: '#dc2626', marginBottom: '1rem', fontSize: '14px' }}>
+                    {bookingError}
+                  </div>
+                )}
+
                 <div className="booking-actions">
                   <Button variant="primary" onClick={handleBookingSubmit}>
                     Confirm Booking
                   </Button>
                   <Button
                     variant="secondary"
-                    onClick={() => setShowBookingForm(false)}
+                    onClick={() => {
+                      setShowBookingForm(false);
+                      setBookingError(null);
+                    }}
                   >
                     Cancel
                   </Button>
@@ -455,7 +372,6 @@ const ServiceDetailPage = () => {
                 providerId={service.providerId || service.provider._id}
                 onSuccess={() => {
                   setShowReviewForm(false);
-                  fetchReviews(); // Refresh reviews after successful submission
                 }}
               />
             </Card>
