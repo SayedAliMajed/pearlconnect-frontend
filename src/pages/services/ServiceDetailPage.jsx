@@ -83,9 +83,17 @@ const ServiceDetailPage = () => {
     if (!service) return;
 
     try {
-      console.log('Fetching service availability for service:', service._id);
-      const serviceId = service._id;
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/availability/service/${serviceId}`, {
+      console.log('Fetching provider availability for service:', service._id);
+      const providerId = service.providerId || service.provider._id;
+
+      if (!providerId) {
+        console.error('No provider ID found in service:', service);
+        setProviderAvailability([]);
+        return;
+      }
+
+      console.log('Using provider ID:', providerId);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/availability/provider/${providerId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -94,14 +102,15 @@ const ServiceDetailPage = () => {
 
       if (response.ok) {
         const availabilityData = await response.json();
-        console.log('Service availability received:', availabilityData);
-        setProviderAvailability(Array.isArray(availabilityData) ? availabilityData : [availabilityData]);
+        console.log('Provider availability received:', availabilityData);
+        // Store the weekly schedule data
+        setProviderAvailability(availabilityData.schedules || []);
       } else {
-        console.log('No availability set for this service yet');
+        console.log('No availability set for this provider yet');
         setProviderAvailability([]);
       }
     } catch (err) {
-      console.error('Error fetching service availability:', err);
+      console.error('Error fetching provider availability:', err);
       setProviderAvailability([]);
     }
   };
@@ -116,8 +125,7 @@ const ServiceDetailPage = () => {
       return;
     }
 
-    // Try to match the selected date with availability slots
-    // Handle both DD/MM/YYYY and YYYY-MM-DD formats
+    // Parse the selected date - HTML input gives YYYY-MM-DD format
     const selectedDateObj = parseBahrainDate(selectedDate);
     console.log('📅 Parsed selected date:', selectedDateObj);
 
@@ -127,45 +135,36 @@ const ServiceDetailPage = () => {
       return;
     }
 
-    // Find matching availability slot for this date
-    let dayAvailability = null;
-    let foundSlotInfo = null;
+    // Get the day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+    const selectedDayOfWeek = selectedDateObj.getDay();
+    console.log('📆 Selected day of week:', selectedDayOfWeek);
 
-    for (const slot of providerAvailability) {
-      const slotDate = parseBahrainDate(slot.date);
-      if (slotDate && isSameDay(slotDate, selectedDateObj)) {
-        dayAvailability = slot;
-        foundSlotInfo = slot;
-        break;
-      }
-    }
+    // Find matching availability schedule for this day of the week
+    const daySchedule = providerAvailability.find(schedule => schedule.dayOfWeek === selectedDayOfWeek);
+    console.log('🔎 Found schedule for day:', daySchedule);
 
-    console.log('🔎 Found availability slot for date:', foundSlotInfo);
-
-    if (!dayAvailability) {
-      console.log('❌ No availability found for selected date:', selectedDate);
+    if (!daySchedule || daySchedule.isEnabled === false) {
+      console.log('❌ No availability schedule found for this day of week:', selectedDayOfWeek);
       setAvailableTimes([]);
       return;
     }
 
-    console.log('✅ Found availability for date:', selectedDate, dayAvailability);
+    console.log('✅ Found schedule for date:', selectedDate, daySchedule);
 
-    // Generate time slots from availability
-    const openingTime = dayAvailability.openingTime || dayAvailability.startTime;
-    const closingTime = dayAvailability.closingTime || dayAvailability.endTime;
+    // Generate time slots from the weekly schedule
+    const openingTime = daySchedule.startTime;
+    const closingTime = daySchedule.endTime;
+    const duration = daySchedule.slotDuration || 60; // minutes
 
-    console.log('⏰ Opening time:', openingTime, 'Closing time:', closingTime);
+    console.log('⏰ Opening time:', openingTime, 'Closing time:', closingTime, 'Duration:', duration);
 
     if (!openingTime || !closingTime) {
-      console.log('❌ Missing opening or closing time in availability data');
+      console.log('❌ Missing opening or closing time in schedule');
       setAvailableTimes([]);
       return;
     }
 
-    const duration = dayAvailability.duration || 60; // minutes
-    console.log('⏱️ Duration:', duration, 'minutes');
-
-    // Use the new generateTimeSlots utility
+    // Use the generateTimeSlots utility
     const slots = generateTimeSlots(openingTime, closingTime, duration);
     console.log('🕐 Generated time slots:', slots);
 
