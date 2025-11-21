@@ -112,43 +112,35 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
         }
       }
 
-      // Create FormData for file uploads if we have files
-      const hasNewFiles = selectedFiles.length > 0;
-      let formDataObj;
-      let headers = {
+      // Use JSON format - backend expects destructuring of req.body
+      const formDataObj = JSON.stringify({
+        title: serviceData.title,
+        description: serviceData.description,
+        price: serviceData.price,
+        provider: serviceData.provider,
+        providerName: serviceData.providerName,
+        active: serviceData.active,
+        category: serviceData.category || '',
+        currency: formData.currency,
+        duration: formData.duration,
+        // Include existing images as URLs
+        images: serviceData.images || [],
+        // Note: File uploads temporarily disabled until backend supports multipart
+        // When re-enabling file uploads, backend needs to handle FormData properly
+      });
+
+      const headers = {
+        'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       };
 
-      if (hasNewFiles) {
-        // Use FormData for file uploads
-        formDataObj = new FormData();
-
-        // Add basic service data
-        formDataObj.append('title', serviceData.title);
-        formDataObj.append('description', serviceData.description);
-        formDataObj.append('price', serviceData.price.toString());
-        formDataObj.append('provider', serviceData.provider);
-        formDataObj.append('providerName', serviceData.providerName);
-        formDataObj.append('active', serviceData.active.toString());
-        formDataObj.append('category', serviceData.category || '');
-        formDataObj.append('currency', formData.currency);
-
-        // Add existing images (URLs as JSON string)
-        if (serviceData.images.length > 0) {
-          formDataObj.append('existingImages', JSON.stringify(serviceData.images));
-        }
-
-        // Add new image files
-        selectedFiles.forEach((file, index) => {
-          formDataObj.append(`images`, file);
-        });
-      } else {
-        // Use JSON for non-file updates
-        formDataObj = JSON.stringify(serviceData);
-        headers['Content-Type'] = 'application/json';
+      // Warn about file uploads being skipped temporarily
+      if (selectedFiles.length > 0) {
+        console.warn('⚠️ File uploads temporarily disabled. Backend needs FormData support for image uploads.');
+        console.warn('Images will be handled as URLs only until backend is updated.');
       }
 
-      console.log('Sending service data:', hasNewFiles ? 'FormData (with files)' : 'JSON', {
+      console.log('Sending service data: JSON format', {
         title: serviceData.title,
         descriptionLength: serviceData.description.length,
         price: serviceData.price,
@@ -156,7 +148,7 @@ const ServiceForm = ({ service, onSuccess, onCancel }) => {
         provider: serviceData.provider,
         filesCount: selectedFiles.length,
         existingImages: serviceData.images.length,
-        apiUrl: `${import.meta.env.VITE_API_URL}/services`,
+        formattedAsJSON: true,
         authTokenExists: !!localStorage.getItem('token')
       });
 
