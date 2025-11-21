@@ -80,19 +80,31 @@ const ServiceDetailPage = () => {
 
 
   const fetchServiceAvailabilityData = async () => {
-    if (!service) return;
+    if (!service) {
+      console.log('❌ fetchServiceAvailabilityData called but no service available');
+      return;
+    }
 
     try {
-      console.log('Fetching provider availability for service:', service._id);
+      console.log('🔍 SERVICE AVAILABILITY DEBUGGING:');
+      console.log('  - Service ID:', service._id);
+      console.log('  - Full Service Object:', service);
+
       const providerId = service.providerId || service.provider._id;
 
+      console.log('  - Direct providerId:', service.providerId);
+      console.log('  - provider._id:', service.provider?._id);
+      console.log('  - Final providerId used:', providerId);
+
       if (!providerId) {
-        console.error('No provider ID found in service:', service);
+        console.error('❌ CRITICAL: No provider ID found in service! Customer cannot see availability slots.');
+        console.log('💡 SOLUTION: Service must have providerId field linking to provider account');
         setProviderAvailability([]);
         return;
       }
 
-      console.log('Using provider ID:', providerId);
+      console.log('📡 CALLING API: GET /availability/provider/' + providerId);
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/availability/provider/${providerId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -100,17 +112,51 @@ const ServiceDetailPage = () => {
         }
       });
 
+      console.log('📡 API RESPONSE STATUS:', response.status);
+      console.log('📡 Response OK?', response.ok);
+
       if (response.ok) {
         const availabilityData = await response.json();
-        console.log('Provider availability received:', availabilityData);
-        // Store the weekly schedule data
-        setProviderAvailability(availabilityData.schedules || []);
+        console.log('✅ AVAILABILITY DATA RECEIVED:');
+        console.log('  - Full response:', availabilityData);
+        console.log('  - Has schedules property?', availabilityData.hasOwnProperty('schedules'));
+        console.log('  - Schedules type:', typeof availabilityData.schedules);
+        console.log('  - Schedules isArray?', Array.isArray(availabilityData.schedules));
+        console.log('  - Schedules length:', availabilityData.schedules?.length || 0);
+        console.log('  - Direct data as array?', Array.isArray(availabilityData));
+
+        let schedules = [];
+        if (Array.isArray(availabilityData)) {
+          console.log('📊 BACKEND RETURNS DIRECT ARRAY - Using as schedules');
+          schedules = availabilityData;
+        } else if (availabilityData.schedules && Array.isArray(availabilityData.schedules)) {
+          console.log('📊 BACKEND RETURNS OBJECT WITH schedules PROPERTY');
+          schedules = availabilityData.schedules;
+        } else {
+          console.log('⚠️ BACKEND RETURNS UNKNOWN STRUCTURE');
+          schedules = [];
+        }
+
+        console.log('📋 FINAL SCHEDULES ARRAY:', schedules);
+
+        if (schedules.length === 0) {
+          console.log('⚠️ PROVIDER HAS NO AVAILABILITY SET - Customer will see no booking options');
+          console.log('💡 SOLUTION: Provider must set weekly schedules first');
+        } else {
+          console.log('✅ PROVIDER HAS ACTIVE SCHEDULES:', schedules.length, 'entries');
+          schedules.forEach((schedule, index) => {
+            console.log(`   Schedule ${index}:`, schedule);
+          });
+        }
+
+        setProviderAvailability(schedules);
       } else {
-        console.log('No availability set for this provider yet');
+        console.log('❌ API RESPONSE ERROR:', response.status, 'for provider', providerId);
+        console.log('⚠️ PROVIDER AVAILABILITY NOT SET - Customer cannot book this service');
         setProviderAvailability([]);
       }
     } catch (err) {
-      console.error('Error fetching provider availability:', err);
+      console.error('❌ NETWORK ERROR fetching provider availability:', err);
       setProviderAvailability([]);
     }
   };
