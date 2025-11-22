@@ -6,7 +6,9 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-blue.svg)](https://www.mongodb.com/atlas)
 [![Vite](https://img.shields.io/badge/Vite-7.1.12-646CFF.svg)](https://vitejs.dev/)
 
-![PearlConnect Screenshot](https://via.placeholder.com/1200x600/4f46e5/ffffff?text=PearlConnect+-+Service+Marketplace+Dashboard)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/SayedAliMajed/pearlconnect-frontend/main/public/img/logo.png" alt="PearlConnect Logo" width="200"/>
+</p>
 
 
 ## 🎯 Project Overview
