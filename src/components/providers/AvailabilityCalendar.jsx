@@ -42,10 +42,6 @@ const AvailabilityCalendar = () => {
     return hours * 60 + minutes;
   };
 
-
-
-
-
   useEffect(() => {
     if (user) {
       loadAvailability();
@@ -75,11 +71,9 @@ const AvailabilityCalendar = () => {
           advanceBookingDays: 30
         });
       } else {
-        console.error('Failed to load availability');
         setAvailability(null);
       }
     } catch (error) {
-      console.error('Error loading availability:', error);
       setAvailability(null);
     } finally {
       setLoading(false);
@@ -188,13 +182,6 @@ const AvailabilityCalendar = () => {
         advanceBookingDays: availability?.advanceBookingDays || 30
       };
 
-      // Debug logging for troubleshooting
-      console.log('Sending availability data:', {
-        schedulesCount: updatedSchedules.length,
-        currentDayOfWeek: dayForm.dayOfWeek,
-        schedules: updatedSchedules
-      });
-
       const response = await fetch(`${import.meta.env.VITE_API_URL}/availability/provider/${providerId}`, {
         method: 'POST',
         headers: {
@@ -210,15 +197,8 @@ const AvailabilityCalendar = () => {
         setExpandedDay(null);
         setEditingDaySchedule(null);
       } else {
-        const errorData = await response.json();
-        const errorMessage = errorData.err || errorData.message || 'Unknown error';
-
-        console.warn('Backend schedule restriction:', {
-          dayOfWeek: dayForm.dayOfWeek,
-          dayName: dayNames[dayForm.dayOfWeek],
-          attempt: 'schedule_update',
-          error: errorMessage
-        });
+        const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response' }));
+        const errorMessage = errorData.err || errorData.message || `HTTP ${response.status}: ${response.statusText}`;
 
         if (errorMessage.toLowerCase().includes('time') && errorMessage.toLowerCase().includes('change')) {
           setFormError('NOTE: Time changes are currently restricted by backend settings. Contact support if you need to modify times.');
@@ -229,8 +209,7 @@ const AvailabilityCalendar = () => {
         }
       }
     } catch (error) {
-      console.error('Error saving availability:', error);
-      setFormError('Failed to save schedule. Please try again.');
+      setFormError(`Failed to save schedule. Please try again. Server error: ${error.message}`);
     } finally {
       setSaving(false);
     }

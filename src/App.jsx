@@ -78,7 +78,7 @@ const App = () => {
         {/* Placeholder routes for future features */}
         <Route path='/products' element={user ? <h1>Products</h1> : <Navigate to="/sign-in" replace />} />
         <Route path='/favs' element={user ? <h1>Favorites</h1> : <Navigate to="/sign-in" replace />} />
-        <Route path='/orders' element={user ? <h1>Orders</h1> : <Navigate to="/sign-in" replace />} />
+        <Route path='/orders' element={user ? <Navigate to="/bookings" replace /> : <Navigate to="/sign-in" replace />} />
       </Routes>
     </>
   );
