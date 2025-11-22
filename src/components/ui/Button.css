@@ -71,6 +71,22 @@
   font-weight: 600;
 }
 
+.ui-button--danger {
+  background-color: #dc3545;
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.ui-button--danger:hover:not(:disabled) {
+  background-color: #c82333;
+  box-shadow: var(--shadow-md);
+}
+
+.ui-button--danger:active:not(:disabled) {
+  background-color: #bd2130;
+  box-shadow: var(--shadow-sm);
+}
+
 .ui-button--category:hover:not(:disabled) {
   background-color: #f8f9fa;
   border-color: var(--primary-teal);
