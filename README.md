@@ -107,8 +107,7 @@ PearlConnect was developed to solve the growing need for a centralized platform 
 
 ### 🚀 **Live Application**
 - **Production Site**: [PearlConnect Live](https://pearlconnect.netlify.app) *(When deployed)*
-- **Backend API**: [PearlConnect API](https://api.pearlconnect.com) *(When deployed)*
-- **Planning Materials**: [Trello Board](https://trello.com/b/your-project-board) *(If available)*
+- **Backend API**: [PearlConnect API](https://pearlconnect-f5b5c70d607f.herokuapp.com/) *(When deployed)*
 - **Backend Repository**: [PearlConnect Backend](https://github.com/SayedAliMajed/pearlconnect-back-end)
 
 ### Test User Accounts
@@ -291,7 +290,7 @@ This project used **Visily.ai** ([https://www.visily.ai/](https://www.visily.ai/
 
 - **Issues**: [GitHub Issues](https://github.com/SayedAliMajed/pearlconnect-frontend/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/SayedAliMajed/pearlconnect-frontend/discussions)
-- **Email**: contact@pearlconnect.com
+
 
 ## 🔄 Release History
 
