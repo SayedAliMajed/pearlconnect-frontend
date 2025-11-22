@@ -790,12 +790,41 @@
   box-shadow: 0 8px 24px rgba(0, 173, 150, 0.4);
 }
 
+/* Prominent Edit Service Form Container */
 .service-form-container {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(15px);
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(255, 235, 245, 0.9));
+  backdrop-filter: blur(20px);
+  border: 2px solid #667eea;
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 80px rgba(102, 126, 234, 0.25), 0 0 0 1px rgba(102, 126, 234, 0.1);
+  position: relative;
+  margin: 2rem auto;
+  max-width: 800px;
+  transition: all 0.3s ease;
+  animation: formAppear 0.4s ease-out;
+}
+
+.service-form-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(135deg, #667eea, #764ba2, #f093fb, #f5576c);
+  border-radius: 24px 24px 0 0;
+}
+
+@keyframes formAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .services-list {
