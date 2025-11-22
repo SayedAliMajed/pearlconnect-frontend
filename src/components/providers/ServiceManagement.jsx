@@ -168,24 +168,8 @@ const ServiceManagement = () => {
           services.map(service => {
             return (
               <Card key={service._id || service.id} className="service-item">
-              <div className="service-content">
-                <div className="service-info">
-                  <h4>{service.title}</h4>
-                  <p className="service-description">{service.description}</p>
-                  <div className="service-meta">
-                    <span className="service-category">
-                      {typeof service.category === 'object' ? service.category.name : service.category}
-                    </span>
-                    <span className="service-price">
-                      {service.currency || 'BD'} {service.price}
-                    </span>
-                    <span className={`service-status ${service.active !== false ? 'active' : 'inactive'}`}>
-                      {service.active !== false ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="service-image">
+                {/* Image section - like home page cards */}
+                <div className="service-image-section">
                   {service.images?.length > 0 ? (
                     <img
                       src={service.images[0].url || service.images[0]}
@@ -198,25 +182,39 @@ const ServiceManagement = () => {
                     </div>
                   )}
                 </div>
-              </div>
 
-              <div className="service-actions">
-                <Button
-                  variant="secondary"
-                  size="small"
-                  onClick={() => handleEditService(service)}
-                >
-                  ✏️ Edit
-                </Button>
-                <Button
-                  variant="danger"
-                  size="small"
-                  onClick={() => handleDeleteService(service._id || service.id)}
-                  disabled={deletingId === (service._id || service.id)}
-                >
-                  {deletingId === (service._id || service.id) ? 'Deleting...' : '🗑️ Delete'}
-                </Button>
-              </div>
+                {/* Content section */}
+                <div className="service-content-section">
+                  <div className="service-info">
+                    <h4>{service.title}</h4>
+                    <p className="service-description">{service.description}</p>
+                    <div className="service-meta">
+                      <span className="service-category">
+                        {typeof service.category === 'object' ? service.category.name : service.category}
+                      </span>
+                      {/* Rating placeholder - can be added later */}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action buttons section */}
+                <div className="service-actions">
+                  <Button
+                    variant="secondary"
+                    size="small"
+                    onClick={() => handleEditService(service)}
+                  >
+                    ✏️ Edit
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="small"
+                    onClick={() => handleDeleteService(service._id || service.id)}
+                    disabled={deletingId === (service._id || service.id)}
+                  >
+                    {deletingId === (service._id || service.id) ? 'Deleting...' : '🗑️ Delete'}
+                  </Button>
+                </div>
               </Card>
             );
           })
