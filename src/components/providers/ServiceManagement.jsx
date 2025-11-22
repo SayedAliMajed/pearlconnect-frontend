@@ -167,7 +167,7 @@ const ServiceManagement = () => {
         {services.length > 0 ? (
           services.map(service => {
             return (
-              <Card key={service._id || service.id} className="service-item" style={{ height: 'auto', overflow: 'visible' }}>
+              <Card key={service._id || service.id} className="service-item">
               <div className="service-content">
                 <div className="service-info">
                   <h4>{service.title}</h4>
@@ -200,12 +200,7 @@ const ServiceManagement = () => {
                 </div>
               </div>
 
-              <div className="service-actions" style={{
-                display: 'flex',
-                gap: '8px',
-                marginTop: '10px',
-                justifyContent: 'flex-end'
-              }}>
+              <div className="service-actions">
                 <Button
                   variant="secondary"
                   size="small"
