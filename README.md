@@ -192,7 +192,6 @@ pearlconnect/
 
 ### Frontend Development
 - **Hot Module Replacement**: Instant updates during development
-- **TypeScript Support**: Optional type checking
 - **CSS Modules**: Scoped styling
 - **Responsive Design**: Mobile-first approach
 
@@ -278,7 +277,7 @@ This project used **Visily.ai** ([https://www.visily.ai/](https://www.visily.ai/
 ## 👥 Team
 
 - **Project Lead & Main Developer**: Sayed Ali Majed - Overall project control, messaging feature, integrations, documentation
-- **Frontend Developer**: Mohammed AlHamar - Bookings and services features (frontend implementation)
+- **Full-Stack Developer**: Mohammed AlHamar - Bookings and services features (frontend & backend implementation)
 - **Full-Stack Developer**: Yaseen Alzeiny - Categories and reviews features (frontend & backend implementation)
 
 ## 🙏 Acknowledgments
