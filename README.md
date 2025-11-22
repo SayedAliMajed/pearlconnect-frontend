@@ -269,12 +269,18 @@ docker run -p 3000:3000 pearlconnect
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 🎨 Design & Planning
+
+### Wireframe Creation
+This project used **Visily.ai** ([https://www.visily.ai/](https://www.visily.ai/)) to create comprehensive wireframes and UI mockups for the initial design phase and user experience planning.
+
 ## 👥 Team
 
 - **Project Lead**: Sayed Ali Majed
-- **Fullstack Development**: Sayed Ali Majed
-- **UI/UX Design**: Sayed Ali Majed
-- **Testing & QA**: Sayed Ali Majed
+- **Frontend Development**: Sayed Ali Majed, Mohammed AlHamar
+- **Backend Development**: Sayed Ali Majed
+- **UI/UX Design & Wireframing**: Sayed Ali Majed, Yaseen Alzeiny
+- **Testing & QA**: Mohammed AlHamar, Yaseen Alzeiny
 
 ## 🙏 Acknowledgments
 
