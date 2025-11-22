@@ -3,6 +3,7 @@ import Card from '../ui/Card';
 import Button from '../ui/Button';
 import ServiceForm from './ServiceForm';
 import { AuthContext } from '../../contexts/AuthContext';
+import { getServiceImageUrl, hasServiceImage } from '../../utils/imageUtils';
 
 const ServiceManagement = () => {
   const { user } = useContext(AuthContext);
@@ -170,15 +171,15 @@ const ServiceManagement = () => {
               <Card key={service._id || service.id} className="service-item">
                 {/* Image section - like home page cards */}
                 <div className="service-image-section">
-                  {service.images?.length > 0 ? (
+                  {hasServiceImage(service) ? (
                     <img
-                      src={service.images[0].url || service.images[0]}
+                      src={getServiceImageUrl(service)}
                       alt={service.title}
                       className="service-thumbnail"
                     />
                   ) : (
                     <div className="service-thumbnail-placeholder">
-                      <span>No image</span>
+                      <span>No Image Available</span>
                     </div>
                   )}
                 </div>
