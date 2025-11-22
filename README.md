@@ -276,11 +276,9 @@ This project used **Visily.ai** ([https://www.visily.ai/](https://www.visily.ai/
 
 ## 👥 Team
 
-- **Project Lead**: Sayed Ali Majed
-- **Frontend Development**: Sayed Ali Majed, Mohammed AlHamar
-- **Backend Development**: Sayed Ali Majed
-- **UI/UX Design & Wireframing**: Sayed Ali Majed, Yaseen Alzeiny
-- **Testing & QA**: Mohammed AlHamar, Yaseen Alzeiny
+- **Project Lead & Main Developer**: Sayed Ali Majed - Overall project control, messaging feature, integrations, documentation
+- **Frontend Developer**: Mohammed AlHamar - Bookings and services features (frontend implementation)
+- **Full-Stack Developer**: Yaseen Alzeiny - Categories and reviews features (frontend & backend implementation)
 
 ## 🙏 Acknowledgments
 
