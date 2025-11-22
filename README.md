@@ -108,8 +108,8 @@ PearlConnect was developed to solve the growing need for a centralized platform 
 ## 🎯 Getting Started
 
 ### 🚀 **Live Application**
-- **Production Site**: [PearlConnect Live](https://pearlconnect.netlify.app) *(When deployed)*
-- **Backend API**: [PearlConnect API](https://pearlconnect-f5b5c70d607f.herokuapp.com/) *(When deployed)*
+- **Production Site**: [PearlConnect Live](https://pearlconnect-frontend-i3gg7r7ez-sayed-ali-majeds-projects.vercel.app/)
+- **Backend API**: [PearlConnect API](https://pearlconnect-f5b5c70d607f.herokuapp.com/)
 - **Backend Repository**: [PearlConnect Backend](https://github.com/SayedAliMajed/pearlconnect-back-end)
 
 ### Test User Accounts
